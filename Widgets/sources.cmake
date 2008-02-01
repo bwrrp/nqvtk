@@ -2,7 +2,7 @@
 # Module Classes
 
 SET( ${ProjectName}_${module}_Classes
-#   ...
+    NQVTKWidget
 )
 
 # --------------------------------------------------

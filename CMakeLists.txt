@@ -16,15 +16,18 @@ INCLUDE( ${VTK_USE_FILE} )
 # Required VTK modules
 SET( VTK_lib
     vtkFiltering
+    vtkIO
 )
 
 # We need Qt
 FIND_PACKAGE( Qt4 REQUIRED )
-SET( QT_USE_OPENGL TRUE )
+SET( QT_USE_QTMAIN TRUE )
+SET( QT_USE_QTOPENGL TRUE )
 INCLUDE( ${QT_USE_FILE} )
 # Required Qt modules
 SET( QT_lib
     ${QT_LIBRARIES}
+    ${QT_QTMAIN_LIBRARIES}
     ${QT_QTOPENGL_LIBRARIES}
 )
 
@@ -75,7 +78,8 @@ SET( ${ProjectName}_ModuleNames
 # Classes for each of the modules
 
 SET( ${ProjectName}_Rendering_Classes
-#    NQVTKWidget
+    Renderable
+    PolyData
 )
 
 # Widgets has its own sources.cmake (for moc / uic)
@@ -124,7 +128,8 @@ MACRO( collect_class_source_files module class headers sources )
                 IF( EXISTS ${classfile} )
                     SET( ${sources} ${${sources}} "${class}.cxx" )
                 ELSE( EXISTS ${classfile} )
-                    MESSAGE( SEND_ERROR "Class implementation not found for '${class}'" )
+                    # Allow header-only implementations
+                    # MESSAGE( SEND_ERROR "Class implementation not found for '${class}'" )
                 ENDIF( EXISTS ${classfile} )
             ENDIF( EXISTS ${classfile} )
         ENDIF( EXISTS ${classfile} )
@@ -181,6 +186,7 @@ FOREACH( i RANGE ${nmodules} )
     SET( ${ProjectName}_Source
         ${${ProjectName}_Source} 
         ${${ProjectName}_${module}_Source} 
+        ${${ProjectName}_${module}_Headers} # Add headers as well
     )
     SET( ${ProjectName}_GeneratedSource
         ${${ProjectName}_GeneratedSource}
@@ -197,11 +203,13 @@ SOURCE_GROUP( "Generated files"
     FILES ${${ProjectName}_GeneratedSource}
 )
 
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
+
 # --------------------------------------------------
 # Executable target
 
 ADD_EXECUTABLE( 
-    ${ProjectName} 
+    ${ProjectName} WIN32
     ${${ProjectName}_Source}
 )
 
