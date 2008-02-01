@@ -19,6 +19,7 @@ protected:
 
 private:
 	void timerEvent(QTimerEvent *event);
+	void keyPressEvent(QKeyEvent *event);
 
 	NQVTK::Renderable *renderable;
 };

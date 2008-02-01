@@ -6,6 +6,8 @@
 #include "Rendering/PolyData.h"
 
 #include <QTime>
+#include <QKeyEvent>
+#include <QApplication>
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
@@ -71,4 +73,14 @@ void NQVTKWidget::timerEvent(QTimerEvent *event)
 {
 	// Update on idle
 	updateGL();
+}
+
+// ----------------------------------------------------------------------------
+void NQVTKWidget::keyPressEvent(QKeyEvent *event)
+{
+	// Quit on Escape
+	if (event->key() == Qt::Key_Escape)
+		qApp->quit();
+	else
+		event->ignore();
 }
