@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderable.h"
+#include "VBOMesh.h"
 
 #include <vtkPolyData.h>
 #include <vtkXMLPolyDataReader.h>
@@ -8,9 +8,11 @@
 
 namespace NQVTK
 {
-	class PolyData : public Renderable
+	class PolyData : public VBOMesh
 	{
 	public:
+		typedef VBOMesh Superclass;
+
 		PolyData()
 		{
 			// Load a polydata for testing
@@ -23,9 +25,7 @@ namespace NQVTK
 			qDebug("Loaded PolyData...");
 
 			vtkPolyData *data = reader->GetOutput();
-			// TODO: extract geometry into VBOs
-			// Some class would be useful to handle VBOs with vertex, normal, color, ... data
-			
+
 			// VTK points and cells
 			qDebug("# points: %d", data->GetNumberOfPoints());
 			qDebug("# cells: %d", data->GetNumberOfCells());
@@ -38,21 +38,16 @@ namespace NQVTK
 
 			// Not sure about this
 			qDebug("# pieces: %d", data->GetNumberOfPieces());
+
+			// TODO: extract geometry into the VBOMesh
 		}
 
 		virtual ~PolyData() { }
 
 		virtual void Draw()
 		{
-			// TODO: render VBOs
-			glBegin(GL_TRIANGLES);
-			glColor3d(1.0, 0.0, 0.0);
-			glVertex3d(-1.0, -1.0, 0.0);
-			glColor3d(0.0, 1.0, 0.0);
-			glVertex3d(1.0, -1.0, 0.0);
-			glColor3d(0.0, 0.0, 1.0);
-			glVertex3d(0.0, 1.0, 0.0);
-			glEnd();
+			// TODO: draw
+			Superclass::Draw();
 		}
 	};
 }

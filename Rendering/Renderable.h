@@ -1,11 +1,16 @@
 #pragma once
 
+#include "GLBlaat/GLResource.h"
+
 namespace NQVTK 
 {
-	class Renderable
+	class Renderable : public GLResource
 	{
 	public:
+		typedef GLResource Superclass;
+
 		Renderable() { };
+
 		virtual ~Renderable() { }
 
 		virtual void Draw() = 0;

@@ -8,7 +8,7 @@ PROJECT( ${ProjectName} )
 # --------------------------------------------------
 # Dependencies
 
-cmake_minimum_required(VERSION 2.4.0)
+cmake_minimum_required( VERSION 2.4.0 )
 
 # We need VTK for its datatypes
 FIND_PACKAGE( VTK REQUIRED )
@@ -38,21 +38,34 @@ SET( OpenGL_lib
     ${OPENGL_LIBRARIES}
 )
 
+# GLEW
+IF( WIN32 )
+    IF( CYGWIN )
+        FIND_LIBRARY( GLEW_lib 
+            NAMES libGLEW GLEW glew32
+            PATHS /usr/lib /usr/lib/w32api
+        )
+    ELSE( CYGWIN )
+        # FIND_LIBRARY does not seem to work here (or maybe we need the paths...)
+        SET( GLEW_lib
+            glew32.lib
+        )
+    ENDIF( CYGWIN )
+ELSE( WIN32 )
+    FIND_LIBRARY( GLEW_lib
+        NAMES libGLEW GLEW glew32
+        PATHS /usr/lib /usr/local/lib
+    )
+ENDIF( WIN32 )
+
 # We need GLBlaat
 SUBDIRS( GLBlaat )
 SET( GLBlaat_lib
     GLBlaat
 )
 
-# GLEW
-IF( WIN32 )
-    SET( GLEW_lib glew32.lib )
-ELSE( WIN32 )
-    SET( GLEW_lib libGLEW.so )
-ENDIF( WIN32 )
-
-# The complete set of libraries required by the application
-SET( ${ProjectName}_Libraries 
+# The complete set of libraries required by the project
+SET( ${ProjectName}_Libraries
     ${VTK_lib}
     ${QT_lib}
     ${OpenGL_lib}
@@ -79,8 +92,9 @@ SET( ${ProjectName}_ModuleNames
 
 SET( ${ProjectName}_Rendering_Classes
     Renderable
+    VBOMesh
     PolyData
-)
+) 
 
 # Widgets has its own sources.cmake (for moc / uic)
 
