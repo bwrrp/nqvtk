@@ -3,6 +3,7 @@
 #include "Renderable.h"
 
 #include "GLBlaat/GLBuffer.h"
+#include <cassert>
 
 namespace NQVTK
 {
@@ -13,24 +14,21 @@ namespace NQVTK
 
 		VBOMesh()
 		{
+			vertexBuffer = GLBuffer::New();
+			assert(vertexBuffer);
 		}
 
-		virtual ~VBOMesh() { }
+		virtual ~VBOMesh() 
+		{ 
+			delete vertexBuffer;
+		}
 
 		virtual void Draw()
 		{
 			// TODO: render VBOs
-			glBegin(GL_TRIANGLES);
-			glColor3d(1.0, 0.0, 0.0);
-			glVertex3d(-1.0, -1.0, 0.0);
-			glColor3d(0.0, 1.0, 0.0);
-			glVertex3d(1.0, -1.0, 0.0);
-			glColor3d(0.0, 0.0, 1.0);
-			glVertex3d(0.0, 1.0, 0.0);
-			glEnd();
 		}
 
 	protected:
-		GLBuffer *vbo;
+		GLBuffer *vertexBuffer;
 	};
 }

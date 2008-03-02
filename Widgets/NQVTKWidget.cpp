@@ -11,23 +11,35 @@
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
-: QGLWidget(parent)
+: QGLWidget(parent), renderable(0)
 {	
-	renderable = new NQVTK::PolyData;
 }
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::~NQVTKWidget()
 {
-	delete renderable;
+	if (renderable) delete renderable;
 }
 
 // ----------------------------------------------------------------------------
 void NQVTKWidget::initializeGL()
 {
+
+	if (glewInit() != GLEW_OK)
+	{
+		qDebug("Failed to initialize GLEW!");
+		return;
+	}
+
+	qDebug("Creating renderable...");
+	if (renderable) delete renderable;
+	renderable = new NQVTK::PolyData(
+		"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
+
 	glClearColor(0.2f, 0.3f, 0.5f, 0.0f);
 
-	glDisable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
 
 	startTimer(0);
 }
@@ -42,7 +54,7 @@ void NQVTKWidget::resizeGL(int w, int h)
 	gluPerspective(
 		45.0, 
 		static_cast<double>(w) / static_cast<double>(h), 
-		0.1, 100.0);
+		150.0, 600.0);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -55,15 +67,17 @@ void NQVTKWidget::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(
-		0.0, 2.0, 10.0, 
-		0.0, 0.0, 0.0, 
+		88.3, 109.2, 400.8, 
+		88.3, 108.4, 78.2, 
 		0.0, 1.0, 0.0);
 
 	// Add some silly rotation
 	// TODO: local transformations should be handled by the Renderable
 	QTime midnight = QTime(0, 0);
+	glTranslated(88.3, 108.4, 78.2);
 	glRotated(static_cast<double>(QTime::currentTime().msecsTo(midnight)) / 10.0, 
 		0.0, 1.0, 0.0);
+	glTranslated(-88.3, -108.4, -78.2);
 
 	renderable->Draw();
 }
