@@ -36,6 +36,10 @@ namespace NQVTK
 
 			vtkPolyData *data = reader->GetOutput();
 
+			data->GetBounds(bounds);
+			qDebug("Bounds: %f - %f, %f - %f, %f - %f", 
+				bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
+
 			// Get points
 			numPoints = data->GetNumberOfPoints();
 			qDebug("# points: %d", numPoints);	//# points: 33221

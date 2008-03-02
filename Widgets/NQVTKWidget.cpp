@@ -63,21 +63,24 @@ void NQVTKWidget::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	double cx, cy, cz;
+	renderable->GetCenter(cx, cy, cz);
+
 	// TODO: replace with some camera abstraction
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(
-		88.3, 109.2, 400.8, 
-		88.3, 108.4, 78.2, 
+		cx, cy + 1.0, cz - 300.0, 
+		cx, cy, cz, 
 		0.0, 1.0, 0.0);
 
 	// Add some silly rotation
 	// TODO: local transformations should be handled by the Renderable
 	QTime midnight = QTime(0, 0);
-	glTranslated(88.3, 108.4, 78.2);
+	glTranslated(cx, cy, cz);
 	glRotated(static_cast<double>(QTime::currentTime().msecsTo(midnight)) / 10.0, 
 		0.0, 1.0, 0.0);
-	glTranslated(-88.3, -108.4, -78.2);
+	glTranslated(-cx, -cy, -cz);
 
 	renderable->Draw();
 }
