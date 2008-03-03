@@ -3,6 +3,7 @@
 #include <QGLWidget>
 
 #include "Rendering/Renderable.h"
+#include "Rendering/Camera.h"
 
 class NQVTKWidget : public QGLWidget {
 	Q_OBJECT
@@ -22,4 +23,5 @@ private:
 	void keyPressEvent(QKeyEvent *event);
 
 	NQVTK::Renderable *renderable;
+	NQVTK::Camera *camera;
 };

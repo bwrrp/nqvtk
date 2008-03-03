@@ -30,5 +30,10 @@ namespace NQVTK
 
 	protected:
 		GLBuffer *vertexBuffer;
+
+	private:
+		// Not implemented
+		VBOMesh(const VBOMesh&);
+		void operator=(const VBOMesh&);
 	};
 }

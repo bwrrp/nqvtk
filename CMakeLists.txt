@@ -94,6 +94,8 @@ SET( ${ProjectName}_Rendering_Classes
     Renderable
     VBOMesh
     PolyData
+    Camera
+    Vector3d
 ) 
 
 # Widgets has its own sources.cmake (for moc / uic)
