@@ -77,12 +77,14 @@ SET( ${ProjectName}_Libraries
 # Modules
 
 SET( ${ProjectName}_Modules
+	Math
     Rendering
     Widgets
 )
 
 # Friendly names for the modules
 SET( ${ProjectName}_ModuleNames
+	"NQVTK Math"
     "NQVTK Rendering"
     "Widgets"
 )
@@ -90,12 +92,16 @@ SET( ${ProjectName}_ModuleNames
 # --------------------------------------------------
 # Classes for each of the modules
 
+SET( ${ProjectName}_Math_Classes
+	Vector3
+)
+
 SET( ${ProjectName}_Rendering_Classes
     Renderable
     VBOMesh
     PolyData
     Camera
-    Vector3d
+    Renderer
 ) 
 
 # Widgets has its own sources.cmake (for moc / uic)

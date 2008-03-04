@@ -23,7 +23,7 @@ namespace NQVTK
 			delete vertexBuffer;
 		}
 
-		virtual void Draw()
+		virtual void Draw() const
 		{
 			// TODO: render VBOs
 		}

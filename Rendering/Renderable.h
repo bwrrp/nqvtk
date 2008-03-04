@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GLBlaat/GLResource.h"
+#include "Math/Vector3.h"
 
 namespace NQVTK 
 {
@@ -9,15 +10,21 @@ namespace NQVTK
 	public:
 		typedef GLResource Superclass;
 
-		Renderable() { };
+		Renderable() 
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				bounds[i] = 0.0;
+			}
+			visible = true;
+		}
 
 		virtual ~Renderable() { }
 
-		virtual void Draw() = 0;
+		virtual void Draw() const = 0;
 
 		// TODO: Transformations?
 
-		// TODO: Something about size, bounding box, ... (useful stuff)
 		void GetBounds(
 			double &xmin, double &xmax, 
 			double &ymin, double &ymax,
@@ -36,17 +43,15 @@ namespace NQVTK
 				bounds[4], bounds[5]);
 		}
 
-		void GetCenter(double &x, double &y, double &z) const
+		Vector3 GetCenter() const
 		{
-			x = (this->bounds[0] + this->bounds[1]) / 2.0;
-			y = (this->bounds[2] + this->bounds[3]) / 2.0;
-			z = (this->bounds[4] + this->bounds[5]) / 2.0;
+			return Vector3(
+				(this->bounds[0] + this->bounds[1]) / 2.0, 
+				(this->bounds[2] + this->bounds[3]) / 2.0, 
+				(this->bounds[4] + this->bounds[5]) / 2.0);
 		}
 
-		void GetCenter(double center[3]) const
-		{
-			GetCenter(center[0], center[1], center[2]);
-		}
+		bool visible;
 
 	protected:
 		double bounds[6];

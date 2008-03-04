@@ -211,12 +211,12 @@ namespace NQVTK
 
 		virtual ~PolyData() { }
 
-		virtual void Draw()
+		virtual void Draw() const
 		{
 			Draw(DRAWMODE_NORMAL, DRAWPARTS_ALL);
 		}
 
-		virtual void Draw(DrawMode mode, DrawParts parts)
+		virtual void Draw(DrawMode mode, DrawParts parts) const
 		{
 			glColor3d(1.0, 1.0, 1.0);
 

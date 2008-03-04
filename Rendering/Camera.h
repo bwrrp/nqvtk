@@ -1,16 +1,19 @@
 #pragma once
 
 #include "GLBlaat/GLResource.h"
-#include "Vector3d.h"
+#include "Renderable.h"
+#include "Math/Vector3.h"
 
 namespace NQVTK 
 {
 	class Camera : public GLResource
 	{
 	public:
-		Vector3d position;
-		Vector3d focus;
-		Vector3d up;
+		typedef GLResource Superclass;
+
+		Vector3 position;
+		Vector3 focus;
+		Vector3 up;
 		double aspect;
 		double nearZ;
 		double farZ;
@@ -20,9 +23,7 @@ namespace NQVTK
 		void FocusOn(const Renderable *obj)
 		{
 			// Get object info
-			double center[3];
 			double bounds[6];
-			obj->GetCenter(center);
 			obj->GetBounds(bounds);
 
 			double size[3];
@@ -34,9 +35,9 @@ namespace NQVTK
 			double radius = 0.5 * max(size[0], max(size[1], size[2]));
 
 			// TODO: set focus, nearZ, farZ based on object position & transformation!
-			position = Vector3d(0.0, 0.0, -3.0 * radius);
+			position = Vector3(0.0, 0.0, -3.0 * radius);
 			// Our object is moved to 0,0,0
-			focus = Vector3d();
+			focus = Vector3();
 			nearZ = 2 * radius;
 			farZ = 4 * radius;
 		}

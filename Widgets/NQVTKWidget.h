@@ -2,8 +2,7 @@
 
 #include <QGLWidget>
 
-#include "Rendering/Renderable.h"
-#include "Rendering/Camera.h"
+#include "Rendering/Renderer.h"
 
 class NQVTKWidget : public QGLWidget {
 	Q_OBJECT
@@ -22,6 +21,7 @@ private:
 	void timerEvent(QTimerEvent *event);
 	void keyPressEvent(QKeyEvent *event);
 
-	NQVTK::Renderable *renderable;
-	NQVTK::Camera *camera;
+	NQVTK::Renderer *renderer;
+
+	bool initialized;
 };
