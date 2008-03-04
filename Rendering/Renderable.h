@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GLBlaat/GL.h"
 #include "GLBlaat/GLResource.h"
 #include "Math/Vector3.h"
 
@@ -20,6 +21,21 @@ namespace NQVTK
 		}
 
 		virtual ~Renderable() { }
+
+		virtual void PushTransforms() const
+		{
+			// TODO: handle local transformations (position, orientation)
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			Vector3 center = GetCenter();
+			glTranslated(-center.x, -center.y, -center.z);
+		}
+
+		virtual void PopTransforms() const
+		{
+			glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+		}
 
 		virtual void Draw() const = 0;
 

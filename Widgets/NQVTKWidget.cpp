@@ -46,7 +46,11 @@ void NQVTKWidget::initializeGL()
 		"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
 	renderer->AddRenderable(renderable);
 
+	// Render-on-idle timer
 	startTimer(0);
+	// FPS display timer
+	fpsTimerId = startTimer(1000);
+	frames = 0;
 
 	qDebug("Init done!");
 }
@@ -65,13 +69,23 @@ void NQVTKWidget::paintGL()
 	{
 		renderer->Draw();
 	}
+	++frames;
 }
 
 // ----------------------------------------------------------------------------
 void NQVTKWidget::timerEvent(QTimerEvent *event)
 {
-	// Update on idle
-	updateGL();
+	if (event->timerId() == fpsTimerId)
+	{
+		// Update FPS display
+		setWindowTitle(QString("NQVTK - %1 FPS").arg(frames));
+		frames = 0;
+	}
+	else
+	{
+		// Update on idle
+		updateGL();
+	}
 }
 
 // ----------------------------------------------------------------------------

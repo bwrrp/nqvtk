@@ -23,10 +23,7 @@ namespace NQVTK
 			delete vertexBuffer;
 		}
 
-		virtual void Draw() const
-		{
-			// TODO: render VBOs
-		}
+		virtual void Draw() const = 0;
 
 	protected:
 		GLBuffer *vertexBuffer;

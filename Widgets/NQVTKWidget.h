@@ -1,8 +1,7 @@
 #pragma once
 
-#include <QGLWidget>
-
 #include "Rendering/Renderer.h"
+#include <QGLWidget>
 
 class NQVTKWidget : public QGLWidget {
 	Q_OBJECT
@@ -24,4 +23,7 @@ private:
 	NQVTK::Renderer *renderer;
 
 	bool initialized;
+
+	int frames;
+	int fpsTimerId;
 };
