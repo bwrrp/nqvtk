@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GLBlaat/GL.h"
 #include "Camera.h"
 #include "Renderable.h"
 #include <vector>

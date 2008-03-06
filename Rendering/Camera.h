@@ -1,8 +1,11 @@
 #pragma once
 
+#include "GLBlaat/GL.h"
 #include "GLBlaat/GLResource.h"
 #include "Renderable.h"
 #include "Math/Vector3.h"
+
+#include <algorithm>
 
 namespace NQVTK 
 {
@@ -32,7 +35,7 @@ namespace NQVTK
 				size[i] = bounds[2 * i + 1] - bounds[2 * i];
 			}
 			// TODO: calculate actual size of bounding box instead
-			double radius = 0.5 * max(size[0], max(size[1], size[2]));
+			double radius = 0.5 * std::max(size[0], std::max(size[1], size[2]));
 
 			// TODO: set focus, nearZ, farZ based on object position & transformation!
 			position = Vector3(0.0, 0.0, -3.0 * radius);

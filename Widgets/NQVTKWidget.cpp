@@ -9,8 +9,6 @@
 #include <QKeyEvent>
 #include <QApplication>
 
-#include <cmath>
-
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
 : QGLWidget(parent), renderer(0), initialized(false)
