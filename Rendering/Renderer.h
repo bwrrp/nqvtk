@@ -6,8 +6,9 @@
 #include <QTime>
 
 #include "GLBlaat/GLFramebuffer.h"
-#include "GLBlaat/GLRenderTexture2DRectangle.h"
 #include "GLBlaat/GLTexture.h"
+#include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLUtility.h"
 
 namespace NQVTK 
 {
@@ -34,6 +35,28 @@ namespace NQVTK
 			if (fbo) delete fbo;
 			fbo = 0;
 
+			program = GLProgram::New();
+			bool res = program->AddFragmentShader(
+				"uniform sampler2DRectShadow depthBuffer;"
+				"void main() {"
+				"  vec4 r0 = gl_FragCoord;"
+				"  float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
+				"  r1 = r1 - 0.5;"
+				"  if( r1 < 0.0) { discard; }"
+				"  gl_FragColor = gl_Color;"
+				"}");
+			if (!res)
+			{
+				qDebug("Shader failed to compile!");
+				qDebug(program->GetInfoLogs().c_str());
+				return false;
+			}
+			if (!program->Link())
+			{
+				qDebug("Program failed to link!");
+				return false;
+			}
+
 			return true;
 		}
 
@@ -45,10 +68,8 @@ namespace NQVTK
 			if (!fbo) 
 			{
 				fbo = GLFramebuffer::New(w, h);
-				fbo->CreateDepthTexture();
-				GLRendertarget *rt = GLRenderTexture2D::New(w, h, GL_RGBA8, 
-					GL_RGBA, GL_UNSIGNED_BYTE);
-				fbo->AttachRendertarget(GL_COLOR_ATTACHMENT0_EXT, rt);
+				fbo->CreateDepthTextureRectangle();
+				fbo->CreateColorTexture();
 				if (!fbo->IsOk())
 				{
 					qDebug("WARNING! fbo not ok!");
@@ -59,7 +80,7 @@ namespace NQVTK
 				if (!fbo->Resize(w, h))
 				{
 					qDebug("WARNING! fbo resize failed!");
-					delete fbo;
+					delete fbo; 
 					fbo = 0;
 					// Recurse to create a new FBO instead
 					Resize(w, h);
@@ -90,16 +111,82 @@ namespace NQVTK
 
 			// DrawRenderables();
 
-			// Simple FBO test
+			// Simple peeling test
 			fbo->Bind();
+
+			glDisable(GL_CULL_FACE);
 			Clear();
 			DrawRenderables();
+			
+			// Get the results
+			GLTexture *colorBuffer = fbo->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+			GLTexture *depthBuffer = fbo->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
+			// Detach the targets
+			GLRendertarget *crt = fbo->DetachRendertarget(GL_COLOR_ATTACHMENT0_EXT);
+			GLRendertarget *drt = fbo->DetachRendertarget(GL_DEPTH_ATTACHMENT_EXT);
+			// Add new ones for the next pass
+			fbo->CreateColorTexture();
+			fbo->CreateDepthTextureRectangle();
+
+			depthBuffer->BindToCurrent();
+			GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
+			glTexParameteri(depthBuffer->GetTextureTarget(), 
+				GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
+
+			// Set up peeling shader
+			program->Start();
+			program->UseTexture("depthBuffer", 0);
+
+			glDisable(GL_CULL_FACE);
+			Clear();
+			DrawRenderables();
+
+			program->Stop();
+
+			glTexParameteri(depthBuffer->GetTextureTarget(), 
+				GL_TEXTURE_COMPARE_MODE, GL_NONE);
+			depthBuffer->UnbindCurrent();
+
 			fbo->Unbind();
 
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
+
+			colorBuffer->BindToCurrent();
+			glEnable(colorBuffer->GetTextureTarget());
+			glDisable(GL_LIGHTING);
+			glBegin(GL_QUADS);
+			glColor3d(1.0, 1.0, 1.0);
+			glTexCoord2d(0.0, 1.0);
+			glVertex3d(-1.0, 0.0, 0.0);
+			glTexCoord2d(1.0, 1.0);
+			glVertex3d(0.0, 0.0, 0.0);
+			glTexCoord2d(1.0, 0.0);
+			glVertex3d(0.0, 1.0, 0.0);
+			glTexCoord2d(0.0, 0.0);
+			glVertex3d(-1.0, 1.0, 0.0);
+			glEnd();
+			glDisable(colorBuffer->GetTextureTarget());
+			colorBuffer->UnbindCurrent();
+
+			depthBuffer->BindToCurrent();
+			glEnable(depthBuffer->GetTextureTarget());
+			glDisable(GL_LIGHTING);
+			glBegin(GL_QUADS);
+			glColor3d(1.0, 1.0, 1.0);
+			glTexCoord2d(0.0, depthBuffer->GetHeight());
+			glVertex3d(-1.0, -1.0, 0.0);
+			glTexCoord2d(depthBuffer->GetWidth(), depthBuffer->GetHeight());
+			glVertex3d(0.0, -1.0, 0.0);
+			glTexCoord2d(depthBuffer->GetWidth(), 0.0);
+			glVertex3d(0.0, 0.0, 0.0);
+			glTexCoord2d(0.0, 0.0);
+			glVertex3d(-1.0, 0.0, 0.0);
+			glEnd();
+			glDisable(depthBuffer->GetTextureTarget());
+			depthBuffer->UnbindCurrent();
 
 			GLTexture *tex = fbo->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 			tex->BindToCurrent();
@@ -125,17 +212,21 @@ namespace NQVTK
 			glDisable(GL_LIGHTING);
 			glBegin(GL_QUADS);
 			glColor3d(1.0, 1.0, 1.0);
-			glTexCoord2d(0.0, 1.0);
+			glTexCoord2d(0.0, tex->GetHeight());
 			glVertex3d(0.0, -1.0, 0.0);
-			glTexCoord2d(1.0, 1.0);
+			glTexCoord2d(tex->GetWidth(), tex->GetHeight());
 			glVertex3d(1.0, -1.0, 0.0);
-			glTexCoord2d(1.0, 0.0);
+			glTexCoord2d(tex->GetWidth(), 0.0);
 			glVertex3d(1.0, 0.0, 0.0);
 			glTexCoord2d(0.0, 0.0);
 			glVertex3d(0.0, 0.0, 0.0);
 			glEnd();
 			glDisable(tex->GetTextureTarget());
 			tex->UnbindCurrent();
+
+			// We don't need these anymore
+			delete crt;
+			delete drt;
 		}
 
 		virtual void DrawRenderables()
@@ -171,6 +262,7 @@ namespace NQVTK
 		std::vector<Renderable*> renderables;
 
 		GLFramebuffer *fbo;
+		GLProgram *program;
 
 	private:
 		// Not implemented

@@ -231,7 +231,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 # Executable target
 
 ADD_EXECUTABLE( 
-    ${ProjectName} WIN32
+    ${ProjectName}
     ${${ProjectName}_Source}
 )
 
