@@ -220,8 +220,6 @@ namespace NQVTK
 		{
 			PushTransforms();
 
-			glColor3d(1.0, 1.0, 1.0);
-
 			// Setup vbos
 			vertexBuffer->BindAsVertexData();
 			// TODO: either VBOMesh or GLBuffer should manage these
