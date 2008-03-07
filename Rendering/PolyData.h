@@ -4,8 +4,6 @@
 
 #include <string>
 #include <vtkPolyData.h>
-#include <vtkXMLPolyDataReader.h>
-#include <vtkSmartPointer.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
@@ -36,22 +34,12 @@ namespace NQVTK
 			DRAWPARTS_ALL = 15
 		};
 
-		PolyData(const std::string &filename)
+		PolyData(vtkPolyData *data)
 		: vertIndices(0), lineIndices(0), polyIndices(0), stripIndices(0)
 		{
 			// TODO: define some useful VBOMesh api and refactor this
 
 			// TODO: check: polydata datatype should be float
-
-			// Load a polydata for testing
-			vtkSmartPointer<vtkXMLPolyDataReader> reader = 
-				vtkSmartPointer<vtkXMLPolyDataReader>::New();
-			reader->SetFileName(filename.c_str());
-			reader->Update();
-
-			qDebug("Loaded PolyData...");
-
-			vtkPolyData *data = reader->GetOutput();
 
 			data->GetBounds(bounds);
 			qDebug("Bounds: %f - %f, %f - %f, %f - %f", 

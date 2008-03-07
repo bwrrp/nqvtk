@@ -9,6 +9,7 @@
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLOcclusionQuery.h"
 #include "GLBlaat/GLUtility.h"
 
 namespace NQVTK 
@@ -16,17 +17,20 @@ namespace NQVTK
 	class Renderer
 	{
 	public:
-		Renderer() : camera(0), fbo1(0), fbo2(0) { };
+		Renderer() : camera(0), fbo1(0), fbo2(0), program(0), query(0) { };
 		virtual ~Renderer() 
 		{ 
 			DeleteAllRenderables();
 			if (camera) delete camera;
+
+			if (fbo1) delete fbo1;
+			if (fbo2) delete fbo2;
+			if (program) delete program;
+			if (query) delete query;
 		}
 
 		virtual bool Initialize()
 		{
-			glClearColor(0.2f, 0.3f, 0.5f, 0.0f);
-
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_DEPTH_TEST);
 
@@ -38,6 +42,7 @@ namespace NQVTK
 			if (fbo2) delete fbo2;
 			fbo2 = 0;
 
+			if (program) delete program;
 			program = GLProgram::New();
 			bool res = program->AddFragmentShader(
 				"uniform sampler2DRectShadow depthBuffer;"
@@ -59,6 +64,9 @@ namespace NQVTK
 				qDebug("Program failed to link!");
 				return false;
 			}
+
+			if (query) delete query;
+			query = GLOcclusionQuery::New();
 
 			return true;
 		}
@@ -166,53 +174,92 @@ namespace NQVTK
 			glRotated(static_cast<double>(QTime::currentTime().msecsTo(midnight)) / 30.0, 
 				0.0, 1.0, 0.0);
 
-			glColor3d(1.0, 1.0, 1.0);
-			// DrawRenderables();
-
-			// Simple peeling test
+			// Prepare for rendering
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			Clear();
+			Vector3 color(1.0, 0.9, 0.4);
+			double alpha = 0.4;
+			color *= alpha;
+			glColor4d(color.x, color.y, color.z, alpha);
+			glDisable(GL_CULL_FACE);
 			fbo1->Bind();
 
-			glDisable(GL_CULL_FACE);
-			Clear();
-			DrawRenderables();
+			// Depth peeling
+			glClearColor(0.0, 0.0, 0.0, 0.0);
+			bool done = false;
+			int layer = 0;
+			int maxlayers = 10;
+			while (!done)
+			{
+				GLTexture *depthBuffer = 0;
+				if (layer > 0)
+				{
+					// Get the results of the previous layer
+					depthBuffer = fbo2->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
 
-			// TODO: Begin depth peeling loop here...
+					depthBuffer->BindToCurrent();
+					GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
+						glTexParameteri(depthBuffer->GetTextureTarget(), 
+						GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 
-			SwapFramebuffers();
-			
-			// Get the results
-			GLTexture *depthBuffer = fbo2->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
+					// Set up peeling shader
+					program->Start();
+					program->UseTexture("depthBuffer", 0);
+				}
+				
+				Clear();
 
-			depthBuffer->BindToCurrent();
-			GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
-			glTexParameteri(depthBuffer->GetTextureTarget(), 
-				GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
+				query->Start();
 
-			// Set up peeling shader
-			program->Start();
-			program->UseTexture("depthBuffer", 0);
+				DrawRenderables();
 
-			glDisable(GL_CULL_FACE);
-			Clear();
-			DrawRenderables();
+				query->Stop();
 
-			program->Stop();
+				if (layer > 0)
+				{
+					program->Stop();
 
-			glTexParameteri(depthBuffer->GetTextureTarget(), 
-				GL_TEXTURE_COMPARE_MODE, GL_NONE);
-			depthBuffer->UnbindCurrent();
+					glTexParameteri(depthBuffer->GetTextureTarget(), 
+						GL_TEXTURE_COMPARE_MODE, GL_NONE);
+					depthBuffer->UnbindCurrent();
+				}
 
-			// TODO: End depth peeling loop here...
+				SwapFramebuffers();
 
-			// TODO: Blend color buffers as we go:
-			//glBlendFuncSeparateEXT(
-			//	GL_DST_ALPHA, GL_ONE, 
-			//	GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-			// TODO: add test for GL_EXT_blend_func_separate before we use this
+				// Blend results to screen
+				fbo1->Unbind();
+				GLTexture *colorBuffer = fbo2->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				glMatrixMode(GL_PROJECTION);
+				glPushMatrix();
+				glLoadIdentity();
+				glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				glLoadIdentity();
+				glDisable(GL_LIGHTING);
+				glDisable(GL_DEPTH_TEST);
+				// TODO: we should test for this extension / GL version 1.4
+				glBlendFuncSeparate(
+					GL_DST_ALPHA, GL_ONE, 
+					GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+				TestDrawTexture(colorBuffer, -1.0, 1.0, -1.0, 1.0);
+				glDisable(GL_BLEND);
+				glEnable(GL_DEPTH_TEST);
+				glPopMatrix();
+				glMatrixMode(GL_PROJECTION);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				fbo1->Bind();
+
+				unsigned int numfragments = query->GetResultui();
+				++layer;
+				done = (layer >= maxlayers || numfragments == 0);
+			}
+
+			// TODO: Blend in the background
+			// (bgcolor + 1.0 alpha quad, with front-to-back blendfunc)
 
 			fbo1->Unbind();
-
-			SwapFramebuffers();
 
 			// Test: display all textures
 			glMatrixMode(GL_PROJECTION);
@@ -221,6 +268,7 @@ namespace NQVTK
 			glLoadIdentity();
 			glDisable(GL_LIGHTING);
 
+			/*
 			TestDrawTexture(fbo1->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT), 
 				-1.0, 0.0, 0.0, 1.0);
 			TestDrawTexture(fbo1->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT), 
@@ -229,6 +277,7 @@ namespace NQVTK
 				0.0, 1.0, 0.0, 1.0);
 			TestDrawTexture(fbo2->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT), 
 				0.0, 1.0, -1.0, 0.0);
+			*/
 		}
 
 		virtual void DrawRenderables()
@@ -266,6 +315,7 @@ namespace NQVTK
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
 		GLProgram *program;
+		GLOcclusionQuery *query;
 
 	private:
 		// Not implemented

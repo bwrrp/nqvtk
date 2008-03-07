@@ -6,12 +6,16 @@
 #include "Rendering/Renderer.h"
 #include "Rendering/PolyData.h"
 
+#include <vtkXMLPolyDataReader.h>
+#include <vtkSmartPointer.h>
+
 #include <QKeyEvent>
 #include <QApplication>
+#include <QGLFormat>
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
-: QGLWidget(parent), renderer(0), initialized(false)
+: QGLWidget(QGLFormat(QGL::AlphaChannel), parent), renderer(0), initialized(false)
 {	
 }
 
@@ -40,8 +44,14 @@ void NQVTKWidget::initializeGL()
 	}
 	
 	qDebug("Creating and adding renderable...");
-	NQVTK::Renderable *renderable = new NQVTK::PolyData(
+	// Load a polydata for testing
+	vtkSmartPointer<vtkXMLPolyDataReader> reader = 
+		vtkSmartPointer<vtkXMLPolyDataReader>::New();
+	reader->SetFileName(
 		"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
+	reader->Update();
+	qDebug("Loaded PolyData...");
+	NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
 	renderer->AddRenderable(renderable);
 
 	// Render-on-idle timer
