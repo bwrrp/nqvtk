@@ -56,7 +56,7 @@ void NQVTKWidget::initializeGL()
 		qDebug("Loaded PolyData 1...");
 		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
 		renderable->color = NQVTK::Vector3(1.0, 0.9, 0.4);
-		renderable->opacity = 0.5;
+		renderable->opacity = 0.4;
 		renderer->AddRenderable(renderable);
 	}
 	{
@@ -68,7 +68,7 @@ void NQVTKWidget::initializeGL()
 		qDebug("Loaded PolyData 2...");
 		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
 		renderable->color = NQVTK::Vector3(0.3, 0.6, 1.0);
-		renderable->opacity = 0.5;
+		renderable->opacity = 0.4;
 		renderer->AddRenderable(renderable);
 	}
 
@@ -90,10 +90,13 @@ void NQVTKWidget::resizeGL(int w, int h)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::paintGL()
 {
-	renderer->Clear();
 	if (initialized) 
 	{
 		renderer->Draw();
+	}
+	else
+	{
+		renderer->Clear();
 	}
 	++frames;
 }

@@ -17,7 +17,7 @@ namespace NQVTK
 	class Renderer
 	{
 	public:
-		Renderer() : camera(0), fbo1(0), fbo2(0), program(0), query(0) { };
+		Renderer() : camera(0), fbo1(0), fbo2(0), scribe(0), painter(0), query(0) { };
 		virtual ~Renderer() 
 		{ 
 			DeleteAllRenderables();
@@ -25,7 +25,8 @@ namespace NQVTK
 
 			if (fbo1) delete fbo1;
 			if (fbo2) delete fbo2;
-			if (program) delete program;
+			if (scribe) delete scribe;
+			if (painter) delete painter;
 			if (query) delete query;
 		}
 
@@ -42,33 +43,59 @@ namespace NQVTK
 			if (fbo2) delete fbo2;
 			fbo2 = 0;
 
-			if (program) delete program;
-			program = GLProgram::New();
-			bool res = program->AddFragmentShader(
-				"uniform sampler2DRectShadow depthBuffer;"
-				"void main() {"
-				"  vec4 r0 = gl_FragCoord;"
-				"  float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
-				"  r1 = r1 - 0.5;"
-				"  if( r1 < 0.0) { discard; }"
-				"  gl_FragColor = gl_Color;"
-				"}");
-			if (!res)
+			// Set up shader programs
+			if (scribe) delete scribe;
+			if (painter) delete painter;
+			// - Scribe (info pass)
 			{
-				qDebug("Shader failed to compile!");
-				qDebug(program->GetInfoLogs().c_str());
-				return false;
+				scribe = GLProgram::New();
+				bool res = scribe->AddFragmentShader(
+					"uniform sampler2DRectShadow depthBuffer;"
+					"void main() {"
+					"  vec4 r0 = gl_FragCoord;"
+					"  float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
+					"  r1 = r1 - 0.5;"
+					"  if( r1 < 0.0) { discard; }"
+					"  gl_FragColor = gl_Color;"
+					"}");
+				if (res) res = scribe->Link();
+				if (!res)
+				{
+					qDebug("Failed to build Scribe!");
+					return false;
+				}
 			}
-			if (!program->Link())
+			// - Painter (shading pass)
+			/*
 			{
-				qDebug("Program failed to link!");
-				return false;
+				painter = GLProgram::New();
+				bool res = painter->AddFragmentShader(
+					"");
+				if (res) res = painter->Link();
+				if (!res)
+				{
+					qDebug("Failed to build Painter!");
+					return false;
+				}
 			}
+			*/
+
 
 			if (query) delete query;
 			query = GLOcclusionQuery::New();
 
 			return true;
+		}
+
+		GLFramebuffer *CreateFBO(int w, int h)
+		{
+			GLFramebuffer *fbo = GLFramebuffer::New(w, h);
+			fbo->CreateDepthTextureRectangle();
+			fbo->CreateColorTexture();
+			if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
+			fbo->Unbind();
+
+			return fbo;
 		}
 
 		virtual void Resize(int w, int h)
@@ -78,11 +105,7 @@ namespace NQVTK
 
 			if (!fbo1) 
 			{
-				fbo1 = GLFramebuffer::New(w, h);
-				fbo1->CreateDepthTextureRectangle();
-				fbo1->CreateColorTexture();
-				if (!fbo1->IsOk()) qDebug("WARNING! fbo1 not ok!");
-				fbo1->Unbind();
+				fbo1 = CreateFBO(w, h);
 			}
 			else
 			{
@@ -91,11 +114,7 @@ namespace NQVTK
 
 			if (!fbo2) 
 			{
-				fbo2 = GLFramebuffer::New(w, h);
-				fbo2->CreateDepthTextureRectangle();
-				fbo2->CreateColorTexture();
-				if (!fbo2->IsOk()) qDebug("WARNING! fbo2 not ok!");
-				fbo2->Unbind();
+				fbo2 = CreateFBO(w, h);
 			}
 			else
 			{
@@ -185,7 +204,7 @@ namespace NQVTK
 			glClearColor(0.0, 0.0, 0.0, 0.0);
 			bool done = false;
 			int layer = 0;
-			int maxlayers = 10;
+			int maxlayers = 20;
 			while (!done)
 			{
 				GLTexture *depthBuffer = 0;
@@ -200,8 +219,8 @@ namespace NQVTK
 						GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 
 					// Set up peeling shader
-					program->Start();
-					program->UseTexture("depthBuffer", 0);
+					scribe->Start();
+					scribe->UseTexture("depthBuffer", 0);
 				}
 				
 				Clear();
@@ -214,7 +233,7 @@ namespace NQVTK
 
 				if (layer > 0)
 				{
-					program->Stop();
+					scribe->Stop();
 
 					glTexParameteri(depthBuffer->GetTextureTarget(), 
 						GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -239,6 +258,7 @@ namespace NQVTK
 					GL_DST_ALPHA, GL_ONE, 
 					GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 				glEnable(GL_BLEND);
+				glColor3d(1.0, 1.0, 1.0);
 				TestDrawTexture(colorBuffer, -1.0, 1.0, -1.0, 1.0);
 				glDisable(GL_BLEND);
 				glEnable(GL_DEPTH_TEST);
@@ -251,20 +271,33 @@ namespace NQVTK
 				unsigned int numfragments = query->GetResultui();
 				++layer;
 				done = (layer >= maxlayers || numfragments == 0);
+				//if (done) qDebug("Layers: %d (%d fragments left)", layer, numfragments);
 			}
-
-			// TODO: Blend in the background
-			// (bgcolor + 1.0 alpha quad, with front-to-back blendfunc)
 
 			fbo1->Unbind();
 
-			/*
-			// Test: display all textures
+			// Blend in the background last
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
+
 			glDisable(GL_LIGHTING);
+			glEnable(GL_BLEND);
+
+			glBegin(GL_QUADS);
+			glColor3d(0.2, 0.2, 0.25);
+			glVertex3d(-1.0, -1.0, 0.0);
+			glVertex3d(1.0, -1.0, 0.0);
+			glColor3d(0.6, 0.6, 0.65);
+			glVertex3d(1.0, 1.0, 0.0);
+			glVertex3d(-1.0, 1.0, 0.0);
+			glEnd();
+
+			glDisable(GL_BLEND);
+
+			/*
+			// Test: display all textures
 
 			TestDrawTexture(fbo1->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT), 
 				-1.0, 0.0, 0.0, 1.0);
@@ -274,7 +307,7 @@ namespace NQVTK
 				0.0, 1.0, 0.0, 1.0);
 			TestDrawTexture(fbo2->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT), 
 				0.0, 1.0, -1.0, 0.0);
-			*/
+			//*/
 		}
 
 		virtual void DrawRenderables()
@@ -311,7 +344,8 @@ namespace NQVTK
 
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
-		GLProgram *program;
+		GLProgram *scribe;
+		GLProgram *painter;
 		GLOcclusionQuery *query;
 
 	private:

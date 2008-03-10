@@ -98,6 +98,7 @@ SET( ${ProjectName}_Math_Classes
 
 SET( ${ProjectName}_Rendering_Classes
     Renderable
+    AttributePointers
     VBOMesh
     PolyData
     Camera

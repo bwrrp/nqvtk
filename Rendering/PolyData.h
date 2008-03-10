@@ -204,35 +204,26 @@ namespace NQVTK
 
 		virtual void Draw(DrawMode mode, DrawParts parts) const
 		{
+			// Color (premultiplied by alpha)
 			Vector3 premultcol = color * opacity;
 			glColor4d(premultcol.x, premultcol.y, premultcol.z, opacity);
 
+			// Enter object coordinates
 			PushTransforms();
 
-			// Setup vbos
-			vertexBuffer->BindAsVertexData();
+			// Setup vbo and pointers
 			SetPointers();
-			// TODO: either VBOMesh or GLBuffer should manage these
-			glEnableClientState(GL_VERTEX_ARRAY);
+
+			// Use lighting if we have normal data
 			if (hasNormals)
 			{
 				glEnable(GL_LIGHTING);
 				glEnable(GL_LIGHT0);
-				glEnable(GL_NORMALIZE);
-				glEnableClientState(GL_NORMAL_ARRAY);
+				//glEnable(GL_NORMALIZE);
 			}
 			else
 			{
 				glDisable(GL_LIGHTING);
-				glDisableClientState(GL_NORMAL_ARRAY);
-			}
-			if (hasTCoords)
-			{
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			}
-			else
-			{
-				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			}
 
 			// Vertices
@@ -292,8 +283,11 @@ namespace NQVTK
 					break;
 				}
 			}
-			vertexBuffer->Unbind();
 
+			// Unset vbo render state
+			UnsetPointers();
+
+			// Restore world coordinates
 			PopTransforms();
 		}
 
