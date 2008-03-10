@@ -8,6 +8,7 @@
 
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
+#include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLOcclusionQuery.h"
 #include "GLBlaat/GLUtility.h"
@@ -17,7 +18,9 @@ namespace NQVTK
 	class Renderer
 	{
 	public:
-		Renderer() : camera(0), fbo1(0), fbo2(0), scribe(0), painter(0), query(0) { };
+		Renderer() : camera(0), fbo1(0), fbo2(0), 
+			tm(0), scribe(0), painter(0), query(0) { };
+
 		virtual ~Renderer() 
 		{ 
 			DeleteAllRenderables();
@@ -25,6 +28,7 @@ namespace NQVTK
 
 			if (fbo1) delete fbo1;
 			if (fbo2) delete fbo2;
+			if (tm) delete tm;
 			if (scribe) delete scribe;
 			if (painter) delete painter;
 			if (query) delete query;
@@ -43,20 +47,43 @@ namespace NQVTK
 			if (fbo2) delete fbo2;
 			fbo2 = 0;
 
+			if (tm) delete tm;
+			tm = GLTextureManager::New();
+			if (!tm) 
+			{
+				qDebug("Failed to create texture manager!");
+				return false;
+			}
+
 			// Set up shader programs
 			if (scribe) delete scribe;
 			if (painter) delete painter;
 			// - Scribe (info pass)
 			{
 				scribe = GLProgram::New();
-				bool res = scribe->AddFragmentShader(
-					"uniform sampler2DRectShadow depthBuffer;"
+				bool res = scribe->AddVertexShader(
+					"varying vec3 normal;"
+					"varying vec4 color;"
 					"void main() {"
-					"  vec4 r0 = gl_FragCoord;"
-					"  float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
-					"  r1 = r1 - 0.5;"
-					"  if( r1 < 0.0) { discard; }"
-					"  gl_FragColor = gl_Color;"
+					"  normal = normalize(gl_NormalMatrix * gl_Normal);"
+					"  color = gl_Color;"
+					"  gl_Position = ftransform();"
+					"}");
+				if (res) res = scribe->AddFragmentShader(
+					"uniform sampler2DRectShadow depthBuffer;"
+					"uniform int layer;"
+					"varying vec3 normal;"
+					"varying vec4 color;"
+					"void main() {"
+					"  if (layer > 0) {"
+					"    vec4 r0 = gl_FragCoord;"
+					"    float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
+					"    r1 = r1 - 0.5;"
+					"    if (r1 < 0.0) { discard; }"
+					"  }"
+					"  vec3 n = normalize(normal + vec3(1.0));"
+					"  gl_FragData[0] = color;"
+					"  gl_FragData[1] = vec4(normal, 1.0);"
 					"}");
 				if (res) res = scribe->Link();
 				if (!res)
@@ -66,11 +93,20 @@ namespace NQVTK
 				}
 			}
 			// - Painter (shading pass)
-			/*
 			{
 				painter = GLProgram::New();
+				//bool res = painter->AddVertexShader("");
 				bool res = painter->AddFragmentShader(
-					"");
+					"uniform sampler2DRect normals;"
+					"uniform sampler2DRect colors;"
+					"void main() {"
+					"  vec4 r0 = gl_FragCoord;"
+					"  vec3 normal = texture2DRect(normals, r0.xyz).rgb;"
+					// TODO: fix normals!
+					"  vec4 color = texture2DRect(colors, r0.xyz);"
+					"  float l = dot(normal, normalize(vec3(1.0)));"
+					"  gl_FragColor = vec4(color.rgb * l, color.a);"
+					"}");
 				if (res) res = painter->Link();
 				if (!res)
 				{
@@ -78,8 +114,6 @@ namespace NQVTK
 					return false;
 				}
 			}
-			*/
-
 
 			if (query) delete query;
 			query = GLOcclusionQuery::New();
@@ -91,7 +125,10 @@ namespace NQVTK
 		{
 			GLFramebuffer *fbo = GLFramebuffer::New(w, h);
 			fbo->CreateDepthTextureRectangle();
-			fbo->CreateColorTexture();
+			fbo->CreateColorTextureRectangle(GL_COLOR_ATTACHMENT0_EXT);
+			fbo->CreateColorTextureRectangle(GL_COLOR_ATTACHMENT1_EXT);
+			GLenum bufs[] = {GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT};
+			glDrawBuffers(2, bufs);
 			if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
 			fbo->Unbind();
 
@@ -208,9 +245,14 @@ namespace NQVTK
 			while (!done)
 			{
 				GLTexture *depthBuffer = 0;
+
+				// Start Scribe program
+				scribe->Start();
+				scribe->SetUniform1i("layer", layer);
+
 				if (layer > 0)
 				{
-					// Get the results of the previous layer
+					// Get the previous layer's depth buffer
 					depthBuffer = fbo2->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
 
 					depthBuffer->BindToCurrent();
@@ -218,8 +260,6 @@ namespace NQVTK
 						glTexParameteri(depthBuffer->GetTextureTarget(), 
 						GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 
-					// Set up peeling shader
-					scribe->Start();
 					scribe->UseTexture("depthBuffer", 0);
 				}
 				
@@ -231,10 +271,10 @@ namespace NQVTK
 
 				query->Stop();
 
+				scribe->Stop();
+
 				if (layer > 0)
 				{
-					scribe->Stop();
-
 					glTexParameteri(depthBuffer->GetTextureTarget(), 
 						GL_TEXTURE_COMPARE_MODE, GL_NONE);
 					depthBuffer->UnbindCurrent();
@@ -244,7 +284,18 @@ namespace NQVTK
 
 				// Blend results to screen
 				fbo1->Unbind();
-				GLTexture *colorBuffer = fbo2->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				
+				GLTexture *colors = fbo2->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				GLTexture *normals = fbo2->GetTexture2D(GL_COLOR_ATTACHMENT1_EXT);
+
+				painter->Start();
+				painter->UseTexture("colors", 0);
+				painter->UseTexture("normals", 1);
+				glActiveTexture(GL_TEXTURE1);
+				normals->BindToCurrent();
+				glActiveTexture(GL_TEXTURE0);
+				colors->BindToCurrent();
+
 				glMatrixMode(GL_PROJECTION);
 				glPushMatrix();
 				glLoadIdentity();
@@ -259,13 +310,16 @@ namespace NQVTK
 					GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 				glEnable(GL_BLEND);
 				glColor3d(1.0, 1.0, 1.0);
-				TestDrawTexture(colorBuffer, -1.0, 1.0, -1.0, 1.0);
+				TestDrawTexture(colors, -1.0, 1.0, -1.0, 1.0);
 				glDisable(GL_BLEND);
 				glEnable(GL_DEPTH_TEST);
 				glPopMatrix();
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glMatrixMode(GL_MODELVIEW);
+
+				painter->Stop();
+
 				fbo1->Bind();
 
 				unsigned int numfragments = query->GetResultui();
@@ -298,7 +352,7 @@ namespace NQVTK
 
 			/*
 			// Test: display all textures
-
+			glDisable(GL_DEPTH_TEST);
 			TestDrawTexture(fbo1->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT), 
 				-1.0, 0.0, 0.0, 1.0);
 			TestDrawTexture(fbo1->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT), 
@@ -307,6 +361,7 @@ namespace NQVTK
 				0.0, 1.0, 0.0, 1.0);
 			TestDrawTexture(fbo2->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT), 
 				0.0, 1.0, -1.0, 0.0);
+			glEnable(GL_DEPTH_TEST);
 			//*/
 		}
 
@@ -344,6 +399,7 @@ namespace NQVTK
 
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
+		GLTextureManager *tm;
 		GLProgram *scribe;
 		GLProgram *painter;
 		GLOcclusionQuery *query;
