@@ -3,6 +3,8 @@
 #include "NQVTKWidget.h"
 #include "NQVTKWidget.moc"
 
+#include "Math/Vector3.h"
+
 #include "Rendering/Renderer.h"
 #include "Rendering/PolyData.h"
 
@@ -43,16 +45,32 @@ void NQVTKWidget::initializeGL()
 		qDebug("Failed to initialize renderer...");
 	}
 	
-	qDebug("Creating and adding renderable...");
+	qDebug("Creating and adding renderables...");
 	// Load a polydata for testing
-	vtkSmartPointer<vtkXMLPolyDataReader> reader = 
-		vtkSmartPointer<vtkXMLPolyDataReader>::New();
-	reader->SetFileName(
-		"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
-	reader->Update();
-	qDebug("Loaded PolyData...");
-	NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
-	renderer->AddRenderable(renderable);
+	{
+		vtkSmartPointer<vtkXMLPolyDataReader> reader = 
+			vtkSmartPointer<vtkXMLPolyDataReader>::New();
+		reader->SetFileName(
+			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
+		reader->Update();
+		qDebug("Loaded PolyData 1...");
+		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
+		renderable->color = NQVTK::Vector3(1.0, 0.9, 0.4);
+		renderable->opacity = 0.5;
+		renderer->AddRenderable(renderable);
+	}
+	{
+		vtkSmartPointer<vtkXMLPolyDataReader> reader = 
+			vtkSmartPointer<vtkXMLPolyDataReader>::New();
+		reader->SetFileName(
+			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2.vtp");
+		reader->Update();
+		qDebug("Loaded PolyData 2...");
+		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
+		renderable->color = NQVTK::Vector3(0.3, 0.6, 1.0);
+		renderable->opacity = 0.5;
+		renderer->AddRenderable(renderable);
+	}
 
 	// Render-on-idle timer
 	startTimer(0);

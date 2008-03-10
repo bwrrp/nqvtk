@@ -18,6 +18,9 @@ namespace NQVTK
 				bounds[i] = 0.0;
 			}
 			visible = true;
+
+			color = Vector3(1.0, 1.0, 1.0);
+			opacity = 1.0;
 		}
 
 		virtual ~Renderable() { }
@@ -68,6 +71,8 @@ namespace NQVTK
 		}
 
 		bool visible;
+		Vector3 color;
+		double opacity;
 
 	protected:
 		double bounds[6];

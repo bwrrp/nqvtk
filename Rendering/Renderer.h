@@ -177,11 +177,8 @@ namespace NQVTK
 			// Prepare for rendering
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			Clear();
-			Vector3 color(1.0, 0.9, 0.4);
-			double alpha = 0.4;
-			color *= alpha;
-			glColor4d(color.x, color.y, color.z, alpha);
 			glDisable(GL_CULL_FACE);
+			glEnable(GL_COLOR_MATERIAL);
 			fbo1->Bind();
 
 			// Depth peeling
@@ -261,6 +258,7 @@ namespace NQVTK
 
 			fbo1->Unbind();
 
+			/*
 			// Test: display all textures
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
@@ -268,7 +266,6 @@ namespace NQVTK
 			glLoadIdentity();
 			glDisable(GL_LIGHTING);
 
-			/*
 			TestDrawTexture(fbo1->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT), 
 				-1.0, 0.0, 0.0, 1.0);
 			TestDrawTexture(fbo1->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT), 

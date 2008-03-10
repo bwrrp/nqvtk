@@ -8,8 +8,6 @@
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
 
-#define BUFFER_OFFSET(i) ((char *)0 + (i))
-
 namespace NQVTK
 {
 	class PolyData : public VBOMesh
@@ -79,20 +77,20 @@ namespace NQVTK
 			vertexBuffer->BindAsVertexData();
 			vertexBuffer->SetData(totalSize, 0, GL_STATIC_DRAW);
 			vertexBuffer->SetSubData(0, pointsSize, points->GetVoidPointer(0));
-			glVertexPointer(3, GL_FLOAT, 0, BUFFER_OFFSET(0));
+			VertexPointer(3, GL_FLOAT, 0, 0);
 			if (hasNormals)
 			{
 				vertexBuffer->SetSubData(pointsSize, 
 					normalsSize, normals->GetVoidPointer(0));
-				glNormalPointer(GL_FLOAT, 0, BUFFER_OFFSET(pointsSize));
+				NormalPointer(GL_FLOAT, 0, pointsSize);
 			}
 
 			if (hasTCoords)
 			{
 				vertexBuffer->SetSubData(pointsSize + normalsSize, 
 					tcoordsSize, tcoords->GetVoidPointer(0));
-				glTexCoordPointer(tcoords->GetNumberOfComponents(), 
-					GL_FLOAT, 0, BUFFER_OFFSET(pointsSize + normalsSize));
+				TexCoordPointer(0, tcoords->GetNumberOfComponents(), 
+					GL_FLOAT, 0, pointsSize + normalsSize);
 			}
 			vertexBuffer->Unbind();
 
@@ -206,10 +204,14 @@ namespace NQVTK
 
 		virtual void Draw(DrawMode mode, DrawParts parts) const
 		{
+			Vector3 premultcol = color * opacity;
+			glColor4d(premultcol.x, premultcol.y, premultcol.z, opacity);
+
 			PushTransforms();
 
 			// Setup vbos
 			vertexBuffer->BindAsVertexData();
+			SetPointers();
 			// TODO: either VBOMesh or GLBuffer should manage these
 			glEnableClientState(GL_VERTEX_ARRAY);
 			if (hasNormals)
