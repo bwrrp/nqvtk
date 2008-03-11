@@ -204,9 +204,8 @@ namespace NQVTK
 
 		virtual void Draw(DrawMode mode, DrawParts parts) const
 		{
-			// Color (premultiplied by alpha)
-			Vector3 premultcol = color * opacity;
-			glColor4d(premultcol.x, premultcol.y, premultcol.z, opacity);
+			// Color
+			glColor4d(color.x, color.y, color.z, opacity);
 
 			// Enter object coordinates
 			PushTransforms();
