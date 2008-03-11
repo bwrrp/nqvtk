@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include "Renderable.h"
 #include <vector>
-#include <QTime>
+#include <QObject>
 
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
@@ -76,6 +76,7 @@ namespace NQVTK
 					"  gl_Position = ftransform();"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
+					"#extension GL_ARB_texture_rectangle : enable\n"
 					"uniform sampler2DRectShadow depthBuffer;"
 					"uniform sampler2DRect infoBuffer;"
 					"uniform int layer;"
@@ -159,6 +160,7 @@ namespace NQVTK
 					"  gl_Position = gl_Vertex;"
 					"}");
 				if (res) res = painter->AddFragmentShader(
+					"#extension GL_ARB_texture_rectangle : enable\n"
 					"uniform sampler2DRect normals;"
 					"uniform sampler2DRect colors;"
 					"uniform sampler2DRect infoPrevious;"
@@ -232,15 +234,14 @@ namespace NQVTK
 					"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
 					"  }"
 					// Apply contouring
-					// TODO: this breaks when combining horizontal and vertical edges (???)
 					"  float contourDepthEpsilon = 0.001;"
-					"  vec4 left   = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
-					"  vec4 top    = texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));"
-					"  float lr = abs(decodeDepth(left.zw) - decodeDepth(info0.zw));"
-					"  float tb = abs(decodeDepth(top.zw) - decodeDepth(info0.zw));"
-					"  bool contourH = (left.x != info0.x && lr < contourDepthEpsilon);"
-					"  bool contourV = (top.x != info0.x && tb < contourDepthEpsilon);"
-					"  if (contourV) {"
+					"  vec4 left = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
+					"  vec4 top = texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));"
+					"  float diffH = abs(decodeDepth(left.zw) - decodeDepth(info0.zw));"
+					"  float diffV = abs(decodeDepth(top.zw) - decodeDepth(info0.zw));"
+					"  bool contourH = (left.x != info0.x && diffH < contourDepthEpsilon);"
+					"  bool contourV = (top.x != info0.x && diffV < contourDepthEpsilon);"
+					"  if (contourH || contourV) {"
 					"    litFragment = vec3(0.0);"
 					"    color.a = 1.0;"
 					"  }"
@@ -252,8 +253,10 @@ namespace NQVTK
 					"    float front = decodeDepth(info1.zw) * depthRange;"
 					"    float back = decodeDepth(info0.zw) * depthRange;"
 					"    float diff = back - front;"
-					"    float fogAlpha = 1.0 - clamp(exp(-diff / depthCueRange), 0.0, 1.0);"
-					"    litFragment = fogColor * fogAlpha + litFragment * color.a * (1.0 - fogAlpha);"
+					"    float fogAlpha = 1.0 - "
+					"      clamp(exp(-diff / depthCueRange), 0.0, 1.0);"
+					"    litFragment = fogColor * fogAlpha + "
+					"      litFragment * color.a * (1.0 - fogAlpha);"
 					"    color.a = fogAlpha + color.a * (1.0 - fogAlpha);"
 					"    litFragment /= color.a;"
 					"  }"
@@ -280,15 +283,19 @@ namespace NQVTK
 		{
 			GLFramebuffer *fbo = GLFramebuffer::New(w, h);
 			fbo->CreateDepthTextureRectangle();
-			fbo->CreateColorTextureRectangle(GL_COLOR_ATTACHMENT0_EXT);
-			fbo->CreateColorTextureRectangle(GL_COLOR_ATTACHMENT1_EXT);
-			fbo->CreateColorTextureRectangle(GL_COLOR_ATTACHMENT2_EXT);
+			int nBufs = 3;
 			GLenum bufs[] = {
 				GL_COLOR_ATTACHMENT0_EXT, 
 				GL_COLOR_ATTACHMENT1_EXT, 
 				GL_COLOR_ATTACHMENT2_EXT, 
 			};
-			glDrawBuffers(3, bufs);
+			for (int i = 0; i < nBufs; ++i)
+			{
+				fbo->CreateColorTextureRectangle(bufs[i]);
+				GLUtility::SetDefaultColorTextureParameters(
+					fbo->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT));
+			}
+			glDrawBuffers(nBufs, bufs);
 			if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
 			fbo->Unbind();
 
@@ -386,11 +393,6 @@ namespace NQVTK
 
 			// Set up the camera (matrices)
 			camera->Draw();
-
-			// Add some silly rotation while we don't have interactive camera control
-			QTime midnight = QTime(0, 0);
-			glRotated(static_cast<double>(QTime::currentTime().msecsTo(midnight)) / 30.0, 
-				0.0, 1.0, 0.0);
 
 			// Prepare for rendering
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -587,6 +589,8 @@ namespace NQVTK
 			}
 			renderables.clear();
 		}
+
+		Camera *GetCamera() { return camera; }
 
 	protected:
 		Camera *camera;

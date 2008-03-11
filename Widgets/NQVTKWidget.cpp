@@ -7,18 +7,21 @@
 
 #include "Rendering/Renderer.h"
 #include "Rendering/PolyData.h"
+#include "Rendering/Camera.h"
 
 #include <vtkXMLPolyDataReader.h>
 #include <vtkSmartPointer.h>
 
 #include <QKeyEvent>
+#include <QMouseEvent>
 #include <QApplication>
 #include <QGLFormat>
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
 : QGLWidget(QGLFormat(QGL::AlphaChannel), parent), renderer(0), initialized(false)
-{	
+{
+	setMouseTracking(true);
 }
 
 // ----------------------------------------------------------------------------
@@ -125,4 +128,43 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		qApp->quit();
 	else
 		event->ignore();
+}
+
+// ----------------------------------------------------------------------------
+void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
+{
+	if (event->buttons() & Qt::LeftButton)
+	{
+		// Rotate
+		renderer->GetCamera()->rotateY += event->x() - lastX;
+		renderer->GetCamera()->rotateX -= event->y() - lastY;
+
+		if (renderer->GetCamera()->rotateX > 80.0) 
+		{
+			renderer->GetCamera()->rotateX = 80.0;
+		}
+		if (renderer->GetCamera()->rotateX < -80.0) 
+		{
+			renderer->GetCamera()->rotateX = -80.0;
+		}
+	}
+
+	if (event->buttons() & Qt::RightButton)
+	{
+		// Zoom
+		renderer->GetCamera()->zoom += (event->y() - lastY) * 0.01f;
+		if (renderer->GetCamera()->zoom < -50.0) 
+		{
+			renderer->GetCamera()->zoom = -50.0;
+		}
+		if (renderer->GetCamera()->zoom > 50.0) 
+		{
+			renderer->GetCamera()->zoom = 50.0;
+		}
+	}
+
+	lastX = event->x();
+	lastY = event->y();
+
+	event->accept();
 }

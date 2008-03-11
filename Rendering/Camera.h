@@ -21,7 +21,12 @@ namespace NQVTK
 		double nearZ;
 		double farZ;
 
-		Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0) { };
+		double rotateX;
+		double rotateY;
+		double zoom;
+
+		Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0), 
+			rotateX(0.0), rotateY(0.0), zoom(0.0) { };
 
 		void FocusOn(const Renderable *obj)
 		{
@@ -56,6 +61,11 @@ namespace NQVTK
 				position.x, position.y, position.z, 
 				focus.x, focus.y, focus.z, 
 				up.x, up.y, up.z);
+
+			// TODO: instead of "world transformations" we should transform position and up
+			glTranslated(0.0, 0.0, -10.0 * zoom);
+			glRotated(rotateX, 1.0, 0.0, 0.0);
+			glRotated(rotateY, 0.0, 1.0, 0.0);
 		}
 
 	private:
