@@ -79,6 +79,7 @@ SET( ${ProjectName}_Libraries
 SET( ${ProjectName}_Modules
 	Math
     Rendering
+    Styles
     Widgets
 )
 
@@ -86,6 +87,7 @@ SET( ${ProjectName}_Modules
 SET( ${ProjectName}_ModuleNames
 	"NQVTK Math"
     "NQVTK Rendering"
+    "NQVTK Render Styles"
     "Widgets"
 )
 
@@ -104,6 +106,12 @@ SET( ${ProjectName}_Rendering_Classes
     Camera
     Renderer
 ) 
+
+SET( ${ProjectName}_Styles_Classes
+    RenderStyle
+    DepthPeeling
+    IBIS
+)
 
 # Widgets has its own sources.cmake (for moc / uic)
 

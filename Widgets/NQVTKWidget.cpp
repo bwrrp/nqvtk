@@ -9,13 +9,19 @@
 #include "Rendering/PolyData.h"
 #include "Rendering/Camera.h"
 
+#include "Styles/DepthPeeling.h"
+#include "Styles/IBIS.h"
+
 #include <vtkXMLPolyDataReader.h>
 #include <vtkSmartPointer.h>
 
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QApplication>
+#include <QStringList>
 #include <QGLFormat>
+
+#include <algorithm>
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
@@ -41,7 +47,7 @@ void NQVTKWidget::initializeGL()
 
 	qDebug("Initializing renderer...");
 	if (!renderer) renderer = new NQVTK::Renderer();
-	initialized = renderer->Initialize();
+	initialized = renderer->SetStyle(new NQVTK::Styles::IBIS());
 
 	if (!initialized)
 	{
@@ -49,30 +55,32 @@ void NQVTKWidget::initializeGL()
 	}
 	
 	qDebug("Creating and adding renderables...");
-	// Load a polydata for testing
+	QStringList args = qApp->arguments();
+	if (args.size() < 2) 
 	{
-		vtkSmartPointer<vtkXMLPolyDataReader> reader = 
-			vtkSmartPointer<vtkXMLPolyDataReader>::New();
-		reader->SetFileName(
-			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
-		reader->Update();
-		qDebug("Loaded PolyData 1...");
-		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
-		renderable->color = NQVTK::Vector3(1.0, 0.9, 0.4);
-		renderable->opacity = 0.3;
-		renderer->AddRenderable(renderable);
+		qDebug("No arguments supplied, using default data...");
+		// Set default testing data (on Vliet)
+		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
+		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2.vtp");
 	}
+	// Load the polydata
+	NQVTK::Vector3 colors[] = {
+		NQVTK::Vector3(1.0, 0.9, 0.4), 
+		NQVTK::Vector3(0.3, 0.6, 1.0)
+	};
+	int i = 0;
+	for (QStringList::const_iterator it = args.begin() + 1; it != args.end(); ++it)
 	{
+		qDebug("Loading #%d...", i);
 		vtkSmartPointer<vtkXMLPolyDataReader> reader = 
 			vtkSmartPointer<vtkXMLPolyDataReader>::New();
-		reader->SetFileName(
-			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2.vtp");
+		reader->SetFileName(it->toUtf8());
 		reader->Update();
-		qDebug("Loaded PolyData 2...");
 		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
-		renderable->color = NQVTK::Vector3(0.3, 0.6, 1.0);
+		renderable->color = colors[std::min(i, 1)];
 		renderable->opacity = 0.3;
 		renderer->AddRenderable(renderable);
+		++i;
 	}
 
 	// Render-on-idle timer
@@ -124,10 +132,28 @@ void NQVTKWidget::timerEvent(QTimerEvent *event)
 void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 {
 	// Quit on Escape
-	if (event->key() == Qt::Key_Escape)
+	switch (event->key())
+	{
+	case Qt::Key_Escape:
 		qApp->quit();
-	else
+		break;
+	case Qt::Key_1:
+		{
+			NQVTK::Renderable *ren = renderer->GetRenderable(0);
+			if (ren) ren->visible = !ren->visible;
+		}
+		break;
+	case Qt::Key_2:
+		{
+			NQVTK::Renderable *ren = renderer->GetRenderable(1);
+			if (ren) ren->visible = !ren->visible;
+		}
+		break;
+	default:
 		event->ignore();
+		return;
+	}
+	event->accept();
 }
 
 // ----------------------------------------------------------------------------
