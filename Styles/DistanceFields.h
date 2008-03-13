@@ -13,12 +13,12 @@ namespace NQVTK
 {
 	namespace Styles
 	{
-		class IBIS : public NQVTK::RenderStyle
+		class DistanceFields : public NQVTK::RenderStyle
 		{
 		public:
-			IBIS() : depthBuffer(0), infoBuffer(0), 
+			DistanceFields() : depthBuffer(0), infoBuffer(0), 
 				colors(0), normals(0), infoCurrent(0), infoPrevious(0) { }
-			virtual ~IBIS() { }
+			virtual ~DistanceFields() { }
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
 			{
@@ -378,8 +378,8 @@ namespace NQVTK
 
 		private:
 			// Not implemented
-			IBIS(const IBIS&);
-			void operator=(const IBIS&);
+			DistanceFields(const DistanceFields&);
+			void operator=(const DistanceFields&);
 		};
 	}
 }

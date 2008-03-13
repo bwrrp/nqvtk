@@ -58,6 +58,7 @@ namespace NQVTK
 			// Figure out how much space we need in the VBO
 			int pointsSize = points->GetNumberOfPoints() * 3 * sizeof(GLfloat);
 			hasNormals = (normals != 0);
+			qDebug("Has normals: %s", (hasNormals ? "yes" : "no"));
 			int normalsSize = 0;
 			if (hasNormals)
 			{
@@ -65,6 +66,7 @@ namespace NQVTK
 					normals->GetNumberOfComponents() * sizeof(GLfloat);
 			}
 			hasTCoords = (tcoords != 0);
+			qDebug("Has texcoords: %s", (hasNormals ? "yes" : "no"));
 			int tcoordsSize = 0; 
 			if (hasTCoords)
 			{

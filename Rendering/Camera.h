@@ -46,8 +46,8 @@ namespace NQVTK
 			position = Vector3(0.0, 0.0, -3.0 * radius);
 			// Our object is moved to 0,0,0
 			focus = Vector3();
-			nearZ = 2 * radius;
-			farZ = 4 * radius;
+			nearZ = 10.0 * zoom + 1.0 * radius;
+			farZ = 10.0 * zoom + 5.0 * radius;
 		}
 
 		void Draw()

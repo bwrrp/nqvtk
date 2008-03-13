@@ -111,6 +111,7 @@ SET( ${ProjectName}_Styles_Classes
     RenderStyle
     DepthPeeling
     IBIS
+    DistanceFields
 )
 
 # Widgets has its own sources.cmake (for moc / uic)
