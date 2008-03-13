@@ -48,7 +48,8 @@ void NQVTKWidget::initializeGL()
 
 	qDebug("Initializing renderer...");
 	if (!renderer) renderer = new NQVTK::Renderer();
-	initialized = renderer->SetStyle(new NQVTK::Styles::IBIS());
+	renderer->SetStyle(new NQVTK::Styles::IBIS());
+	initialized = renderer->Initialize();
 
 	if (!initialized)
 	{
@@ -155,6 +156,15 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 			NQVTK::Renderable *ren = renderer->GetRenderable(1);
 			if (ren) ren->visible = !ren->visible;
 		}
+		break;
+	case Qt::Key_F1:
+		renderer->SetStyle(new NQVTK::Styles::DepthPeeling());
+		break;
+	case Qt::Key_F2:
+		renderer->SetStyle(new NQVTK::Styles::IBIS());
+		break;
+	case Qt::Key_F3:
+		renderer->SetStyle(new NQVTK::Styles::DistanceFields());
 		break;
 	default:
 		event->ignore();

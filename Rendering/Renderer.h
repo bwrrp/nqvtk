@@ -92,6 +92,9 @@ namespace NQVTK
 
 		virtual void Resize(int w, int h)
 		{
+			this->width = w;
+			this->height = h;
+
 			glViewport(0, 0, static_cast<GLint>(w), static_cast<GLint>(h));
 			camera->aspect = static_cast<double>(w) / static_cast<double>(h);
 
@@ -123,6 +126,7 @@ namespace NQVTK
 			double xmin, double xmax, 
 			double ymin, double ymax)
 		{
+			if (!tex) return;
 			glColor3d(1.0, 1.0, 1.0);
 			glDisable(GL_BLEND);
 			tex->BindToCurrent();
@@ -130,26 +134,26 @@ namespace NQVTK
 			if (tex->GetTextureTarget() == GL_TEXTURE_RECTANGLE_ARB)
 			{
 				glBegin(GL_QUADS);
-				glTexCoord2d(0.0, tex->GetHeight());
-				glVertex3d(xmin, ymin, 0.0);
-				glTexCoord2d(tex->GetWidth(), tex->GetHeight());
-				glVertex3d(xmax, ymin, 0.0);
-				glTexCoord2d(tex->GetWidth(), 0.0);
-				glVertex3d(xmax, ymax, 0.0);
 				glTexCoord2d(0.0, 0.0);
+				glVertex3d(xmin, ymin, 0.0);
+				glTexCoord2d(tex->GetWidth(), 0.0);
+				glVertex3d(xmax, ymin, 0.0);
+				glTexCoord2d(tex->GetWidth(), tex->GetHeight());
+				glVertex3d(xmax, ymax, 0.0);
+				glTexCoord2d(0.0, tex->GetHeight());
 				glVertex3d(xmin, ymax, 0.0);
 				glEnd();
 			}
 			else 
 			{
 				glBegin(GL_QUADS);
-				glTexCoord2d(0.0, 1.0);
-				glVertex3d(xmin, ymin, 0.0);
-				glTexCoord2d(1.0, 1.0);
-				glVertex3d(xmax, ymin, 0.0);
-				glTexCoord2d(1.0, 0.0);
-				glVertex3d(xmax, ymax, 0.0);
 				glTexCoord2d(0.0, 0.0);
+				glVertex3d(xmin, ymin, 0.0);
+				glTexCoord2d(1.0, 0.0);
+				glVertex3d(xmax, ymin, 0.0);
+				glTexCoord2d(1.0, 1.0);
+				glVertex3d(xmax, ymax, 0.0);
+				glTexCoord2d(0.0, 1.0);
 				glVertex3d(xmin, ymax, 0.0);
 				glEnd();
 			}
@@ -342,10 +346,19 @@ namespace NQVTK
 		{ 
 			if (this->style) delete this->style;
 			this->style = style;
-			return Initialize();
+			// Re-initialize if we're initialized
+			if (camera) 
+			{
+				bool ok = Initialize();
+				Resize(width, height);
+				return ok;
+			}
+			return true;
 		}
 
 	protected:
+		int width;
+		int height;
 		Camera *camera;
 		std::vector<Renderable*> renderables;
 
