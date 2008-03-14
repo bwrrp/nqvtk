@@ -6,15 +6,17 @@
 #include "Math/Vector3.h"
 
 #include "Rendering/Renderer.h"
-#include "Rendering/PolyData.h"
 #include "Rendering/Camera.h"
+#include "Rendering/PolyData.h"
+#include "Rendering/ImageDataTexture3D.h"
 
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
 #include "Styles/DistanceFields.h"
 
-#include <vtkXMLPolyDataReader.h>
 #include <vtkSmartPointer.h>
+#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLImageDataReader.h>
 
 #include <QKeyEvent>
 #include <QMouseEvent>
@@ -48,7 +50,8 @@ void NQVTKWidget::initializeGL()
 
 	qDebug("Initializing renderer...");
 	if (!renderer) renderer = new NQVTK::Renderer();
-	renderer->SetStyle(new NQVTK::Styles::IBIS());
+	NQVTK::Styles::DistanceFields *style = new NQVTK::Styles::DistanceFields();
+	renderer->SetStyle(style);
 	initialized = renderer->Initialize();
 
 	if (!initialized)
@@ -62,11 +65,11 @@ void NQVTKWidget::initializeGL()
 	{
 		qDebug("No arguments supplied, using default data...");
 		// Set default testing data (on Vliet)
-		/* - msdata
+		//* - msdata
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2.vtp");
 		//*/
-		//*  Cartilage
+		/*  Cartilage
 		args.append("D:/Data/Cartilage/Lorena/femoral2.vtp");
 		args.append("D:/Data/Cartilage/Lorena/femoral1.vtp");
 		//*/
@@ -90,6 +93,32 @@ void NQVTKWidget::initializeGL()
 		renderer->AddRenderable(renderable);
 		++i;
 	}
+
+	//* For testing purposes: load and set the distance fields
+	// NOTE: assingments are flipped because object 1 should use distfield 0
+	{
+		qDebug("Loading distance field 0...");
+		vtkSmartPointer<vtkXMLImageDataReader> reader = 
+			vtkSmartPointer<vtkXMLImageDataReader>::New();
+		reader->SetFileName(
+			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-dist256.vti");
+		reader->Update();
+		GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+		assert(tex);
+		style->SetDistanceField(1, tex);
+	}
+	{
+		qDebug("Loading distance field 1...");
+		vtkSmartPointer<vtkXMLImageDataReader> reader = 
+			vtkSmartPointer<vtkXMLImageDataReader>::New();
+		reader->SetFileName(
+			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-dist256.vti");
+		reader->Update();
+		GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+		assert(tex);
+		style->SetDistanceField(0, tex);
+	}
+	//*/
 
 	// Render-on-idle timer
 	startTimer(0);
@@ -158,13 +187,13 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 	case Qt::Key_F1:
-		renderer->SetStyle(new NQVTK::Styles::DepthPeeling());
+		initialized = renderer->SetStyle(new NQVTK::Styles::DepthPeeling());
 		break;
 	case Qt::Key_F2:
-		renderer->SetStyle(new NQVTK::Styles::IBIS());
+		initialized = renderer->SetStyle(new NQVTK::Styles::IBIS());
 		break;
 	case Qt::Key_F3:
-		renderer->SetStyle(new NQVTK::Styles::DistanceFields());
+		initialized = renderer->SetStyle(new NQVTK::Styles::DistanceFields());
 		break;
 	default:
 		event->ignore();
@@ -196,13 +225,13 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 	{
 		// Zoom
 		renderer->GetCamera()->zoom += (event->y() - lastY) * 0.01f;
-		if (renderer->GetCamera()->zoom < -50.0) 
+		if (renderer->GetCamera()->zoom < 0.05) 
 		{
-			renderer->GetCamera()->zoom = -50.0;
+			renderer->GetCamera()->zoom = 0.05;
 		}
-		if (renderer->GetCamera()->zoom > 50.0) 
+		if (renderer->GetCamera()->zoom > 20.0) 
 		{
-			renderer->GetCamera()->zoom = 50.0;
+			renderer->GetCamera()->zoom = 20.0;
 		}
 	}
 

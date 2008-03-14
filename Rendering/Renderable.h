@@ -28,16 +28,14 @@ namespace NQVTK
 		virtual void PushTransforms() const
 		{
 			// TODO: handle local transformations (position, orientation)
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			Vector3 center = GetCenter();
-			glTranslated(-center.x, -center.y, -center.z);
+			//glMatrixMode(GL_MODELVIEW);
+			//glPushMatrix();
 		}
 
 		virtual void PopTransforms() const
 		{
-			glMatrixMode(GL_MODELVIEW);
-			glPopMatrix();
+			//glMatrixMode(GL_MODELVIEW);
+			//glPopMatrix();
 		}
 
 		virtual void Draw() const = 0;

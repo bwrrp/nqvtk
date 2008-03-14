@@ -15,6 +15,8 @@ namespace NQVTK
 		class DepthPeeling : public NQVTK::RenderStyle
 		{
 		public:
+			typedef NQVTK::RenderStyle Superclass;
+
 			DepthPeeling() : depthBuffer(0), colors(0) { }
 			virtual ~DepthPeeling() { }
 

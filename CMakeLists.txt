@@ -16,6 +16,7 @@ INCLUDE( ${VTK_USE_FILE} )
 # Required VTK modules
 SET( VTK_lib
     vtkFiltering
+    vtkImaging
     vtkIO
 )
 
@@ -103,6 +104,7 @@ SET( ${ProjectName}_Rendering_Classes
     AttributePointers
     VBOMesh
     PolyData
+    ImageDataTexture3D
     Camera
     Renderer
 ) 

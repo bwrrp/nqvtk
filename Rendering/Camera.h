@@ -26,7 +26,7 @@ namespace NQVTK
 		double zoom;
 
 		Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0), 
-			rotateX(0.0), rotateY(0.0), zoom(0.0) { };
+			rotateX(0.0), rotateY(0.0), zoom(1.0) { };
 
 		void FocusOn(const Renderable *obj)
 		{
@@ -39,15 +39,14 @@ namespace NQVTK
 			{
 				size[i] = bounds[2 * i + 1] - bounds[2 * i];
 			}
-			// TODO: calculate actual size of bounding box instead
-			double radius = 0.5 * std::max(size[0], std::max(size[1], size[2]));
 
-			// TODO: set focus, nearZ, farZ based on object position & transformation!
-			position = Vector3(0.0, 0.0, -3.0 * radius);
-			// Our object is moved to 0,0,0
-			focus = Vector3();
-			nearZ = 10.0 * zoom + 1.0 * radius;
-			farZ = 10.0 * zoom + 5.0 * radius;
+			// TODO: calculate actual size of bounding box instead
+			double radius = 0.7 * std::max(size[0], std::max(size[1], size[2]));
+
+			focus = obj->GetCenter();
+			position = focus - Vector3(0.0, 0.0, 3.0 * radius * zoom);
+			nearZ = std::max(0.01, 3.0 * radius * zoom - radius);
+			farZ = 3.0 * radius * zoom + radius;
 		}
 
 		void Draw()
@@ -63,9 +62,11 @@ namespace NQVTK
 				up.x, up.y, up.z);
 
 			// TODO: instead of "world transformations" we should transform position and up
-			glTranslated(0.0, 0.0, -10.0 * zoom);
+			// TODO: zoom should be handled here instead of modifying position
+			glTranslated(focus.x, focus.y, focus.z);
 			glRotated(rotateX, 1.0, 0.0, 0.0);
 			glRotated(rotateY, 0.0, 1.0, 0.0);
+			glTranslated(-focus.x, -focus.y, -focus.z);
 		}
 
 	private:

@@ -69,6 +69,7 @@ namespace NQVTK
 			// Set up shader programs
 			if (scribe) delete scribe;
 			if (painter) delete painter;
+			scribe = painter = 0;
 			// - Scribe (info pass)
 			scribe = style->CreateScribe();
 			if (!scribe)
@@ -312,7 +313,7 @@ namespace NQVTK
 			{
 				if ((*it)->visible)
 				{
-					scribe->SetUniform1i("objectId", objectId);
+					style->PrepareForObject(scribe, objectId, *it);
 					(*it)->Draw();
 				}
 				++objectId;

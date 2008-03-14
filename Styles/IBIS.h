@@ -16,6 +16,8 @@ namespace NQVTK
 		class IBIS : public NQVTK::RenderStyle
 		{
 		public:
+			typedef NQVTK::RenderStyle Superclass;
+
 			IBIS() : depthBuffer(0), infoBuffer(0), 
 				colors(0), normals(0), infoCurrent(0), infoPrevious(0) { }
 			virtual ~IBIS() { }
@@ -95,7 +97,7 @@ namespace NQVTK
 					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
 					"  if (bit > int(N)) return false;"
 					"  int i;"
-					"  bool on;"
+					"  bool on = false;"
 					"  for (i = 0; i <= bit; ++i) {"
 					"    on = fract(mask) > 0.25;"
 					"    mask = floor(mask) / f;"
@@ -120,11 +122,9 @@ namespace NQVTK
 					"    if (r1 < 0.0) { discard; }"
 					"  }"
 					// Get the previous info buffer
-					"  vec4 prevInfo;"
+					"  vec4 prevInfo = vec4(0.0);"
 					"  if (layer > 0) {"
 					"    prevInfo = texture2DRect(infoBuffer, r0.xy);"
-					"  } else {"
-					"    prevInfo = vec4(0.0);"
 					"  }"
 					// Coplanarity peeling
 					"  if (getBit(prevInfo.y, objectId) == gl_FrontFacing) {"

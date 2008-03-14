@@ -5,9 +5,11 @@
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLUtility.h"
 
 #include <cassert>
+#include <map>
 
 namespace NQVTK
 {
@@ -16,9 +18,19 @@ namespace NQVTK
 		class DistanceFields : public NQVTK::RenderStyle
 		{
 		public:
+			typedef NQVTK::RenderStyle Superclass;
+
 			DistanceFields() : depthBuffer(0), infoBuffer(0), 
 				colors(0), normals(0), infoCurrent(0), infoPrevious(0) { }
-			virtual ~DistanceFields() { }
+			
+			virtual ~DistanceFields() 
+			{ 
+				for (std::map<int, GLTexture*>::iterator it = distanceFields.begin();
+					it != distanceFields.end(); ++it)
+				{
+					delete it->second;
+				}
+			}
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
 			{
@@ -49,11 +61,13 @@ namespace NQVTK
 				bool res = scribe->AddVertexShader(
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
+					"varying vec4 vertex;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
 					// Shader main function
 					"void main() {"
+					"  vertex = gl_Vertex;"
 					"  normal = normalize(gl_NormalMatrix * gl_Normal);"
 					"  color = gl_Color;"
 					"  vec4 pos = gl_ModelViewMatrix * gl_Vertex;"
@@ -65,8 +79,15 @@ namespace NQVTK
 					"#extension GL_ARB_texture_rectangle : enable\n"
 					"uniform sampler2DRectShadow depthBuffer;"
 					"uniform sampler2DRect infoBuffer;"
+					"uniform sampler3D distanceField;"
+					"uniform bool hasDistanceField;"
+					"uniform float distanceFieldDataShift;"
+					"uniform float distanceFieldDataScale;"
+					"uniform vec3 distanceFieldOrigin;"
+					"uniform vec3 distanceFieldSize;"
 					"uniform int layer;"
 					"uniform int objectId;"
+					"varying vec4 vertex;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
@@ -95,7 +116,7 @@ namespace NQVTK
 					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
 					"  if (bit > int(N)) return false;"
 					"  int i;"
-					"  bool on;"
+					"  bool on = false;"
 					"  for (i = 0; i <= bit; ++i) {"
 					"    on = fract(mask) > 0.25;"
 					"    mask = floor(mask) / f;"
@@ -120,20 +141,36 @@ namespace NQVTK
 					"    if (r1 < 0.0) { discard; }"
 					"  }"
 					// Get the previous info buffer
-					"  vec4 prevInfo;"
+					"  vec4 prevInfo = vec4(0.0);"
 					"  if (layer > 0) {"
 					"    prevInfo = texture2DRect(infoBuffer, r0.xy);"
-					"  } else {"
-					"    prevInfo = vec4(0.0);"
 					"  }"
 					// Coplanarity peeling
 					"  if (getBit(prevInfo.y, objectId) == gl_FrontFacing) {"
 					"    discard;"
 					"  }"
-					// Encode identity
-					"  float id = float(objectId) + 1.0;"
-					"  if (id < 0.0) id = 0.0;"
-					"  float identity = id / 9.0;"
+					// TODO: Distance classification
+					"  float classification = 0.0;"
+					"  if (hasDistanceField) {"
+					// HACK: Beware! Hack! Distance field alignment is wrong!
+					"    vec4 v = vec4(vertex.xyz / vertex.w, 1.0);"
+					"    v = v + vec4(-3.5, -4.0, 9.0, 0.0);"
+					"    vec3 p = (v.xyz - distanceFieldOrigin) / distanceFieldSize;"
+					"    float dist = texture3D(distanceField, p).x;"
+					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
+					"    dist = clamp(dist / 7.0, 0.0, 1.0);"
+					"    if (objectId == 0) {"
+					"      color = vec4(1.0, 1.0 - dist, 1.0 - dist, 1.0);"
+					"      classification = 0.25;"
+					"    } else {"
+					"      color = vec4(1.0 - dist, 1.0 - dist, 1.0, 1.0);"
+					"      classification = 0.5;"
+					"    }"
+					"    if (dist < 0.15) {"
+					"      classification = 0.0;"
+					"      color = vec4(1.0);"
+					"    }"
+					"  }"
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
 					"  if (objectId >= 0) {"
@@ -146,7 +183,7 @@ namespace NQVTK
 					// Store data
 					"  gl_FragData[0] = color;"
 					"  gl_FragData[1] = vec4(n, 1.0);"
-					"  gl_FragData[2] = vec4(identity, inOutMask, depthVec);"
+					"  gl_FragData[2] = vec4(classification, inOutMask, depthVec);"
 					"}");
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
@@ -193,7 +230,7 @@ namespace NQVTK
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return inActor0 && inActor1;"
+					"  return inActor0 || inActor1;"
 					"}"
 					// CSG formula for fogging volumes
 					"bool CSGFog(float mask) {"
@@ -232,13 +269,13 @@ namespace NQVTK
 					// Apply lighting
 					"  vec3 litFragment = phongShading(color.rgb, normal);"
 					// Apply CSG
-					"  float mask0 = info0.y;"
-					"  float mask1 = info1.y;"
-					"  if (CSG(mask0) != CSG(mask1)) {"
-					"    color.a = 1.0;"
-					"  } else {"
-					"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
-					"  }"
+					//"  float mask0 = info0.y;"
+					//"  float mask1 = info1.y;"
+					//"  if (CSG(mask0) != CSG(mask1)) {"
+					//"    color.a = 1.0;"
+					//"  } else {"
+					//"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
+					//"  }"
 					// Apply contouring
 					"  float contourDepthEpsilon = 0.001;"
 					"  vec4 left = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
@@ -252,20 +289,20 @@ namespace NQVTK
 					"    color.a = 1.0;"
 					"  }"
 					// Apply fogging
-					"  if (CSGFog(mask1)) {"
-					"    float depthCueRange = 10.0;"
-					"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
-					"    float depthRange = (farPlane - nearPlane);"
-					"    float front = decodeDepth(info1.zw) * depthRange;"
-					"    float back = decodeDepth(info0.zw) * depthRange;"
-					"    float diff = back - front;"
-					"    float fogAlpha = 1.0 - "
-					"      clamp(exp(-diff / depthCueRange), 0.0, 1.0);"
-					"    litFragment = fogColor * fogAlpha + "
-					"      litFragment * color.a * (1.0 - fogAlpha);"
-					"    color.a = fogAlpha + color.a * (1.0 - fogAlpha);"
-					"    litFragment /= color.a;"
-					"  }"
+					//"  if (CSGFog(mask1)) {"
+					//"    float depthCueRange = 10.0;"
+					//"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
+					//"    float depthRange = (farPlane - nearPlane);"
+					//"    float front = decodeDepth(info1.zw) * depthRange;"
+					//"    float back = decodeDepth(info0.zw) * depthRange;"
+					//"    float diff = back - front;"
+					//"    float fogAlpha = 1.0 - "
+					//"      clamp(exp(-diff / depthCueRange), 0.0, 1.0);"
+					//"    litFragment = fogColor * fogAlpha + "
+					//"      litFragment * color.a * (1.0 - fogAlpha);"
+					//"    color.a = fogAlpha + color.a * (1.0 - fogAlpha);"
+					//"    litFragment /= color.a;"
+					//"  }"
 					// Pre-multiply colors by alpha
 					"  litFragment *= color.a;"
 					"  gl_FragColor = vec4(litFragment, color.a);"
@@ -278,6 +315,42 @@ namespace NQVTK
 					return 0;
 				}
 				return painter;
+			}
+
+			virtual void PrepareForObject(GLProgram *scribe, 
+				int objectId, NQVTK::Renderable *renderable)
+			{
+				Superclass::PrepareForObject(scribe, objectId, renderable);
+				
+				ImageDataTexture3D *distanceField = 
+					dynamic_cast<ImageDataTexture3D*>(GetDistanceField(objectId));
+				if (distanceField)
+				{
+					scribe->SetUniform1i("hasDistanceField", 1);
+					scribe->SetUniform1f("distanceFieldDataShift", 
+						distanceField->GetDataShift());
+					scribe->SetUniform1f("distanceFieldDataScale", 
+						distanceField->GetDataScale());
+					Vector3 origin = distanceField->GetOrigin();
+					scribe->SetUniform3f("distanceFieldOrigin", 
+						origin.x, origin.y, origin.z);
+					Vector3 size = distanceField->GetOriginalSize();
+					scribe->SetUniform3f("distanceFieldSize", 
+						size.x, size.y, size.z);
+					glActiveTexture(GL_TEXTURE2);
+					distanceField->BindToCurrent();
+					// Linear interpolation looks nicer
+					glTexParameteri(distanceField->GetTextureTarget(), 
+						GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(distanceField->GetTextureTarget(), 
+						GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					scribe->UseTexture("distanceField", 2);
+					glActiveTexture(GL_TEXTURE0);
+				}
+				else
+				{
+					scribe->SetUniform1i("hasDistanceField", 0);
+				}
 			}
 
 			virtual void BindScribeTextures(GLProgram *scribe, 
@@ -366,6 +439,14 @@ namespace NQVTK
 				colors = 0;
 			}
 
+			void SetDistanceField(int objectId, GLTexture *field)
+			{
+				assert(field);
+				GLTexture *old = GetDistanceField(objectId);
+				if (old) delete old;
+				distanceFields[objectId] = field;
+			}
+
 		protected:
 			// Scribe textures
 			GLTexture *depthBuffer;
@@ -375,6 +456,16 @@ namespace NQVTK
 			GLTexture *normals;
 			GLTexture *infoCurrent;
 			GLTexture *infoPrevious;
+
+			// Distance fields
+			std::map<int, GLTexture*> distanceFields;
+			GLTexture *GetDistanceField(int objectId)
+			{
+				// Look up the texture, return 0 if nothing's attached
+				std::map<int, GLTexture*>::iterator it = distanceFields.find(objectId);
+				if (it == distanceFields.end()) return 0;
+				return it->second;
+			}
 
 		private:
 			// Not implemented

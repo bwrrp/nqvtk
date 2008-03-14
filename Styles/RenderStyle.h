@@ -1,10 +1,12 @@
 #pragma once
 
-class GLFramebuffer;
-class GLProgram;
+#include "GLBlaat/GLFramebuffer.h"
+#include "GLBlaat/GLProgram.h"
 
 namespace NQVTK
 {
+	class Renderable;
+
 	class RenderStyle
 	{
 	public:
@@ -14,6 +16,12 @@ namespace NQVTK
 		virtual GLFramebuffer *CreateFBO(int w, int h) = 0;
 		virtual GLProgram *CreateScribe() = 0;
 		virtual GLProgram *CreatePainter() = 0;
+
+		virtual void PrepareForObject(GLProgram *scribe, 
+			int objectId, Renderable *renderable) 
+		{
+			scribe->SetUniform1i("objectId", objectId);
+		}
 
 		virtual void BindScribeTextures(GLProgram *scribe, 
 			GLFramebuffer *previous) { }
