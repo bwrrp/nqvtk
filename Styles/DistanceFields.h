@@ -74,6 +74,7 @@ namespace NQVTK
 					"  float depthRange = (farPlane - nearPlane);"
 					"  depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;"
 					"  gl_Position = ftransform();"
+					"  gl_TexCoord[0] = gl_MultiTexCoord0;"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
 					"#extension GL_ARB_texture_rectangle : enable\n"
@@ -134,6 +135,7 @@ namespace NQVTK
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
+					"  vec4 col = color;"
 					// Depth peeling
 					"  if (layer > 0) {"
 					"    float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
@@ -149,7 +151,7 @@ namespace NQVTK
 					"  if (getBit(prevInfo.y, objectId) == gl_FrontFacing) {"
 					"    discard;"
 					"  }"
-					// TODO: Distance classification
+					// Distance classification
 					"  float classification = 0.0;"
 					"  if (hasDistanceField) {"
 					// HACK: Beware! Hack! Distance field alignment is wrong!
@@ -158,18 +160,28 @@ namespace NQVTK
 					"    vec3 p = (v.xyz - distanceFieldOrigin) / distanceFieldSize;"
 					"    float dist = texture3D(distanceField, p).x;"
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
-					"    dist = clamp(dist / 7.0, 0.0, 1.0);"
+					"    float d = clamp(dist / 7.0, 0.0, 1.0);"
 					"    if (objectId == 0) {"
-					"      color = vec4(1.0, 1.0 - dist, 1.0 - dist, 1.0);"
+					"      col = vec4(col.rgb, 0.6);"
+					//"      col = vec4(1.0, 1.0 - d, 1.0 - d, 1.0);"
 					"      classification = 0.25;"
 					"    } else {"
-					"      color = vec4(1.0 - dist, 1.0 - dist, 1.0, 1.0);"
+					"      col = vec4(col.rgb, 0.6);"
+					//"      col = vec4(1.0 - d, 1.0 - d, 1.0, 1.0);"
 					"      classification = 0.5;"
 					"    }"
-					"    if (dist < 0.15) {"
+					"    float classificationThreshold = 1.05;"
+					"    if (dist < classificationThreshold) {"
 					"      classification = 0.0;"
-					"      color = vec4(1.0);"
+					"      col = vec4(1.0);"
 					"    }"
+					"  }"
+					// TEST: texture coordinates
+					"  if (col.a < 1.0 || !hasDistanceField) {"
+					"    vec2 tc = frac(abs(gl_TexCoord[0].xy));"
+					"    float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
+					"    grid *= abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0);"
+					"    col = vec4(col.rgb, (col.a + 0.2) * pow(1.0 - grid, 5.0));"
 					"  }"
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
@@ -181,7 +193,7 @@ namespace NQVTK
 					// Encode normal
 					"  vec3 n = (normalize(normal) + vec3(1.0)) / 2.0;"
 					// Store data
-					"  gl_FragData[0] = color;"
+					"  gl_FragData[0] = col;"
 					"  gl_FragData[1] = vec4(n, 1.0);"
 					"  gl_FragData[2] = vec4(classification, inOutMask, depthVec);"
 					"}");
@@ -230,7 +242,7 @@ namespace NQVTK
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return inActor0 || inActor1;"
+					"  return inActor0 && inActor1;"
 					"}"
 					// CSG formula for fogging volumes
 					"bool CSGFog(float mask) {"
@@ -242,7 +254,7 @@ namespace NQVTK
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return inActor0 || inActor1;"
+					"  return false;"// inActor0 || inActor1;"
 					"}"
 					// Phong shading helper
 					"vec3 phongShading(vec3 matColor, vec3 normal) {"
@@ -269,13 +281,14 @@ namespace NQVTK
 					// Apply lighting
 					"  vec3 litFragment = phongShading(color.rgb, normal);"
 					// Apply CSG
-					//"  float mask0 = info0.y;"
-					//"  float mask1 = info1.y;"
-					//"  if (CSG(mask0) != CSG(mask1)) {"
-					//"    color.a = 1.0;"
+					"  float mask0 = info0.y;"
+					"  float mask1 = info1.y;"
+					"  if (CSG(mask0) != CSG(mask1)) {"
+					//"    litFragment.rgb -= 0.3 * color.a;"// TEST: grid
+					"    color.a = 1.0;"
 					//"  } else {"
 					//"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
-					//"  }"
+					"  }"
 					// Apply contouring
 					"  float contourDepthEpsilon = 0.001;"
 					"  vec4 left = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
@@ -289,20 +302,20 @@ namespace NQVTK
 					"    color.a = 1.0;"
 					"  }"
 					// Apply fogging
-					//"  if (CSGFog(mask1)) {"
-					//"    float depthCueRange = 10.0;"
-					//"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
-					//"    float depthRange = (farPlane - nearPlane);"
-					//"    float front = decodeDepth(info1.zw) * depthRange;"
-					//"    float back = decodeDepth(info0.zw) * depthRange;"
-					//"    float diff = back - front;"
-					//"    float fogAlpha = 1.0 - "
-					//"      clamp(exp(-diff / depthCueRange), 0.0, 1.0);"
-					//"    litFragment = fogColor * fogAlpha + "
-					//"      litFragment * color.a * (1.0 - fogAlpha);"
-					//"    color.a = fogAlpha + color.a * (1.0 - fogAlpha);"
-					//"    litFragment /= color.a;"
-					//"  }"
+					"  if (CSGFog(mask1)) {"
+					"    float depthCueRange = 10.0;"
+					"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
+					"    float depthRange = (farPlane - nearPlane);"
+					"    float front = decodeDepth(info1.zw) * depthRange;"
+					"    float back = decodeDepth(info0.zw) * depthRange;"
+					"    float diff = back - front;"
+					"    float fogAlpha = 1.0 - "
+					"      clamp(exp(-diff / depthCueRange), 0.0, 1.0);"
+					"    litFragment = fogColor * fogAlpha + "
+					"      litFragment * color.a * (1.0 - fogAlpha);"
+					"    color.a = fogAlpha + color.a * (1.0 - fogAlpha);"
+					"    litFragment /= color.a;"
+					"  }"
 					// Pre-multiply colors by alpha
 					"  litFragment *= color.a;"
 					"  gl_FragColor = vec4(litFragment, color.a);"

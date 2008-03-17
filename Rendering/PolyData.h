@@ -71,7 +71,7 @@ namespace NQVTK
 			if (hasTCoords)
 			{
 				tcoordsSize = tcoords->GetNumberOfTuples() * 
-					tcoords->GetNumberOfComponents() * sizeof(GLfloat);
+					tcoords->GetNumberOfComponents() * sizeof(GLdouble);
 			}
 			int totalSize = pointsSize + normalsSize + tcoordsSize;
 
@@ -92,7 +92,7 @@ namespace NQVTK
 				vertexBuffer->SetSubData(pointsSize + normalsSize, 
 					tcoordsSize, tcoords->GetVoidPointer(0));
 				TexCoordPointer(0, tcoords->GetNumberOfComponents(), 
-					GL_FLOAT, 0, pointsSize + normalsSize);
+					GL_DOUBLE, 0, pointsSize + normalsSize);
 			}
 			vertexBuffer->Unbind();
 

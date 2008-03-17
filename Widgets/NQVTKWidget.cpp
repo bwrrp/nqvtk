@@ -66,8 +66,8 @@ void NQVTKWidget::initializeGL()
 		qDebug("No arguments supplied, using default data...");
 		// Set default testing data (on Vliet)
 		//* - msdata
-		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2.vtp");
-		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2.vtp");
+		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-textured.vtp");
+		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-textured.vtp");
 		//*/
 		/*  Cartilage
 		args.append("D:/Data/Cartilage/Lorena/femoral2.vtp");
