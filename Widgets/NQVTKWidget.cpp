@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QStringList>
 #include <QGLFormat>
+#include <QDateTime>
 
 #include <algorithm>
 
@@ -174,6 +175,18 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Escape:
 		qApp->quit();
 		break;
+	case Qt::Key_C:
+		{
+			QDateTime now = QDateTime::currentDateTime();
+			QImage screenshot = this->grabFrameBuffer(true);
+			// Fix alpha values
+			screenshot.invertPixels(QImage::InvertRgba);
+			screenshot.invertPixels(QImage::InvertRgb);
+			// Save it
+			screenshot.save(QString("NQVTK-%1.png").arg(
+				now.toString("yyMMdd-hhmmss")), "PNG");
+			break;
+		}
 	case Qt::Key_1:
 		{
 			NQVTK::Renderable *ren = renderer->GetRenderable(0);

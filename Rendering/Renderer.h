@@ -276,10 +276,10 @@ namespace NQVTK
 			glEnable(GL_BLEND);
 
 			glBegin(GL_QUADS);
-			glColor3d(0.2, 0.2, 0.25);
+			glColor4d(0.2, 0.2, 0.25, 0.0);
 			glVertex3d(-1.0, -1.0, 0.0);
 			glVertex3d(1.0, -1.0, 0.0);
-			glColor3d(0.6, 0.6, 0.65);
+			glColor4d(0.6, 0.6, 0.65, 0.0);
 			glVertex3d(1.0, 1.0, 0.0);
 			glVertex3d(-1.0, 1.0, 0.0);
 			glEnd();
