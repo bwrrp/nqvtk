@@ -3,6 +3,8 @@
 #include "Rendering/Renderer.h"
 #include <QGLWidget>
 
+#include "Styles/DistanceFields.h"
+
 class NQVTKWidget : public QGLWidget {
 	Q_OBJECT
 
@@ -10,6 +12,9 @@ public:
 	// TODO: add full QGLWidget constructors
 	NQVTKWidget(QWidget *parent = 0);
 	virtual ~NQVTKWidget();
+
+	// HACK: exposed this way for now... improve later...
+	NQVTK::Styles::DistanceFields *distfieldstyle;
 
 protected:
 	void initializeGL();

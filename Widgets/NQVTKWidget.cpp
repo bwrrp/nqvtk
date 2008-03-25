@@ -52,6 +52,7 @@ void NQVTKWidget::initializeGL()
 	qDebug("Initializing renderer...");
 	if (!renderer) renderer = new NQVTK::Renderer();
 	NQVTK::Styles::DistanceFields *style = new NQVTK::Styles::DistanceFields();
+	this->distfieldstyle = style;
 	renderer->SetStyle(style);
 	initialized = renderer->Initialize();
 
@@ -206,7 +207,7 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		initialized = renderer->SetStyle(new NQVTK::Styles::IBIS());
 		break;
 	case Qt::Key_F3:
-		initialized = renderer->SetStyle(new NQVTK::Styles::DistanceFields());
+		initialized = renderer->SetStyle(distfieldstyle);
 		break;
 	default:
 		event->ignore();

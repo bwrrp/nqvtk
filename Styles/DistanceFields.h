@@ -8,6 +8,8 @@
 #include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLUtility.h"
 
+#include "Rendering/ImageDataTexture3D.h"
+
 #include <cassert>
 #include <map>
 
@@ -21,7 +23,17 @@ namespace NQVTK
 			typedef NQVTK::RenderStyle Superclass;
 
 			DistanceFields() : depthBuffer(0), infoBuffer(0), 
-				colors(0), normals(0), infoCurrent(0), infoPrevious(0) { }
+				colors(0), normals(0), infoCurrent(0), infoPrevious(0) 
+			{ 
+				// Set default parameters
+				useDistanceColorMap = false;
+				classificationThreshold = 1.05;
+				useGridTexture = true;
+				useFatContours = false;
+				contourDepthEpsilon = 0.001;
+				useFog = true;
+				depthCueRange = 10.0;
+			}
 			
 			virtual ~DistanceFields() 
 			{ 
@@ -88,6 +100,11 @@ namespace NQVTK
 					"uniform vec3 distanceFieldSize;"
 					"uniform int layer;"
 					"uniform int objectId;"
+					// Parameters
+					"uniform bool useDistanceColorMap;"
+					"uniform float classificationThreshold;" // = 1.05
+					"uniform bool useGridTexture;"
+					// Varying
 					"varying vec4 vertex;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
@@ -160,28 +177,37 @@ namespace NQVTK
 					"    vec3 p = (v.xyz - distanceFieldOrigin) / distanceFieldSize;"
 					"    float dist = texture3D(distanceField, p).x;"
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
-					"    float d = clamp(dist / 7.0, 0.0, 1.0);"
-					"    if (objectId == 0) {"
-					"      col = vec4(col.rgb, 0.6);"
-					//"      col = vec4(1.0, 1.0 - d, 1.0 - d, 1.0);"
-					"      classification = 0.25;"
+					"    if (useDistanceColorMap) {"
+					"      float d = clamp(dist / 7.0, 0.0, 1.0);"
+					"      if (objectId == 0) {"
+					"        col = vec4(1.0, 1.0 - d, 1.0 - d, 1.0);"
+					"        classification = 0.25;"
+					"      } else {"
+					"        col = vec4(1.0 - d, 1.0 - d, 1.0, 1.0);"
+					"        classification = 0.5;"
+					"      }"
 					"    } else {"
-					"      col = vec4(col.rgb, 0.6);"
-					//"      col = vec4(1.0 - d, 1.0 - d, 1.0, 1.0);"
-					"      classification = 0.5;"
+					"      if (objectId == 0) {"
+					"        col = vec4(col.rgb, 0.6);"
+					"        classification = 0.25;"
+					"      } else {"
+					"        col = vec4(col.rgb, 0.6);"
+					"        classification = 0.5;"
+					"      }"
 					"    }"
-					"    float classificationThreshold = 1.05;"
 					"    if (dist < classificationThreshold) {"
 					"      classification = 0.0;"
 					"      col = vec4(1.0);"
 					"    }"
 					"  }"
-					// TEST: texture coordinates
-					"  if (col.a < 1.0 || !hasDistanceField) {"
-					"    vec2 tc = frac(abs(gl_TexCoord[0].xy));"
-					"    float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
-					"    grid *= abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0);"
-					"    col = vec4(col.rgb, (col.a + 0.2) * pow(1.0 - grid, 5.0));"
+					// TEST: grid
+					"  if (useGridTexture) {"
+					"    if (col.a < 1.0 || !hasDistanceField) {"
+					"      vec2 tc = frac(abs(gl_TexCoord[0].xy));"
+					"      float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
+					"      grid *= abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0);"
+					"      col = vec4(col.rgb, (col.a + 0.2) * pow(1.0 - grid, 5.0));"
+					"    }"
 					"  }"
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
@@ -223,6 +249,11 @@ namespace NQVTK
 					"uniform int layer;"
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
+					// Parameters
+					"uniform bool useFatContours;"
+					"uniform float contourDepthEpsilon;" // = 0.001
+					"uniform bool useFog;"
+					"uniform float depthCueRange;" // = 10.0
 					// Rounds a float to the nearest integer
 					"float round(float x) {"
 					"  return floor(x + 0.5);"
@@ -254,7 +285,7 @@ namespace NQVTK
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return false;"// inActor0 || inActor1;"
+					"  return inActor0 || inActor1;"
 					"}"
 					// Phong shading helper
 					"vec3 phongShading(vec3 matColor, vec3 normal) {"
@@ -290,20 +321,25 @@ namespace NQVTK
 					//"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
 					"  }"
 					// Apply contouring
-					"  float contourDepthEpsilon = 0.001;"
-					"  vec4 left = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
-					"  vec4 top = texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));"
-					"  float diffH = abs(decodeDepth(left.zw) - decodeDepth(info0.zw));"
-					"  float diffV = abs(decodeDepth(top.zw) - decodeDepth(info0.zw));"
-					"  bool contourH = (left.x != info0.x && diffH < contourDepthEpsilon);"
-					"  bool contourV = (top.x != info0.x && diffV < contourDepthEpsilon);"
-					"  if (contourH || contourV) {"
+					"  vec4 left   = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
+					"  vec4 right  = texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));"
+					"  vec4 top    = texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));"
+					"  vec4 bottom = texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));"
+					"  float depth = decodeDepth(info0.zw);"
+					"  float diffL = abs(decodeDepth(left.zw) - depth);"
+					"  float diffR = abs(decodeDepth(right.zw) - depth);"
+					"  float diffT = abs(decodeDepth(top.zw) - depth);"
+					"  float diffB = abs(decodeDepth(bottom.zw) - depth);"
+					"  bool contourL = (left.x != info0.x && diffL < contourDepthEpsilon);"
+					"  bool contourR = (right.x != info0.x && diffR < contourDepthEpsilon);"
+					"  bool contourT = (top.x != info0.x && diffT < contourDepthEpsilon);"
+					"  bool contourB = (bottom.x != info0.x && diffB < contourDepthEpsilon);"
+					"  if (contourL || contourT || (useFatContours && (contourR || contourB))) {"
 					"    litFragment = vec3(0.0);"
 					"    color.a = 1.0;"
 					"  }"
 					// Apply fogging
-					"  if (CSGFog(mask1)) {"
-					"    float depthCueRange = 10.0;"
+					"  if (useFog && CSGFog(mask1)) {"
 					"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
 					"    float depthRange = (farPlane - nearPlane);"
 					"    float front = decodeDepth(info1.zw) * depthRange;"
@@ -387,6 +423,11 @@ namespace NQVTK
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
 				scribe->UseTexture("depthBuffer", 0);
+
+				// Set program parameters
+				scribe->SetUniform1i("useDistanceColorMap", useDistanceColorMap);
+				scribe->SetUniform1f("classificationThreshold", classificationThreshold);
+				scribe->SetUniform1i("useGridTexture", useGridTexture);
 			}
 
 			virtual void UnbindScribeTextures() 
@@ -432,6 +473,12 @@ namespace NQVTK
 				glActiveTexture(GL_TEXTURE0);
 				colors->BindToCurrent();
 				painter->UseTexture("colors", 0);
+
+				// Set program parameters
+				painter->SetUniform1i("useFatContours", useFatContours);
+				painter->SetUniform1f("contourDepthEpsilon", contourDepthEpsilon);
+				painter->SetUniform1i("useFog", useFog);
+				painter->SetUniform1f("depthCueRange", depthCueRange);
 			}
 
 			virtual void UnbindPainterTextures() 
@@ -459,6 +506,17 @@ namespace NQVTK
 				if (old) delete old;
 				distanceFields[objectId] = field;
 			}
+
+			// Program parameters
+			// - Scribe
+			bool useDistanceColorMap;
+			float classificationThreshold; // = 1.05
+			bool useGridTexture;
+			// - Painter
+			bool useFatContours;
+			float contourDepthEpsilon; // = 0.001
+			bool useFog;
+			float depthCueRange; // = 10.0
 
 		protected:
 			// Scribe textures

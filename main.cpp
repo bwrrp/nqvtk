@@ -1,13 +1,13 @@
 #include <QApplication>
-#include "Widgets/NQVTKWidget.h"
+#include "Widgets/NQVTKWindow.h"
 
 int main(int argc, char *argv[]) 
 {
 	// Set up Qt application
 	QApplication app(argc, argv);
-	NQVTKWidget *widget = new NQVTKWidget;
-	widget->resize(800, 600);
-	widget->show();
+	NQVTKWindow *window = new NQVTKWindow;
+	window->resize(800, 600);
+	window->show();
 
 	// Go!
 	app.exec();

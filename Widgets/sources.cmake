@@ -3,13 +3,14 @@
 
 SET( ${ProjectName}_${module}_Classes
     NQVTKWidget
+    NQVTKWindow
 )
 
 # --------------------------------------------------
 # UI files
 
-SET( VTKSurfaces_${module}_UI
-#   ${module}/MainWindow.ui
+SET( ${ProjectName}_${module}_UI
+   ${module}/NQVTKWindow.ui
 )
 
 # Tell cmake to uic the .ui files
