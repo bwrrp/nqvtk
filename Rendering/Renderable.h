@@ -21,6 +21,8 @@ namespace NQVTK
 
 			color = Vector3(1.0, 1.0, 1.0);
 			opacity = 1.0;
+
+			rotateX = rotateY = 0.0;
 		}
 
 		virtual ~Renderable() { }
@@ -28,19 +30,23 @@ namespace NQVTK
 		virtual void PushTransforms() const
 		{
 			// TODO: handle local transformations (position, orientation)
-			//glMatrixMode(GL_MODELVIEW);
-			//glPushMatrix();
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			Vector3 center = GetCenter();
+			glTranslated(position.x, position.y, position.z);
+			glTranslated(center.x, center.y, center.z);
+			glRotated(rotateX, 1.0, 0.0, 0.0);
+			glRotated(rotateY, 0.0, 1.0, 0.0);
+			glTranslated(-center.x, -center.y, -center.z);
 		}
 
 		virtual void PopTransforms() const
 		{
-			//glMatrixMode(GL_MODELVIEW);
-			//glPopMatrix();
+			glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
 		}
 
 		virtual void Draw() const = 0;
-
-		// TODO: Transformations?
 
 		void GetBounds(
 			double &xmin, double &xmax, 
@@ -71,6 +77,11 @@ namespace NQVTK
 		bool visible;
 		Vector3 color;
 		double opacity;
+
+		// TODO: Do transformations properly
+		Vector3 position;
+		double rotateX;
+		double rotateY;
 
 	protected:
 		double bounds[6];

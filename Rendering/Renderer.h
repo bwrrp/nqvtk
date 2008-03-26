@@ -307,6 +307,24 @@ namespace NQVTK
 		virtual void DrawRenderables()
 		{
 			int objectId = 0;
+			// Load object transforms
+			// HACK: should be handled elsewhere, but we also need the distfield transform
+			for (std::vector<Renderable*>::const_iterator it = renderables.begin();
+				it != renderables.end(); ++it)
+			{
+				glActiveTexture(GL_TEXTURE0 + objectId);
+				glMatrixMode(GL_TEXTURE);
+				glLoadIdentity();
+				Vector3 center = (*it)->GetCenter();
+				glTranslated((*it)->position.x, (*it)->position.y, (*it)->position.z);
+				glTranslated(center.x, center.y, center.z);
+				glRotated((*it)->rotateX, 1.0, 0.0, 0.0);
+				glRotated((*it)->rotateY, 0.0, 1.0, 0.0);
+				glTranslated(-center.x, -center.y, -center.z);
+				++objectId;
+			}
+			glActiveTexture(GL_TEXTURE0);
+			objectId = 0;
 			// Iterate over all renderables and draw them
 			for (std::vector<Renderable*>::const_iterator it = renderables.begin();
 				it != renderables.end(); ++it)
@@ -331,6 +349,11 @@ namespace NQVTK
 			return renderables[i];
 		}
 
+		int GetNumberOfRenderables() 
+		{
+			return renderables.size();
+		}
+
 		void DeleteAllRenderables()
 		{
 			for (std::vector<Renderable*>::iterator it = renderables.begin();
@@ -339,6 +362,17 @@ namespace NQVTK
 				delete *it;
 			}
 			renderables.clear();
+		}
+
+		void ResetRenderables()
+		{
+			for (std::vector<Renderable*>::iterator it = renderables.begin();
+				it != renderables.end(); ++it)
+			{
+				(*it)->position = Vector3();
+				(*it)->rotateX = 0.0;
+				(*it)->rotateY = 0.0;
+			}
 		}
 
 		Camera *GetCamera() { return camera; }

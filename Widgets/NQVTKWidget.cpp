@@ -157,7 +157,7 @@ void NQVTKWidget::timerEvent(QTimerEvent *event)
 	if (event->timerId() == fpsTimerId)
 	{
 		// Update FPS display
-		setWindowTitle(QString("NQVTK - %1 FPS").arg(frames));
+		emit fpsChanged(frames);
 		frames = 0;
 	}
 	else
@@ -188,6 +188,9 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 				now.toString("yyMMdd-hhmmss")), "PNG");
 			break;
 		}
+	case Qt::Key_R:
+		renderer->ResetRenderables();
+		break;
 	case Qt::Key_1:
 		{
 			NQVTK::Renderable *ren = renderer->GetRenderable(0);
@@ -207,6 +210,7 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		initialized = renderer->SetStyle(new NQVTK::Styles::IBIS());
 		break;
 	case Qt::Key_F3:
+		distfieldstyle = new NQVTK::Styles::DistanceFields();
 		initialized = renderer->SetStyle(distfieldstyle);
 		break;
 	default:
@@ -219,33 +223,68 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if (event->buttons() & Qt::LeftButton)
+	if (event->modifiers() & Qt::ControlModifier) 
 	{
-		// Rotate
-		renderer->GetCamera()->rotateY += event->x() - lastX;
-		renderer->GetCamera()->rotateX -= event->y() - lastY;
+		NQVTK::Renderable *renderable = renderer->GetRenderable(0);
+		// Mouse controls object 0
+		if (renderable && event->buttons() & Qt::LeftButton)
+		{
+			// Rotate
+			renderable->rotateY += event->x() - lastX;
+			renderable->rotateX -= event->y() - lastY;
 
-		if (renderer->GetCamera()->rotateX > 80.0) 
-		{
-			renderer->GetCamera()->rotateX = 80.0;
+			if (renderable->rotateX > 80.0) 
+			{
+				renderable->rotateX = 80.0;
+			}
+			if (renderable->rotateX < -80.0) 
+			{
+				renderable->rotateX = -80.0;
+			}
 		}
-		if (renderer->GetCamera()->rotateX < -80.0) 
+		if (renderable && event->buttons() & Qt::MidButton)
 		{
-			renderer->GetCamera()->rotateX = -80.0;
+			// TODO: make translation relative to window
+			NQVTK::Vector3 right = NQVTK::Vector3(1.0, 0.0, 0.0);
+			NQVTK::Vector3 up = NQVTK::Vector3(0.0, 1.0, 0.0);
+			double factor = 0.6;
+			// Translate
+			renderable->position += 
+				(lastX - event->x()) * factor * right +
+				(lastY - event->y()) * factor * up;
 		}
 	}
-
-	if (event->buttons() & Qt::RightButton)
+	else
 	{
-		// Zoom
-		renderer->GetCamera()->zoom += (event->y() - lastY) * 0.01f;
-		if (renderer->GetCamera()->zoom < 0.05) 
+		// Mouse controls camera
+		if (event->buttons() & Qt::LeftButton)
 		{
-			renderer->GetCamera()->zoom = 0.05;
+			// Rotate
+			renderer->GetCamera()->rotateY += event->x() - lastX;
+			renderer->GetCamera()->rotateX -= event->y() - lastY;
+
+			if (renderer->GetCamera()->rotateX > 80.0) 
+			{
+				renderer->GetCamera()->rotateX = 80.0;
+			}
+			if (renderer->GetCamera()->rotateX < -80.0) 
+			{
+				renderer->GetCamera()->rotateX = -80.0;
+			}
 		}
-		if (renderer->GetCamera()->zoom > 20.0) 
+
+		if (event->buttons() & Qt::RightButton)
 		{
-			renderer->GetCamera()->zoom = 20.0;
+			// Zoom
+			renderer->GetCamera()->zoom += (event->y() - lastY) * 0.01f;
+			if (renderer->GetCamera()->zoom < 0.05) 
+			{
+				renderer->GetCamera()->zoom = 0.05;
+			}
+			if (renderer->GetCamera()->zoom > 20.0) 
+			{
+				renderer->GetCamera()->zoom = 20.0;
+			}
 		}
 	}
 

@@ -15,6 +15,10 @@ public:
 
 	// HACK: exposed this way for now... improve later...
 	NQVTK::Styles::DistanceFields *distfieldstyle;
+	NQVTK::Renderer *GetRenderer() { return renderer; }
+
+signals:
+	void fpsChanged(int);
 
 protected:
 	void initializeGL();

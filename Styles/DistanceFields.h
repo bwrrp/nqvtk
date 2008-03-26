@@ -28,7 +28,8 @@ namespace NQVTK
 				// Set default parameters
 				useDistanceColorMap = false;
 				classificationThreshold = 1.05;
-				useGridTexture = true;
+				useGridTexture = false;
+				useGlyphTexture = false;
 				useFatContours = false;
 				contourDepthEpsilon = 0.001;
 				useFog = true;
@@ -73,13 +74,15 @@ namespace NQVTK
 				bool res = scribe->AddVertexShader(
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
+					"uniform int objectId;"
 					"varying vec4 vertex;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
 					// Shader main function
 					"void main() {"
-					"  vertex = gl_Vertex;"
+					// HACK: find a better way to pass these transforms
+					"  vertex = gl_TextureMatrixInverse[1 - objectId] * gl_TextureMatrix[objectId] * gl_Vertex;"
 					"  normal = normalize(gl_NormalMatrix * gl_Normal);"
 					"  color = gl_Color;"
 					"  vec4 pos = gl_ModelViewMatrix * gl_Vertex;"
@@ -104,6 +107,7 @@ namespace NQVTK
 					"uniform bool useDistanceColorMap;"
 					"uniform float classificationThreshold;" // = 1.05
 					"uniform bool useGridTexture;"
+					"uniform bool useGlyphTexture;"
 					// Varying
 					"varying vec4 vertex;"
 					"varying vec3 normal;"
@@ -177,22 +181,17 @@ namespace NQVTK
 					"    vec3 p = (v.xyz - distanceFieldOrigin) / distanceFieldSize;"
 					"    float dist = texture3D(distanceField, p).x;"
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
+					"    if (objectId == 0) {"
+					"      classification = 0.25;"
+					"    } else {"
+					"      classification = 0.5;"
+					"    }"
 					"    if (useDistanceColorMap) {"
 					"      float d = clamp(dist / 7.0, 0.0, 1.0);"
 					"      if (objectId == 0) {"
 					"        col = vec4(1.0, 1.0 - d, 1.0 - d, 1.0);"
-					"        classification = 0.25;"
 					"      } else {"
 					"        col = vec4(1.0 - d, 1.0 - d, 1.0, 1.0);"
-					"        classification = 0.5;"
-					"      }"
-					"    } else {"
-					"      if (objectId == 0) {"
-					"        col = vec4(col.rgb, 0.6);"
-					"        classification = 0.25;"
-					"      } else {"
-					"        col = vec4(col.rgb, 0.6);"
-					"        classification = 0.5;"
 					"      }"
 					"    }"
 					"    if (dist < classificationThreshold) {"
@@ -200,13 +199,24 @@ namespace NQVTK
 					"      col = vec4(1.0);"
 					"    }"
 					"  }"
-					// TEST: grid
+					// TEST: grid texture
 					"  if (useGridTexture) {"
 					"    if (col.a < 1.0 || !hasDistanceField) {"
 					"      vec2 tc = frac(abs(gl_TexCoord[0].xy));"
 					"      float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
-					"      grid *= abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0);"
-					"      col = vec4(col.rgb, (col.a + 0.2) * pow(1.0 - grid, 5.0));"
+					"      grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
+					"      col = vec4(col.rgb, (col.a + 0.2) * pow(grid, 5.0));"
+					"    }"
+					"  }"
+					// TEST: glyph texture
+					"  if (useGlyphTexture) {"
+					"    if (col.a < 1.0 || !hasDistanceField) {"
+					"      vec2 tc = abs(2.0 * gl_TexCoord[0].xy - vec2(1.0));"
+					"      if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {"
+					"        col.a = min(col.a + 0.3, 1.0);"
+					"      } else if ((tc.x < 0.15 && tc.y < 0.95) || (tc.y < 0.15 && tc.x < 0.65)) {"
+					"        col.a = min(col.a + 0.15, 1.0);"
+					"      }"
 					"    }"
 					"  }"
 					// Encode in-out mask
@@ -428,6 +438,7 @@ namespace NQVTK
 				scribe->SetUniform1i("useDistanceColorMap", useDistanceColorMap);
 				scribe->SetUniform1f("classificationThreshold", classificationThreshold);
 				scribe->SetUniform1i("useGridTexture", useGridTexture);
+				scribe->SetUniform1i("useGlyphTexture", useGlyphTexture);
 			}
 
 			virtual void UnbindScribeTextures() 
@@ -512,6 +523,7 @@ namespace NQVTK
 			bool useDistanceColorMap;
 			float classificationThreshold; // = 1.05
 			bool useGridTexture;
+			bool useGlyphTexture;
 			// - Painter
 			bool useFatContours;
 			float contourDepthEpsilon; // = 0.001
