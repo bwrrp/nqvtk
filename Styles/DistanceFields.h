@@ -202,7 +202,7 @@ namespace NQVTK
 					// TEST: grid texture
 					"  if (useGridTexture) {"
 					"    if (col.a < 1.0 || !hasDistanceField) {"
-					"      vec2 tc = frac(abs(gl_TexCoord[0].xy));"
+					"      vec2 tc = fract(abs(gl_TexCoord[0].xy));"
 					"      float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
 					"      grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
 					"      col = vec4(col.rgb, (col.a + 0.2) * pow(grid, 5.0));"
