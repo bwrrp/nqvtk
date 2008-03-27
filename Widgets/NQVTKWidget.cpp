@@ -70,6 +70,10 @@ void NQVTKWidget::initializeGL()
 		//* - msdata
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-textured.vtp");
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-textured.vtp");
+		args.append("-"); // distance field marker
+		// NOTE: fields are flipped because object 1 should use distfield 0
+		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-dist256.vti");
+		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-dist256.vti");
 		//*/
 		/*  Cartilage
 		args.append("D:/Data/Cartilage/Lorena/femoral2.vtp");
@@ -82,45 +86,41 @@ void NQVTKWidget::initializeGL()
 		NQVTK::Vector3(0.3, 0.6, 1.0)
 	};
 	int i = 0;
+	bool distFields = false;
 	for (QStringList::const_iterator it = args.begin() + 1; it != args.end(); ++it)
 	{
-		qDebug("Loading #%d...", i);
-		vtkSmartPointer<vtkXMLPolyDataReader> reader = 
-			vtkSmartPointer<vtkXMLPolyDataReader>::New();
-		reader->SetFileName(it->toUtf8());
-		reader->Update();
-		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
-		renderable->color = colors[std::min(i, 1)];
-		renderable->opacity = 0.3;
-		renderer->AddRenderable(renderable);
+		qDebug("Loading %s #%d...", (distFields ? "distance field" : "surface"), i);
+		if (QString("-") == *it)
+		{
+			distFields = true;
+			i = 0;
+			continue;
+		}
+		if (!distFields)
+		{
+			// Load surface
+			vtkSmartPointer<vtkXMLPolyDataReader> reader = 
+				vtkSmartPointer<vtkXMLPolyDataReader>::New();
+			reader->SetFileName(it->toUtf8());
+			reader->Update();
+			NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
+			renderable->color = colors[std::min(i, 1)];
+			renderable->opacity = 0.3;
+			renderer->AddRenderable(renderable);
+		}
+		else
+		{
+			// Load distance field
+			vtkSmartPointer<vtkXMLImageDataReader> reader = 
+				vtkSmartPointer<vtkXMLImageDataReader>::New();
+			reader->SetFileName(it->toUtf8());
+			reader->Update();
+			GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+			assert(tex);
+			distfieldstyle->SetDistanceField(i, tex);
+		}
 		++i;
 	}
-
-	//* For testing purposes: load and set the distance fields
-	// NOTE: assingments are flipped because object 1 should use distfield 0
-	{
-		qDebug("Loading distance field 0...");
-		vtkSmartPointer<vtkXMLImageDataReader> reader = 
-			vtkSmartPointer<vtkXMLImageDataReader>::New();
-		reader->SetFileName(
-			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-dist256.vti");
-		reader->Update();
-		GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
-		assert(tex);
-		style->SetDistanceField(1, tex);
-	}
-	{
-		qDebug("Loading distance field 1...");
-		vtkSmartPointer<vtkXMLImageDataReader> reader = 
-			vtkSmartPointer<vtkXMLImageDataReader>::New();
-		reader->SetFileName(
-			"D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-dist256.vti");
-		reader->Update();
-		GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
-		assert(tex);
-		style->SetDistanceField(0, tex);
-	}
-	//*/
 
 	// Render-on-idle timer
 	startTimer(0);
