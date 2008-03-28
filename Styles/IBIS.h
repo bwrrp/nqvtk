@@ -217,7 +217,7 @@ namespace NQVTK
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return false;"//inActor0 || inActor1;"
+					"  return inActor0 || inActor1;"
 					"}"
 					// Phong shading helper
 					"vec3 phongShading(vec3 matColor, vec3 normal) {"

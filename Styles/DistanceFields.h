@@ -173,14 +173,18 @@ namespace NQVTK
 					"  }"
 					// Distance classification
 					"  float classification = 0.0;"
+					"  if (objectId >= 0) {"
+					"    classification = 0.25 + float(objectId) * 0.25;"
+					"  }"
 					"  if (hasDistanceField) {"
-					"    vec4 v = vec4(vertex.xyz / vertex.w, 1.0);"
+					"    vec3 p = vertex.xyz / vertex.w;"
 					// HACK: Beware! Hack! Distance field alignment is wrong!
-					//"    v = v + vec4(-3.5, -4.0, 9.0, 0.0);"
-					"    vec3 p = (v.xyz - distanceFieldOrigin) / distanceFieldSize;"
+					//"    p = p + vec3(-3.5, -4.0, 9.0);" // msdata
+					"    p = p + vec3(-28.0, 57.0, 13.0);"
+					"    p = (p - distanceFieldOrigin) / distanceFieldSize;"
 					"    float dist = texture3D(distanceField, p).x;"
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
-					"    classification = 0.25 + float(objectId) * 0.25;"
+					//*
 					"    if (useDistanceColorMap) {"
 					"      float d = clamp(dist / 7.0, 0.0, 1.0);"
 					"      if (objectId == 0) {"
@@ -189,31 +193,31 @@ namespace NQVTK
 					"        col = vec4(1.0 - d, 1.0 - d, 1.0, 1.0);"
 					"      }"
 					"    }"
+					//*/
 					"    if (dist < classificationThreshold) {"
 					"      classification = 0.0;"
 					"      col = vec4(1.0);"
 					"    }"
 					"  }"
+					//*
 					// TEST: grid texture
-					"  if (useGridTexture) {"
-					"    if (col.a < 1.0 || !hasDistanceField) {"
-					"      vec2 tc = fract(abs(gl_TexCoord[0].xy));"
-					"      float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
-					"      grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
-					"      col = vec4(col.rgb, (col.a + 0.2) * pow(grid, 5.0));"
-					"    }"
+					"  if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {"
+					"    vec2 tc = fract(abs(gl_TexCoord[0].xy));"
+					"    float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
+					"    grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
+					"    col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));"
 					"  }"
+					//*/
 					// TEST: glyph texture
-					"  if (useGlyphTexture) {"
-					"    if (col.a < 1.0 || !hasDistanceField) {"
-					"      vec2 tc = abs(2.0 * gl_TexCoord[0].xy - vec2(1.0));"
-					"      if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {"
-					"        col.a = min(col.a + 0.3, 1.0);"
-					"      } else if ((tc.x < 0.15 && tc.y < 0.95) || (tc.y < 0.15 && tc.x < 0.65)) {"
-					"        col.a = min(col.a + 0.15, 1.0);"
-					"      }"
+					"  if (useGlyphTexture && (col.a < 1.0 || !hasDistanceField)) {"
+					"    vec2 tc = abs(2.0 * gl_TexCoord[0].xy - vec2(1.0));"
+					"    if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {"
+					"      col.a = min(col.a + 0.3, 1.0);"
+					"    } else if ((tc.x < 0.15 && tc.y < 0.95) || (tc.y < 0.15 && tc.x < 0.65)) {"
+					"      col.a = min(col.a + 0.15, 1.0);"
 					"    }"
 					"  }"
+					//*/
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
 					"  if (objectId >= 0) {"
@@ -290,7 +294,7 @@ namespace NQVTK
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return false;"//inActor0 || inActor1;"
+					"  return inActor0 || inActor1;"
 					"}"
 					// Phong shading helper
 					"vec3 phongShading(vec3 matColor, vec3 normal) {"

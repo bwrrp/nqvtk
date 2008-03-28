@@ -64,7 +64,7 @@ private slots:
 	void on_depthCueRange_valueChanged(int val) 
 	{
 		ui.nqvtkwidget->distfieldstyle->depthCueRange = 
-			static_cast<double>(val) / 100.0;
+			static_cast<double>(val) / 1000.0;
 	}
 
 	void on_useFog_toggled(bool val) 

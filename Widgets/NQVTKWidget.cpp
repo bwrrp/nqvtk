@@ -76,15 +76,22 @@ void NQVTKWidget::initializeGL()
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-dist256.vti");
 		//*/
 		/*  Cartilage
-		args.append("D:/Data/Cartilage/Lorena/femoral2.vtp");
-		args.append("D:/Data/Cartilage/Lorena/femoral1.vtp");
+		args.append("D:/Data/Cartilage/Lorena/femoral2-textured.vtp");
+		args.append("D:/Data/Cartilage/Lorena/femoral1-textured.vtp");
+		args.append("-");
+		args.append("D:/Data/Cartilage/Lorena/femoral1-dist256.vti");
+		args.append("D:/Data/Cartilage/Lorena/femoral2-dist256.vti");
 		//*/
-		//* Ventricles
-		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_reversed.vtp");
-		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_reversed.vtp");
+		/* Ventricles
+		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_textured.vtp");
+		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_textured.vtp");
 		args.append("-"); // distance field marker
 		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_padded.vti");
 		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_padded.vti");
+		//*/
+		//* Dragon
+		args.append("D:/Data/Surface/dragon-tri2.vtp");
+		args.append("D:/Data/Surface/dragon-smooth-tri2.vtp");
 		//*/
 	}
 	// Load the polydata

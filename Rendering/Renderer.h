@@ -288,7 +288,7 @@ namespace NQVTK
 
 			glDisable(GL_BLEND);
 
-			//* Debug views
+			/* Debug views
 			GLenum top = GL_COLOR_ATTACHMENT0_EXT;
 			GLenum bottom = GL_COLOR_ATTACHMENT2_EXT;
 			//GLenum bottom = GL_DEPTH_ATTACHMENT_EXT;
