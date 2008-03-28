@@ -67,7 +67,7 @@ void NQVTKWidget::initializeGL()
 	{
 		qDebug("No arguments supplied, using default data...");
 		// Set default testing data (on Vliet)
-		//* - msdata
+		/* - msdata
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-textured.vtp");
 		args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-textured.vtp");
 		args.append("-"); // distance field marker
@@ -78,6 +78,13 @@ void NQVTKWidget::initializeGL()
 		/*  Cartilage
 		args.append("D:/Data/Cartilage/Lorena/femoral2.vtp");
 		args.append("D:/Data/Cartilage/Lorena/femoral1.vtp");
+		//*/
+		//* Ventricles
+		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_reversed.vtp");
+		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_reversed.vtp");
+		args.append("-"); // distance field marker
+		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_padded.vti");
+		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_padded.vti");
 		//*/
 	}
 	// Load the polydata

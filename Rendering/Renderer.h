@@ -24,7 +24,10 @@ namespace NQVTK
 	public:
 		Renderer() : camera(0), style(0), 
 			fbo1(0), fbo2(0), tm(0), 
-			scribe(0), painter(0), query(0) { };
+			scribe(0), painter(0), query(0) 
+		{ 
+			maxLayers = 6;
+		};
 
 		virtual ~Renderer() 
 		{ 
@@ -58,13 +61,13 @@ namespace NQVTK
 			if (fbo2) delete fbo2;
 			fbo2 = 0;
 
-			if (tm) delete tm;
-			tm = GLTextureManager::New();
-			if (!tm) 
-			{
-				qDebug("Failed to create texture manager!");
-				return false;
-			}
+			//if (tm) delete tm;
+			//tm = GLTextureManager::New();
+			//if (!tm) 
+			//{
+			//	qDebug("Failed to create texture manager!");
+			//	return false;
+			//}
 
 			// Set up shader programs
 			if (scribe) delete scribe;
@@ -200,7 +203,6 @@ namespace NQVTK
 			// Depth peeling
 			bool done = false;
 			int layer = 0;
-			int maxlayers = 6;
 			while (!done)
 			{
 				GLTexture *depthBuffer = 0;
@@ -259,7 +261,7 @@ namespace NQVTK
 
 				unsigned int numfragments = query->GetResultui();
 				++layer;
-				done = (layer >= maxlayers || numfragments == 0);
+				done = (layer >= maxLayers || numfragments == 0);
 				//if (done) qDebug("Layers: %d (%d fragments left)", layer, numfragments);
 				
 				SwapFramebuffers();
@@ -286,7 +288,7 @@ namespace NQVTK
 
 			glDisable(GL_BLEND);
 
-			/*
+			//* Debug views
 			GLenum top = GL_COLOR_ATTACHMENT0_EXT;
 			GLenum bottom = GL_COLOR_ATTACHMENT2_EXT;
 			//GLenum bottom = GL_DEPTH_ATTACHMENT_EXT;
@@ -390,6 +392,8 @@ namespace NQVTK
 			}
 			return true;
 		}
+
+		int maxLayers;
 
 	protected:
 		int width;

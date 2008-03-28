@@ -81,4 +81,10 @@ private slots:
 				static_cast<double>(val) / 100.0;
 		}
 	}
+
+	void on_maxLayers_valueChanged(int val)
+	{
+		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
+		renderer->maxLayers = val;
+	}
 };

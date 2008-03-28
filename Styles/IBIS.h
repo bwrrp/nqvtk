@@ -19,7 +19,15 @@ namespace NQVTK
 			typedef NQVTK::RenderStyle Superclass;
 
 			IBIS() : depthBuffer(0), infoBuffer(0), 
-				colors(0), normals(0), infoCurrent(0), infoPrevious(0) { }
+				colors(0), normals(0), infoCurrent(0), infoPrevious(0) 
+			{ 
+				// Set default parameters
+				useFatContours = false;
+				contourDepthEpsilon = 0.001;
+				useFog = true;
+				depthCueRange = 10.0;
+			}
+			
 			virtual ~IBIS() { }
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
@@ -79,8 +87,8 @@ namespace NQVTK
 					// Encodes a bit set in a float, range [0..1]
 					"float setBit(float byte, int bit, bool on) {"
 					"  float f = 2.0;"
-					"  int N = 8;"
-					"  float max = pow(f, float(N)) - 1.0;"
+					"  float N = 2.0;"
+					"  float max = pow(f, N) - 1.0;"
 					"  byte = round(byte * max);"
 					"  float bf = pow(f, float(bit));"
 					"  float b = fract(byte / bf);"
@@ -93,7 +101,7 @@ namespace NQVTK
 					// Gets a single bit from a float-encoded bit set
 					"bool getBit(float byte, int bit) {"
 					"  float f = 2.0;"
-					"  float N = 8.0;"
+					"  float N = 2.0;"
 					"  if (bit > int(N)) return false;"
 					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
 					"  int i;"
@@ -113,6 +121,7 @@ namespace NQVTK
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
+					"  vec4 col = color;"
 					// Depth peeling
 					"  if (layer > 0) {"
 					"    float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
@@ -142,7 +151,7 @@ namespace NQVTK
 					// Encode normal
 					"  vec3 n = (normalize(normal) + vec3(1.0)) / 2.0;"
 					// Store data
-					"  gl_FragData[0] = color;"
+					"  gl_FragData[0] = col;"
 					"  gl_FragData[1] = vec4(n, 1.0);"
 					"  gl_FragData[2] = vec4(identity, inOutMask, depthVec);"
 					"}");
@@ -172,6 +181,11 @@ namespace NQVTK
 					"uniform int layer;"
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
+					// Parameters
+					"uniform bool useFatContours;"
+					"uniform float contourDepthEpsilon;" // = 0.001
+					"uniform bool useFog;"
+					"uniform float depthCueRange;" // = 10.0
 					// Rounds a float to the nearest integer
 					"float round(float x) {"
 					"  return floor(x + 0.5);"
@@ -184,7 +198,7 @@ namespace NQVTK
 					// CSG formula
 					"bool CSG(float mask) {"
 					"  float f = 2.0;"
-					"  float N = 8.0;"
+					"  float N = 2.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
@@ -196,14 +210,14 @@ namespace NQVTK
 					// CSG formula for fogging volumes
 					"bool CSGFog(float mask) {"
 					"  float f = 2.0;"
-					"  float N = 8.0;"
+					"  float N = 2.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return inActor0 || inActor1;"
+					"  return false;"//inActor0 || inActor1;"
 					"}"
 					// Phong shading helper
 					"vec3 phongShading(vec3 matColor, vec3 normal) {"
@@ -234,24 +248,29 @@ namespace NQVTK
 					"  float mask1 = info1.y;"
 					"  if (CSG(mask0) != CSG(mask1)) {"
 					"    color.a = 1.0;"
-					"  } else {"
-					"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
+					//"  } else {"
+					//"    if (color.a > 0.0) color.a = 1.5 - length(litFragment);"
 					"  }"
 					// Apply contouring
-					"  float contourDepthEpsilon = 0.001;"
-					"  vec4 left = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
-					"  vec4 top = texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));"
-					"  float diffH = abs(decodeDepth(left.zw) - decodeDepth(info0.zw));"
-					"  float diffV = abs(decodeDepth(top.zw) - decodeDepth(info0.zw));"
-					"  bool contourH = (left.x != info0.x && diffH < contourDepthEpsilon);"
-					"  bool contourV = (top.x != info0.x && diffV < contourDepthEpsilon);"
-					"  if (contourH || contourV) {"
+					"  vec4 left   = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));"
+					"  vec4 right  = texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));"
+					"  vec4 top    = texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));"
+					"  vec4 bottom = texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));"
+					"  float depth = decodeDepth(info0.zw);"
+					"  float diffL = abs(decodeDepth(left.zw) - depth);"
+					"  float diffR = abs(decodeDepth(right.zw) - depth);"
+					"  float diffT = abs(decodeDepth(top.zw) - depth);"
+					"  float diffB = abs(decodeDepth(bottom.zw) - depth);"
+					"  bool contourL = (left.x != info0.x && diffL < contourDepthEpsilon);"
+					"  bool contourR = (right.x != info0.x && diffR < contourDepthEpsilon);"
+					"  bool contourT = (top.x != info0.x && diffT < contourDepthEpsilon);"
+					"  bool contourB = (bottom.x != info0.x && diffB < contourDepthEpsilon);"
+					"  if (contourL || contourT || (useFatContours && (contourR || contourB))) {"
 					"    litFragment = vec3(0.0);"
 					"    color.a = 1.0;"
 					"  }"
 					// Apply fogging
-					"  if (CSGFog(mask1)) {"
-					"    float depthCueRange = 10.0;"
+					"  if (useFog && CSGFog(mask1)) {"
 					"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
 					"    float depthRange = (farPlane - nearPlane);"
 					"    float front = decodeDepth(info1.zw) * depthRange;"
@@ -344,6 +363,12 @@ namespace NQVTK
 				glActiveTexture(GL_TEXTURE0);
 				colors->BindToCurrent();
 				painter->UseTexture("colors", 0);
+
+				// Set program parameters
+				painter->SetUniform1i("useFatContours", useFatContours);
+				painter->SetUniform1f("contourDepthEpsilon", contourDepthEpsilon);
+				painter->SetUniform1i("useFog", useFog);
+				painter->SetUniform1f("depthCueRange", depthCueRange);
 			}
 
 			virtual void UnbindPainterTextures() 
@@ -363,6 +388,13 @@ namespace NQVTK
 				colors->UnbindCurrent();
 				colors = 0;
 			}
+
+			// Program parameters
+			// - Painter
+			bool useFatContours;
+			float contourDepthEpsilon; // = 0.001
+			bool useFog;
+			float depthCueRange; // = 10.0
 
 		protected:
 			// Scribe textures

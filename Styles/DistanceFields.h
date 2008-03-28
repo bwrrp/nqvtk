@@ -93,6 +93,7 @@ namespace NQVTK
 					"}");
 				if (res) res = scribe->AddFragmentShader(
 					"#extension GL_ARB_texture_rectangle : enable\n"
+					"#extension GL_ARB_draw_buffers : enable\n"
 					"uniform sampler2DRectShadow depthBuffer;"
 					"uniform sampler2DRect infoBuffer;"
 					"uniform sampler3D distanceField;"
@@ -120,8 +121,8 @@ namespace NQVTK
 					// Encodes a bit set in a float, range [0..1]
 					"float setBit(float byte, int bit, bool on) {"
 					"  float f = 2.0;"
-					"  int N = 8;"
-					"  float max = pow(f, float(N)) - 1.0;"
+					"  float N = 2.0;"
+					"  float max = pow(f, N) - 1.0;"
 					"  byte = round(byte * max);"
 					"  float bf = pow(f, float(bit));"
 					"  float b = fract(byte / bf);"
@@ -134,7 +135,7 @@ namespace NQVTK
 					// Gets a single bit from a float-encoded bit set
 					"bool getBit(float byte, int bit) {"
 					"  float f = 2.0;"
-					"  float N = 8.0;"
+					"  float N = 2.0;"
 					"  if (bit > int(N)) return false;"
 					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
 					"  int i;"
@@ -173,17 +174,13 @@ namespace NQVTK
 					// Distance classification
 					"  float classification = 0.0;"
 					"  if (hasDistanceField) {"
-					// HACK: Beware! Hack! Distance field alignment is wrong!
 					"    vec4 v = vec4(vertex.xyz / vertex.w, 1.0);"
-					"    v = v + vec4(-3.5, -4.0, 9.0, 0.0);"
+					// HACK: Beware! Hack! Distance field alignment is wrong!
+					//"    v = v + vec4(-3.5, -4.0, 9.0, 0.0);"
 					"    vec3 p = (v.xyz - distanceFieldOrigin) / distanceFieldSize;"
 					"    float dist = texture3D(distanceField, p).x;"
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
-					"    if (objectId == 0) {"
-					"      classification = 0.25;"
-					"    } else {"
-					"      classification = 0.5;"
-					"    }"
+					"    classification = 0.25 + float(objectId) * 0.25;"
 					"    if (useDistanceColorMap) {"
 					"      float d = clamp(dist / 7.0, 0.0, 1.0);"
 					"      if (objectId == 0) {"
@@ -274,7 +271,7 @@ namespace NQVTK
 					// CSG formula
 					"bool CSG(float mask) {"
 					"  float f = 2.0;"
-					"  float N = 8.0;"
+					"  float N = 2.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
@@ -286,14 +283,14 @@ namespace NQVTK
 					// CSG formula for fogging volumes
 					"bool CSGFog(float mask) {"
 					"  float f = 2.0;"
-					"  float N = 8.0;"
+					"  float N = 2.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return inActor0 || inActor1;"
+					"  return false;"//inActor0 || inActor1;"
 					"}"
 					// Phong shading helper
 					"vec3 phongShading(vec3 matColor, vec3 normal) {"
@@ -420,6 +417,7 @@ namespace NQVTK
 				assert(infoBuffer);
 				glActiveTexture(GL_TEXTURE1);
 				infoBuffer->BindToCurrent();
+				GLUtility::SetDefaultColorTextureParameters(infoBuffer);
 				scribe->UseTexture("infoBuffer", 1);
 
 				// Get the previous layer's depth buffer

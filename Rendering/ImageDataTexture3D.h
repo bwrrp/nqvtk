@@ -73,7 +73,7 @@ namespace NQVTK
 			// TODO: check for NPOTS extension if needed
 
 			// Finally, create the texture
-			float *dataPointer = static_cast<float*>(vol->GetScalarPointer());
+			unsigned char *dataPointer = static_cast<unsigned char*>(vol->GetScalarPointer());
 			ImageDataTexture3D *tex = new ImageDataTexture3D(
 				dim[0], dim[1], dim[2], GL_LUMINANCE);
 			tex->dataShift = shift;
