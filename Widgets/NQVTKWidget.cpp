@@ -10,10 +10,6 @@
 #include "Rendering/PolyData.h"
 #include "Rendering/ImageDataTexture3D.h"
 
-#include "Styles/DepthPeeling.h"
-#include "Styles/IBIS.h"
-#include "Styles/DistanceFields.h"
-
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLImageDataReader.h>
@@ -51,9 +47,11 @@ void NQVTKWidget::initializeGL()
 
 	qDebug("Initializing renderer...");
 	if (!renderer) renderer = new NQVTK::Renderer();
-	NQVTK::Styles::DistanceFields *style = new NQVTK::Styles::DistanceFields();
-	this->distfieldstyle = style;
-	renderer->SetStyle(style);
+	depthpeelStyle = new NQVTK::Styles::DepthPeeling();
+	ibisStyle = new NQVTK::Styles::IBIS();
+	distfieldStyle = new NQVTK::Styles::DistanceFields();
+
+	renderer->SetStyle(distfieldStyle);
 	initialized = renderer->Initialize();
 
 	if (!initialized)
@@ -82,16 +80,19 @@ void NQVTKWidget::initializeGL()
 		args.append("D:/Data/Cartilage/Lorena/femoral1-dist256.vti");
 		args.append("D:/Data/Cartilage/Lorena/femoral2-dist256.vti");
 		//*/
-		/* Ventricles
+		//* Ventricles
 		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_textured.vtp");
 		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_textured.vtp");
 		args.append("-"); // distance field marker
 		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_padded.vti");
 		args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_padded.vti");
 		//*/
-		//* Dragon
-		args.append("D:/Data/Surface/dragon-tri2.vtp");
-		args.append("D:/Data/Surface/dragon-smooth-tri2.vtp");
+		/* Test heightfield
+		args.append("D:/Data/Surface/test3-small-tri.vtp");
+		args.append("D:/Data/Surface/test4-small-tri.vtp");
+		args.append("-");
+		args.append("D:/Data/Surface/test4-small-dist256.vti");
+		args.append("D:/Data/Surface/test3-small-dist256.vti");
 		//*/
 	}
 	// Load the polydata
@@ -131,7 +132,7 @@ void NQVTKWidget::initializeGL()
 			reader->Update();
 			GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
 			assert(tex);
-			distfieldstyle->SetDistanceField(i, tex);
+			distfieldStyle->SetDistanceField(i, tex);
 		}
 		++i;
 	}
@@ -205,6 +206,12 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_R:
 		renderer->ResetRenderables();
 		break;
+	case Qt::Key_V:
+		// Viewpoint for the heightfield data, as used in the paper
+		renderer->GetCamera()->zoom = 0.62;
+		renderer->GetCamera()->rotateX = 29.0;
+		renderer->GetCamera()->rotateY = 180.0;
+		break;
 	case Qt::Key_1:
 		{
 			NQVTK::Renderable *ren = renderer->GetRenderable(0);
@@ -218,14 +225,13 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 	case Qt::Key_F1:
-		initialized = renderer->SetStyle(new NQVTK::Styles::DepthPeeling());
+		initialized = renderer->SetStyle(depthpeelStyle);
 		break;
 	case Qt::Key_F2:
-		initialized = renderer->SetStyle(new NQVTK::Styles::IBIS());
+		initialized = renderer->SetStyle(ibisStyle);
 		break;
 	case Qt::Key_F3:
-		distfieldstyle = new NQVTK::Styles::DistanceFields();
-		initialized = renderer->SetStyle(distfieldstyle);
+		initialized = renderer->SetStyle(distfieldStyle);
 		break;
 	default:
 		event->ignore();

@@ -207,7 +207,7 @@
              <number>1</number>
             </property>
             <property name="maximum" >
-             <number>3000</number>
+             <number>30000</number>
             </property>
             <property name="value" >
              <number>1000</number>
@@ -276,7 +276,7 @@
              </sizepolicy>
             </property>
             <property name="maximum" >
-             <number>500</number>
+             <number>750</number>
             </property>
             <property name="value" >
              <number>105</number>

@@ -381,7 +381,6 @@ namespace NQVTK
 
 		bool SetStyle(RenderStyle *style) 
 		{ 
-			if (this->style) delete this->style;
 			this->style = style;
 			// Re-initialize if we're initialized
 			if (camera) 

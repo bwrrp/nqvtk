@@ -23,9 +23,9 @@ namespace NQVTK
 			{ 
 				// Set default parameters
 				useFatContours = false;
-				contourDepthEpsilon = 0.001;
+				contourDepthEpsilon = 0.001f;
 				useFog = true;
-				depthCueRange = 10.0;
+				depthCueRange = 10.0f;
 			}
 			
 			virtual ~IBIS() { }

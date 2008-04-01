@@ -180,7 +180,8 @@ namespace NQVTK
 					"    vec3 p = vertex.xyz / vertex.w;"
 					// HACK: Beware! Hack! Distance field alignment is wrong!
 					//"    p = p + vec3(-3.5, -4.0, 9.0);" // msdata
-					"    p = p + vec3(-28.0, 57.0, 13.0);"
+					//"    p = p + vec3(-28.0, 57.0, 13.0);" // cartilage
+					//"    p = p + vec3(98.0, 98.0, 100.0);" // test
 					"    p = (p - distanceFieldOrigin) / distanceFieldSize;"
 					"    float dist = texture3D(distanceField, p).x;"
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
@@ -194,11 +195,23 @@ namespace NQVTK
 					"      }"
 					"    }"
 					//*/
+					// TEST: saturation color map
+					//"    float d = clamp(dist / classificationThreshold, 0.0, 1.0);"
+					//"    col = vec4(col.rgb * d + vec3(0.5) * (1.0 - d), col.a);"
+					// Thresholding
 					"    if (dist < classificationThreshold) {"
 					"      classification = 0.0;"
 					"      col = vec4(1.0);"
 					"    }"
 					"  }"
+					/* TEST: texcoord-less xy grid
+					"  if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {"
+					"    vec2 tc = fract(abs(0.03 * vertex.xy / vertex.w));"
+					"    float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
+					"    grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
+					"    col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));"
+					"  }"
+					//*/
 					//*
 					// TEST: grid texture
 					"  if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {"
@@ -207,6 +220,7 @@ namespace NQVTK
 					"    grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
 					"    col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));"
 					"  }"
+					//*/
 					//*/
 					// TEST: glyph texture
 					"  if (useGlyphTexture && (col.a < 1.0 || !hasDistanceField)) {"
@@ -432,6 +446,7 @@ namespace NQVTK
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
+				//	GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 				scribe->UseTexture("depthBuffer", 0);
 
 				// Set program parameters

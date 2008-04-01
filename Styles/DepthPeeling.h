@@ -8,6 +8,8 @@
 #include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLUtility.h"
 
+#include <cassert>
+
 namespace NQVTK
 {
 	namespace Styles

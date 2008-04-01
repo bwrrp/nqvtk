@@ -3,6 +3,8 @@
 #include "Rendering/Renderer.h"
 #include <QGLWidget>
 
+#include "Styles/DepthPeeling.h"
+#include "Styles/IBIS.h"
 #include "Styles/DistanceFields.h"
 
 class NQVTKWidget : public QGLWidget {
@@ -14,7 +16,9 @@ public:
 	virtual ~NQVTKWidget();
 
 	// HACK: exposed this way for now... improve later...
-	NQVTK::Styles::DistanceFields *distfieldstyle;
+	NQVTK::Styles::DepthPeeling *depthpeelStyle;
+	NQVTK::Styles::IBIS *ibisStyle;
+	NQVTK::Styles::DistanceFields *distfieldStyle;
 	NQVTK::Renderer *GetRenderer() { return renderer; }
 
 signals:

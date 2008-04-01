@@ -31,45 +31,45 @@ private slots:
 
 	void on_useGridTexture_toggled(bool val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->useGridTexture = val;
+		ui.nqvtkwidget->distfieldStyle->useGridTexture = val;
 	}
 
 	void on_useGlyphTexture_toggled(bool val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->useGlyphTexture = val;
+		ui.nqvtkwidget->distfieldStyle->useGlyphTexture = val;
 	}
 
 	void on_classificationThreshold_valueChanged(int val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->classificationThreshold = 
+		ui.nqvtkwidget->distfieldStyle->classificationThreshold = 
 			static_cast<double>(val) / 100.0;
 	}
 
 	void on_useDistanceColorMap_toggled(bool val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->useDistanceColorMap = val;
+		ui.nqvtkwidget->distfieldStyle->useDistanceColorMap = val;
 	}
 
 	void on_contourDepthEpsilon_valueChanged(int val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->contourDepthEpsilon = 
+		ui.nqvtkwidget->distfieldStyle->contourDepthEpsilon = 
 			static_cast<double>(val) / 1000.0;
 	}
 
 	void on_useFatContours_toggled(bool val) 
 	{ 
-		ui.nqvtkwidget->distfieldstyle->useFatContours = val;
+		ui.nqvtkwidget->distfieldStyle->useFatContours = val;
 	}
 
 	void on_depthCueRange_valueChanged(int val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->depthCueRange = 
+		ui.nqvtkwidget->distfieldStyle->depthCueRange = 
 			static_cast<double>(val) / 1000.0;
 	}
 
 	void on_useFog_toggled(bool val) 
 	{
-		ui.nqvtkwidget->distfieldstyle->useFog = val;
+		ui.nqvtkwidget->distfieldStyle->useFog = val;
 	}
 
 	void on_opacity_valueChanged(int val)
