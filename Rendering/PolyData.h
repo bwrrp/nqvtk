@@ -8,6 +8,8 @@
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
 
+#define NQVTK_USE_NV_PRIMITIVE_RESTART
+
 namespace NQVTK
 {
 	class PolyData : public VBOMesh
@@ -232,12 +234,21 @@ namespace NQVTK
 			if (numStrips > 0)
 			{
 				qDebug("Processing strips...");
-				// For now, we use degenerate triangled to combine all strips into one
 				vtkCellArray *strips = data->GetStrips();
+#ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
+				// Use the NV_primitive_restart extension to define an index to restart strips
+				glPrimitiveRestartIndexNV(0xFFFF);
+				// Each strip consists of number N followed by N point indices
+				// Adding restart indices, we need N + 1 indices
+				// We (ab)use numStrips to indicate the number of indices in the strip
+				numStrips = strips->GetNumberOfConnectivityEntries();
+#else
+				// For now, we use degenerate triangled to combine all strips into one
 				// Each strip consists of number N followed by N point indices
 				// Adding degenerate tris adds two points per strip, so we have N + 2 points
 				// We (ab)use numStrips to indicate the number of points in the strip
 				numStrips = strips->GetNumberOfConnectivityEntries() + numStrips;
+#endif
 				vtkIdType *pIds = strips->GetPointer();
 				vtkIdType *pEnd = pIds + strips->GetNumberOfConnectivityEntries();
 				stripIndices = GLBuffer::New();
@@ -250,26 +261,38 @@ namespace NQVTK
 				// Walk through strip cells and build the index buffer
 				while (pIds < pEnd)
 				{
+#ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
+					// Start a new strip
+					if (pIds != strips->GetPointer())
+					{
+						*indices = 0xFFFF;
+						++indices;
+					}
+#endif
 					// Get number of points in strip
 					vtkIdType nPts = *pIds;
 					++pIds;
+#ifndef NQVTK_USE_NV_PRIMITIVE_RESTART
 					// Add the first point twice to finish the degenerate strip
 					if (nPts > 0)
 					{
 						*indices = static_cast<unsigned int>(*pIds);
 						++indices;
 					}
+#endif
 					// Copy this strip
 					while (nPts > 0)
 					{
 						*indices = static_cast<unsigned int>(*pIds);
 						++indices;
+#ifndef NQVTK_USE_NV_PRIMITIVE_RESTART
 						// Add the last point twice to start a degenerate strip
 						if (nPts == 1)
 						{
 							*indices = static_cast<unsigned int>(*pIds);
 							++indices;
 						}
+#endif
 						--nPts;
 						++pIds;
 					}
@@ -359,6 +382,9 @@ namespace NQVTK
 			if ((numStrips > 0) && (parts & DRAWPARTS_STRIPS))
 			{
 				stripIndices->BindAsIndexData();
+#ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
+				glEnableClientState(GL_PRIMITIVE_RESTART_NV);
+#endif
 				switch (mode)
 				{
 				case DRAWMODE_POINTS:
@@ -374,6 +400,9 @@ namespace NQVTK
 					// TODO: use glMultiDrawElements rather than degenerate triangles?
 					break;
 				}
+#ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
+				glDisableClientState(GL_PRIMITIVE_RESTART_NV);
+#endif
 				stripIndices->Unbind();
 			}
 
