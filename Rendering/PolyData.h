@@ -237,7 +237,7 @@ namespace NQVTK
 				vtkCellArray *strips = data->GetStrips();
 #ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
 				// Use the NV_primitive_restart extension to define an index to restart strips
-				glPrimitiveRestartIndexNV(0xFFFF);
+				primitiveRestartIndex = 0xFFFF;
 				// Each strip consists of number N followed by N point indices
 				// Adding restart indices, we need N + 1 indices
 				// We (ab)use numStrips to indicate the number of indices in the strip
@@ -258,14 +258,15 @@ namespace NQVTK
 					0, GL_STATIC_DRAW);
 				unsigned int *indices = 
 					reinterpret_cast<unsigned int*>(stripIndices->Map(GL_WRITE_ONLY));
+				bool atStart = true;
 				// Walk through strip cells and build the index buffer
 				while (pIds < pEnd)
 				{
 #ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
 					// Start a new strip
-					if (pIds != strips->GetPointer())
+					if (!atStart)
 					{
-						*indices = 0xFFFF;
+						*indices = primitiveRestartIndex;
 						++indices;
 					}
 #endif
@@ -274,7 +275,7 @@ namespace NQVTK
 					++pIds;
 #ifndef NQVTK_USE_NV_PRIMITIVE_RESTART
 					// Add the first point twice to finish the degenerate strip
-					if (nPts > 0)
+					if (nPts > 0 && !atStart)
 					{
 						*indices = static_cast<unsigned int>(*pIds);
 						++indices;
@@ -296,6 +297,7 @@ namespace NQVTK
 						--nPts;
 						++pIds;
 					}
+					atStart = false;
 				}
 				stripIndices->Unmap();
 				stripIndices->Unbind();
@@ -383,6 +385,7 @@ namespace NQVTK
 			{
 				stripIndices->BindAsIndexData();
 #ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
+				glPrimitiveRestartIndexNV(primitiveRestartIndex);
 				glEnableClientState(GL_PRIMITIVE_RESTART_NV);
 #endif
 				switch (mode)
@@ -425,6 +428,10 @@ namespace NQVTK
 		GLBuffer *lineIndices;
 		GLBuffer *polyIndices;
 		GLBuffer *stripIndices;
+
+#ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
+		unsigned int primitiveRestartIndex;
+#endif
 
 		bool hasNormals;
 		bool hasTCoords;
