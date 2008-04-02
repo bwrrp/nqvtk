@@ -145,8 +145,48 @@ namespace NQVTK
 			if (numLines > 0)
 			{
 				qDebug("Processing lines...");
-				// TODO: draw data->GetLines() as lines
-				numLines = 0;
+				// For now, we split up polylines into separate segments
+				vtkCellArray *lines = data->GetLines();
+				int numPolyLines = numLines;
+				// Each line consists of number N followed by N point indices
+				// This is translated to 2(N-1) points for line segments
+				int numPoints = lines->GetNumberOfConnectivityEntries() - numPolyLines;
+				numLines = 2 * (numPoints - numPolyLines);
+				vtkIdType *pIds = lines->GetPointer();
+				vtkIdType *pEnd = pIds + lines->GetNumberOfConnectivityEntries();
+				lineIndices = GLBuffer::New();
+				lineIndices->BindAsIndexData();
+				lineIndices->SetData(
+					numLines * 2 * sizeof(GLuint), 
+					0, GL_STATIC_DRAW);
+				unsigned int *indices = 
+					reinterpret_cast<unsigned int*>(lineIndices->Map(GL_WRITE_ONLY));
+				// Walk through line cells and build the index buffer
+				while (pIds < pEnd)
+				{
+					// Get number of points in polyline
+					vtkIdType nPts = *pIds;
+					++pIds;
+					if (nPts == 1)
+					{
+						++pIds;
+						continue;
+					}
+					// Split this polyline in segments
+					while (nPts > 1)
+					{
+						// Add the first point
+						*indices = static_cast<unsigned int>(*pIds);
+						++indices;
+						++pIds;
+						--nPts;
+						// Add the second point
+						*indices = static_cast<unsigned int>(*pIds);
+						++ indices;
+					}
+				}
+				lineIndices->Unmap();
+				lineIndices->Unbind();
 			}
 
 			// Polygons
@@ -192,8 +232,50 @@ namespace NQVTK
 			if (numStrips > 0)
 			{
 				qDebug("Processing strips...");
-				// TODO: draw data->GetStrips() as strips
-				numStrips = 0;
+				// For now, we use degenerate triangled to combine all strips into one
+				vtkCellArray *strips = data->GetStrips();
+				// Each strip consists of number N followed by N point indices
+				// Adding degenerate tris adds two points per strip, so we have N + 2 points
+				// We (ab)use numStrips to indicate the number of points in the strip
+				numStrips = strips->GetNumberOfConnectivityEntries() + numStrips;
+				vtkIdType *pIds = strips->GetPointer();
+				vtkIdType *pEnd = pIds + strips->GetNumberOfConnectivityEntries();
+				stripIndices = GLBuffer::New();
+				stripIndices->BindAsIndexData();
+				stripIndices->SetData(
+					numStrips * sizeof(GLuint), 
+					0, GL_STATIC_DRAW);
+				unsigned int *indices = 
+					reinterpret_cast<unsigned int*>(stripIndices->Map(GL_WRITE_ONLY));
+				// Walk through strip cells and build the index buffer
+				while (pIds < pEnd)
+				{
+					// Get number of points in strip
+					vtkIdType nPts = *pIds;
+					++pIds;
+					// Add the first point twice to finish the degenerate strip
+					if (nPts > 0)
+					{
+						*indices = static_cast<unsigned int>(*pIds);
+						++indices;
+					}
+					// Copy this strip
+					while (nPts > 0)
+					{
+						*indices = static_cast<unsigned int>(*pIds);
+						++indices;
+						// Add the last point twice to start a degenerate strip
+						if (nPts == 1)
+						{
+							*indices = static_cast<unsigned int>(*pIds);
+							++indices;
+						}
+						--nPts;
+						++pIds;
+					}
+				}
+				stripIndices->Unmap();
+				stripIndices->Unbind();
 			}
 		}
 
@@ -239,16 +321,19 @@ namespace NQVTK
 			// Lines
 			if ((numLines > 0) && (parts & DRAWPARTS_LINES))
 			{
+				lineIndices->BindAsIndexData();
 				if (mode == DRAWMODE_POINTS)
 				{
-					// TODO: draw lines as points
+					glDrawElements(GL_POINTS, numLines * 2, 
+						GL_UNSIGNED_INT, BUFFER_OFFSET(0));
 				}
 				else
 				{
-					// TODO: draw lines
-					// Lines are multiple indexed polylines, 
-					// glMultiDrawElements may work well here
+					glDrawElements(GL_LINES, numLines * 2, 
+						GL_UNSIGNED_INT, BUFFER_OFFSET(0));
+					// TODO: use glMultiDrawElements rather than duplicating points
 				}
+				lineIndices->Unbind();
 			}
 
 			// Polygons
@@ -271,18 +356,25 @@ namespace NQVTK
 				}
 				polyIndices->Unbind();
 			}
-			if ((numStrips > 0) && (parts * DRAWPARTS_STRIPS))
+			if ((numStrips > 0) && (parts & DRAWPARTS_STRIPS))
 			{
+				stripIndices->BindAsIndexData();
 				switch (mode)
 				{
 				case DRAWMODE_POINTS:
+					glDrawElements(GL_POINTS, numStrips, 
+						GL_UNSIGNED_INT, BUFFER_OFFSET(0));
+					break;
 				case DRAWMODE_WIREFRAME:
+					// TODO: draw as wireframe
+					break;
 				case DRAWMODE_NORMAL:
-					// TODO: draw triangle strips
-					// Strips are multiple indexed triangle strips, 
-					// glMultiDrawElements may work well here
+					glDrawElements(GL_TRIANGLE_STRIP, numStrips, 
+						GL_UNSIGNED_INT, BUFFER_OFFSET(0));
+					// TODO: use glMultiDrawElements rather than degenerate triangles?
 					break;
 				}
+				stripIndices->Unbind();
 			}
 
 			// Unset vbo render state
