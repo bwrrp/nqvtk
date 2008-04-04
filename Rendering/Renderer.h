@@ -26,6 +26,8 @@ namespace NQVTK
 			fbo1(0), fbo2(0), tm(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
+			viewportX = 0;
+			viewportY = 0;
 			maxLayers = 6;
 		};
 
@@ -96,10 +98,10 @@ namespace NQVTK
 
 		virtual void Resize(int w, int h)
 		{
-			this->width = w;
-			this->height = h;
+			this->viewportWidth = w;
+			this->viewportHeight = h;
 
-			glViewport(0, 0, static_cast<GLint>(w), static_cast<GLint>(h));
+			glViewport(viewportX, viewportY, w, h);
 			camera->aspect = static_cast<double>(w) / static_cast<double>(h);
 
 			if (!fbo1) 
@@ -180,15 +182,20 @@ namespace NQVTK
 			fbo2 = fbo;
 		}
 
-		virtual void Draw()
+		virtual void DrawCamera()
 		{
 			// TODO: replace this, add camera reset to focus on all renderables
 			Renderable *renderable = renderables[0];
-			// TODO: add a useful way to focus camera on objects
+			camera->position = renderable->GetCenter() - Vector3(0.0, 0.0, 1.0);
 			camera->FocusOn(renderable);
 
 			// Set up the camera (matrices)
 			camera->Draw();
+		}
+
+		virtual void Draw()
+		{
+			DrawCamera();
 
 			// Prepare for rendering
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -241,6 +248,8 @@ namespace NQVTK
 				painter->SetUniform1i("layer", layer);
 				painter->SetUniform1f("farPlane", camera->farZ);
 				painter->SetUniform1f("nearPlane", camera->nearZ);
+				painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
+				painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
 
 				style->BindPainterTextures(painter, fbo1, fbo2);
 
@@ -386,7 +395,9 @@ namespace NQVTK
 			if (camera) 
 			{
 				bool ok = Initialize();
-				Resize(width, height);
+				// TODO: subclasses might need this call
+				// problems occur if a subclass modifies the size, so we call this
+				Renderer::Resize(viewportWidth, viewportHeight);
 				return ok;
 			}
 			return true;
@@ -395,8 +406,12 @@ namespace NQVTK
 		int maxLayers;
 
 	protected:
-		int width;
-		int height;
+		// Area to draw in
+		int viewportX;
+		int viewportY;
+		int viewportWidth;
+		int viewportHeight;
+
 		Camera *camera;
 		std::vector<Renderable*> renderables;
 

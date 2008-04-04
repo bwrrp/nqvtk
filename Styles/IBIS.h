@@ -181,6 +181,8 @@ namespace NQVTK
 					"uniform int layer;"
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
+					"uniform float viewportX;"
+					"uniform float viewportY;"
 					// Parameters
 					"uniform bool useFatContours;"
 					"uniform float contourDepthEpsilon;" // = 0.001
@@ -235,6 +237,8 @@ namespace NQVTK
 					// Main shader function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
+					"  r0.x -= viewportX;"
+					"  r0.y -= viewportY;"
 					"  vec3 normal = texture2DRect(normals, r0.xy).rgb;"
 					"  normal = (2.0 * normal) - vec3(1.0);"
 					"  vec4 color = texture2DRect(colors, r0.xy);"

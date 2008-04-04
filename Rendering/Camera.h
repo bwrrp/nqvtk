@@ -44,7 +44,11 @@ namespace NQVTK
 			double radius = 0.7 * std::max(size[0], std::max(size[1], size[2]));
 
 			focus = obj->GetCenter();
-			position = focus - Vector3(0.0, 0.0, 3.0 * radius * zoom);
+			// Scale the position to the correct zoom level
+			Vector3 focusToPos = (position - focus).normalized();
+			focusToPos *= 3.0 * radius * zoom;
+			position = focus + focusToPos;
+			//position = focus - Vector3(0.0, 0.0, 3.0 * radius * zoom);
 			nearZ = std::max(0.01, 3.0 * radius * zoom - radius);
 			farZ = 3.0 * radius * zoom + radius;
 		}

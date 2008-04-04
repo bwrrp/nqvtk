@@ -6,6 +6,7 @@
 #include "ui_NQVTKWindow.h"
 
 #include "Styles/DistanceFields.h"
+#include "Rendering/CrossEyedStereoRenderer.h"
 
 class NQVTKWindow : public QMainWindow
 {
@@ -86,5 +87,14 @@ private slots:
 	{
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->maxLayers = val;
+	}
+
+	void on_eyeSpacing_valueChanged(int val)
+	{
+		// Do we have a stereo renderer?
+		NQVTK::CrossEyedStereoRenderer *stereoRenderer = 
+			dynamic_cast<NQVTK::CrossEyedStereoRenderer*>(ui.nqvtkwidget->GetRenderer());
+		if (stereoRenderer) stereoRenderer->eyeSpacing = 
+			static_cast<double>(val) / 1000.0;
 	}
 };

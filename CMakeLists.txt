@@ -107,6 +107,7 @@ SET( ${ProjectName}_Rendering_Classes
     ImageDataTexture3D
     Camera
     Renderer
+    CrossEyedStereoRenderer
 ) 
 
 SET( ${ProjectName}_Styles_Classes
