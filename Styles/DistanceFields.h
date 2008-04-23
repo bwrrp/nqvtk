@@ -119,23 +119,25 @@ namespace NQVTK
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
+#ifndef NQVTK_USE_EXT_GPU_SHADER4
 					// Rounds a float to the nearest integer
 					"float round(float x) {"
 					"  return floor(x + 0.5);"
 					"}"
+#endif
 					// Encodes a bit set in a float, range [0..1]
-					"float setBit(float byte, int bit, bool on) {"
+					"\nfloat setBit(float byte, int bit, bool on) {"
 #ifdef NQVTK_USE_EXT_GPU_SHADER4
-					"  float N = 2.0;"
-					"  float max = pow(2.0, N) - 1.0;"
-					"  int pattern = int(round(byte * max));"
-					"  int mask = 1 << bit;"
-					"  if (on) {"
-					"    pattern = pattern | mask;"
-					"  } else {"
-					"    pattern = pattern & !mask;"
-					"  }"
-					"  return float(pattern) / max;"
+					"\n  float N = 2.0;"
+					"\n  float max = pow(2.0, N) - 1.0;"
+					"\n  int pattern = int(round(byte * max));"
+					"\n  int mask = 1 << bit;"
+					"\n  if (on) {"
+					"\n    pattern = pattern | mask;"
+					"\n  } else {"
+					"\n    pattern = pattern & ~mask;"
+					"\n  }"
+					"\n  return float(pattern) / max;"
 #else
 					"  float f = 2.0;"
 					"  float N = 2.0;"
@@ -151,7 +153,7 @@ namespace NQVTK
 #endif
 					"}"
 					// Gets a single bit from a float-encoded bit set
-					"bool getBit(float byte, int bit) {"
+					"\nbool getBit(float byte, int bit) {"
 #ifdef NQVTK_USE_EXT_GPU_SHADER4
 					"  float N = 2.0;"
 					"  float max = pow(2.0, N) - 1.0;"
@@ -308,10 +310,12 @@ namespace NQVTK
 					"uniform float contourDepthEpsilon;" // = 0.001
 					"uniform bool useFog;"
 					"uniform float depthCueRange;" // = 10.0
+#ifndef NQVTK_USE_EXT_GPU_SHADER4
 					// Rounds a float to the nearest integer
 					"float round(float x) {"
 					"  return floor(x + 0.5);"
 					"}"
+#endif
 					// Unpacks a float from two 8 bit channels
 					"float decodeDepth(vec2 coded) {"
 					"  vec2 factors = vec2(1.0, 0.00390625);"
@@ -413,7 +417,18 @@ namespace NQVTK
 					"  }"
 					// Apply fogging
 					"  if (useFog && CSGFog(mask1)) {"
+#ifdef NQVTK_USE_EXT_GPU_SHADER4
+					"    vec3 fogColor = vec3(0.0);"
+					"    if (getBit(mask1, 0) && getBit(mask1, 1)) {"
+					"      fogColor = vec3(1.0, 1.0, 1.0);"
+					"    } else if (getBit(mask1, 0)) {"
+					"      fogColor = vec3(1.0, 1.0, 0.0);"
+					"    } else {"
+					"      fogColor = vec3(0.2, 0.0, 1.0);"
+					"    }"
+#else
 					"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
+#endif
 					"    float depthRange = (farPlane - nearPlane);"
 					"    float front = decodeDepth(info1.zw) * depthRange;"
 					"    float back = decodeDepth(info0.zw) * depthRange;"
