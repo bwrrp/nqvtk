@@ -108,7 +108,8 @@ SET( ${ProjectName}_Rendering_Classes
     Camera
     Renderer
     CrossEyedStereoRenderer
-) 
+    ShadowMappingRenderer
+)
 
 SET( ${ProjectName}_Styles_Classes
     RenderStyle
