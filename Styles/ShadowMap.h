@@ -54,10 +54,14 @@ namespace NQVTK
 					"uniform float nearPlane;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
+					"varying float depthInCamera;"
 					// Shader main function
 					"void main() {"
 					"  normal = normalize(gl_NormalMatrix * gl_Normal);"
 					"  color = gl_Color;"
+					"  vec4 pos = gl_ModelViewMatrix * gl_Vertex;"
+					"  float depthRange = (farPlane - nearPlane);"
+					"  depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;"
 					"  gl_Position = ftransform();"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
@@ -72,6 +76,7 @@ namespace NQVTK
 					"uniform int objectId;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
+					"varying float depthInCamera;"
 					// Rounds a float to the nearest integer
 					"\n#ifndef GL_EXT_gpu_shader4\n"
 					"float round(float x) {"
@@ -129,6 +134,14 @@ namespace NQVTK
 					"  return (fract(mask) > 0.25);"
 					"\n#endif\n"
 					"}"
+					// Packs a float in two 8 bit channels
+					"vec2 encodeDepth(float depth) {"
+					"  depth = clamp(depth, 0.0, 1.0);"
+					"  vec2 factors = vec2(1.0, 256.0);"
+					"  vec2 result = fract(depth * factors);"
+					"  result.x -= result.y / factors.y;"
+					"  return result;"
+					"}"
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
@@ -157,8 +170,10 @@ namespace NQVTK
 					"  if (objectId >= 0) {"
 					"    inOutMask = setBit(inOutMask, objectId, gl_FrontFacing);"
 					"  }"
+					// Encode depth
+					"  vec2 depthVec = encodeDepth(depthInCamera);"
 					// Store data
-					"  gl_FragData[0] = vec4(identity, inOutMask, 0.0, 0.0);"
+					"  gl_FragData[0] = vec4(identity, inOutMask, depthVec);"
 					"}");
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
@@ -195,6 +210,11 @@ namespace NQVTK
 					"  return floor(x + 0.5);"
 					"}"
 					"\n#endif\n"
+					// Unpacks a float from two 8 bit channels
+					"float decodeDepth(vec2 coded) {"
+					"  vec2 factors = vec2(1.0, 0.00390625);"
+					"  return dot(coded, factors);"
+					"}"
 					// CSG formula
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
@@ -234,8 +254,11 @@ namespace NQVTK
 					"  float mask0 = info0.y;"
 					"  float mask1 = info1.y;"
 					"  if (CSG(mask0) == CSG(mask1)) {"
-					// TODO: apply texturing here
-					"    discard;"
+					// this is a transparent surface, which could be textured
+					// TODO: store depths? accumulate opacity? 
+					"  } else {"
+					// this is a solid surface
+					// TODO: store depth of the first one encountered
 					"  }"
 					"  gl_FragColor = vec4(1.0);"
 					"}");
