@@ -520,7 +520,6 @@ namespace NQVTK
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
-				//	GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
 				scribe->UseTexture("depthBuffer", 0);
 
 				// Set program parameters
