@@ -17,13 +17,15 @@
 #include "GLBlaat/GLOcclusionQuery.h"
 #include "GLBlaat/GLUtility.h"
 
+#include <cassert>
+
 namespace NQVTK 
 {
 	class Renderer
 	{
 	public:
 		Renderer() : camera(0), style(0), 
-			fbo1(0), fbo2(0), tm(0), 
+			fbo1(0), fbo2(0), fboTarget(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
 			viewportX = 0;
@@ -39,7 +41,7 @@ namespace NQVTK
 
 			if (fbo1) delete fbo1;
 			if (fbo2) delete fbo2;
-			if (tm) delete tm;
+			//if (fboTarget) delete fboTarget;
 			if (scribe) delete scribe;
 			if (painter) delete painter;
 			if (query) delete query;
@@ -63,13 +65,8 @@ namespace NQVTK
 			if (fbo2) delete fbo2;
 			fbo2 = 0;
 
-			//if (tm) delete tm;
-			//tm = GLTextureManager::New();
-			//if (!tm) 
-			//{
-			//	qDebug("Failed to create texture manager!");
-			//	return false;
-			//}
+			// This will be managed by someone else
+			fboTarget = 0;
 
 			// Set up shader programs
 			if (scribe) delete scribe;
@@ -120,6 +117,10 @@ namespace NQVTK
 			else
 			{
 				if (!fbo2->Resize(w, h)) qDebug("WARNING! fbo2 resize failed!");
+			}
+			if (fboTarget)
+			{
+				if (!fboTarget->Resize(w, h)) qDebug("WARNING! fboTarget resize failed!");
 			}
 		}
 
@@ -235,10 +236,15 @@ namespace NQVTK
 
 				style->UnbindScribeTextures();
 
-				// Blend results to screen
+				// Blend results to screen or to target FBO
 				fbo1->Unbind();
-				
+				if (fboTarget)
+				{
+					fboTarget->Bind();
+				}
+
 				glDisable(GL_DEPTH_TEST);
+				// TODO: might want to make blend function customizable (in styles?)
 				glBlendFuncSeparate(
 					GL_DST_ALPHA, GL_ONE, 
 					GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
@@ -272,9 +278,16 @@ namespace NQVTK
 				++layer;
 				done = (layer >= maxLayers || numfragments == 0);
 				//if (done) qDebug("Layers: %d (%d fragments left)", layer, numfragments);
-				
+
 				SwapFramebuffers();
-				if (!done) fbo1->Bind();
+				if (!done) 
+				{
+					if (fboTarget)
+					{
+						fboTarget->Unbind();
+					}
+					fbo1->Bind();
+				}
 			}
 
 			// Blend in the background last
@@ -313,6 +326,11 @@ namespace NQVTK
 				0.0, 1.0, -1.0, 0.0);
 			glEnable(GL_DEPTH_TEST);
 			//*/
+
+			if (fboTarget)
+			{
+				fboTarget->Unbind();
+			}
 		}
 
 		virtual void DrawRenderables()
@@ -403,6 +421,16 @@ namespace NQVTK
 			return true;
 		}
 
+		GLFramebuffer *SetTarget(GLFramebuffer *target)
+		{
+			GLFramebuffer *oldTarget = this->fboTarget;
+			this->fboTarget = target;
+			// Make sure it's the right size
+			bool ok = target->Resize(viewportWidth, viewportHeight);
+			assert(ok);
+			return oldTarget;
+		}
+
 		int maxLayers;
 
 	protected:
@@ -419,7 +447,7 @@ namespace NQVTK
 
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
-		GLTextureManager *tm;
+		GLFramebuffer *fboTarget;
 		GLProgram *scribe;
 		GLProgram *painter;
 		GLOcclusionQuery *query;
