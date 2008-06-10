@@ -5,7 +5,10 @@
 
 #include "Math/Vector3.h"
 
+#include "Rendering/Renderer.h"
 #include "Rendering/CrossEyedStereoRenderer.h"
+#include "Rendering/ShadowMappingRenderer.h"
+
 #include "Rendering/Camera.h"
 #include "Rendering/PolyData.h"
 #include "Rendering/ImageDataTexture3D.h"
@@ -47,12 +50,14 @@ void NQVTKWidget::initializeGL()
 
 	qDebug("Initializing renderer...");
 	//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
-	if (!renderer) renderer = new NQVTK::Renderer();
+	if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
+	//if (!renderer) renderer = new NQVTK::Renderer();
 	depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 	ibisStyle = new NQVTK::Styles::IBIS();
 	distfieldStyle = new NQVTK::Styles::DistanceFields();
 
 	renderer->SetStyle(distfieldStyle);
+	//renderer->SetStyle(new NQVTK::Styles::ShadowMap());
 	initialized = renderer->Initialize();
 
 	if (!initialized)

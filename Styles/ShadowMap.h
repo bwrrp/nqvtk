@@ -18,8 +18,7 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			ShadowMap() : depthBuffer(0), infoBuffer(0), 
-				colors(0), normals(0), infoCurrent(0), infoPrevious(0) 
+			ShadowMap() : depthBuffer(0), infoBuffer(0), infoCurrent(0), infoPrevious(0) 
 			{
 			}
 			
@@ -41,6 +40,17 @@ namespace NQVTK
 				}
 				glDrawBuffers(nBufs, bufs);
 				if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
+				fbo->Unbind();
+
+				return fbo;
+			}
+
+			virtual GLFramebuffer *CreateShadowBufferFBO(int w, int h)
+			{
+				GLFramebuffer *fbo = GLFramebuffer::New(w, h);
+				// We only need a color texture to store the shadow map
+				fbo->CreateColorTextureRectangle();
+				if (!fbo->IsOk()) qDebug("WARNING! shadow buffer fbo not ok!");
 				fbo->Unbind();
 
 				return fbo;
@@ -256,11 +266,11 @@ namespace NQVTK
 					"  if (CSG(mask0) == CSG(mask1)) {"
 					// this is a transparent surface, which could be textured
 					// TODO: store depths? accumulate opacity? 
+					"    gl_FragColor = vec4(0.0);"
 					"  } else {"
-					// this is a solid surface
-					// TODO: store depth of the first one encountered
+					// this is a solid surface, store the depth
+					"    gl_FragColor = vec4(info0.zw, 0.0, 1.0);"
 					"  }"
-					"  gl_FragColor = vec4(1.0);"
 					"}");
 				if (res) res = painter->Link();
 				qDebug(painter->GetInfoLogs().c_str());
@@ -350,8 +360,8 @@ namespace NQVTK
 
 		private:
 			// Not implemented
-			IBIS(const IBIS&);
-			void operator=(const IBIS&);
+			ShadowMap(const ShadowMap&);
+			void operator=(const ShadowMap&);
 		};
 	}
 }
