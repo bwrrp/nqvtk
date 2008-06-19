@@ -18,8 +18,7 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			IBIS() : depthBuffer(0), infoBuffer(0), 
-				colors(0), normals(0), infoCurrent(0), infoPrevious(0) 
+			IBIS()
 			{ 
 				// Set default parameters
 				useFatContours = false;
@@ -358,96 +357,64 @@ namespace NQVTK
 				return painter;
 			}
 
-			virtual void BindScribeTextures(GLProgram *scribe, 
-				GLFramebuffer *previous) 
+			virtual void RegisterScribeTextures(GLFramebuffer *previous) 
 			{
-				assert(!depthBuffer && !infoBuffer);
-
-				// Get the previous layer's info buffer
-				infoBuffer = previous->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
-				assert(infoBuffer);
-				glActiveTexture(GL_TEXTURE1);
-				infoBuffer->BindToCurrent();
-				scribe->UseTexture("infoBuffer", 1);
-
 				// Get the previous layer's depth buffer
-				depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
+				GLTexture *depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
 				assert(depthBuffer);
-				glActiveTexture(GL_TEXTURE0);
-				depthBuffer->BindToCurrent();
+				// TODO: find out if parameters should be stored in the GLTexture
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
-				scribe->UseTexture("depthBuffer", 0);
+				tm->AddTexture("depthBuffer", depthBuffer, false);
+
+				// Get the previous layer's info buffer
+				GLTexture *infoBuffer = previous->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
+				assert(infoBuffer);
+				tm->AddTexture("infoBuffer", infoBuffer, false);
 			}
 
-			virtual void UnbindScribeTextures() 
+			virtual void UnregisterScribeTextures() 
 			{
-				assert(depthBuffer && infoBuffer);
-
-				glActiveTexture(GL_TEXTURE1);
-				infoBuffer->UnbindCurrent();
-				infoBuffer = 0;
-				glActiveTexture(GL_TEXTURE0);
-				glTexParameteri(depthBuffer->GetTextureTarget(), 
-						GL_TEXTURE_COMPARE_MODE, GL_NONE);
-				depthBuffer->UnbindCurrent();
-				depthBuffer = 0;
+				//tm->RemoveTexture("depthBuffer");
+				//tm->RemoveTexture("infoBuffer");
 			}
 
-			virtual void BindPainterTextures(GLProgram *painter, 
-				GLFramebuffer *current, GLFramebuffer *previous) 
+			virtual void RegisterPainterTextures(GLFramebuffer *current, GLFramebuffer *previous) 
 			{
-				assert(!colors && !normals && !infoCurrent && !infoPrevious);
-
 				// Previous layer info buffer
-				infoPrevious = previous->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
+				GLTexture *infoPrevious = previous->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
 				assert(infoPrevious);
-				glActiveTexture(GL_TEXTURE3);
-				infoPrevious->BindToCurrent();
-				painter->UseTexture("infoPrevious", 3);
+				tm->AddTexture("infoPrevious", infoPrevious, false);
 				// Current layer info buffer
-				infoCurrent = current->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
+				GLTexture *infoCurrent = current->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
 				assert(infoCurrent);
-				glActiveTexture(GL_TEXTURE2);
-				infoCurrent->BindToCurrent();
-				painter->UseTexture("infoCurrent", 2);
-				// Current layer normals
-				normals = current->GetTexture2D(GL_COLOR_ATTACHMENT1_EXT);
-				assert(normals);
-				glActiveTexture(GL_TEXTURE1);
-				normals->BindToCurrent();
-				painter->UseTexture("normals", 1);
+				tm->AddTexture("infoCurrent", infoCurrent, false);
 				// Current layer colors
-				colors = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				GLTexture *colors = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 				assert(colors);
-				glActiveTexture(GL_TEXTURE0);
-				colors->BindToCurrent();
-				painter->UseTexture("colors", 0);
+				tm->AddTexture("colors", colors, false);
+				// Current layer normals
+				GLTexture *normals = current->GetTexture2D(GL_COLOR_ATTACHMENT1_EXT);
+				assert(normals);
+				tm->AddTexture("normals", normals, false);
+			}
 
+			virtual void UnregisterPainterTextures() 
+			{
+				//tm->RemoveTexture("infoPrevious");
+				//tm->RemoveTexture("infoCurrent");
+				//tm->RemoveTexture("colors");
+				//tm->RemoveTexture("normals");
+			}
+
+			virtual void UpdatePainterParameters(GLProgram *painter)
+			{
 				// Set program parameters
 				painter->SetUniform1i("useFatContours", useFatContours);
 				painter->SetUniform1f("contourDepthEpsilon", contourDepthEpsilon);
 				painter->SetUniform1i("useFog", useFog);
 				painter->SetUniform1f("depthCueRange", depthCueRange);
-			}
-
-			virtual void UnbindPainterTextures() 
-			{
-				assert(colors && normals && infoCurrent && infoPrevious);
-
-				glActiveTexture(GL_TEXTURE3);
-				infoPrevious->UnbindCurrent();
-				infoPrevious = 0;
-				glActiveTexture(GL_TEXTURE2);
-				infoCurrent->UnbindCurrent();
-				infoCurrent = 0;
-				glActiveTexture(GL_TEXTURE1);
-				normals->UnbindCurrent();
-				normals = 0;
-				glActiveTexture(GL_TEXTURE0);
-				colors->UnbindCurrent();
-				colors = 0;
 			}
 
 			// Program parameters
@@ -456,16 +423,6 @@ namespace NQVTK
 			float contourDepthEpsilon; // = 0.001
 			bool useFog;
 			float depthCueRange; // = 10.0
-
-		protected:
-			// Scribe textures
-			GLTexture *depthBuffer;
-			GLTexture *infoBuffer;
-			// Painter textures
-			GLTexture *colors;
-			GLTexture *normals;
-			GLTexture *infoCurrent;
-			GLTexture *infoPrevious;
 
 		private:
 			// Not implemented

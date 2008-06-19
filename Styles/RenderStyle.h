@@ -2,6 +2,7 @@
 
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLTextureManager.h"
 
 namespace NQVTK
 {
@@ -10,8 +11,16 @@ namespace NQVTK
 	class RenderStyle
 	{
 	public:
-		RenderStyle() { }
+		RenderStyle() 
+		{ 
+			tm = 0;
+		}
 		virtual ~RenderStyle() { }
+
+		void Initialize(GLTextureManager *tm)
+		{
+			this->tm = tm;
+		}
 
 		virtual GLFramebuffer *CreateFBO(int w, int h) = 0;
 		virtual GLProgram *CreateScribe() = 0;
@@ -23,13 +32,17 @@ namespace NQVTK
 			scribe->SetUniform1i("objectId", objectId);
 		}
 
-		virtual void BindScribeTextures(GLProgram *scribe, 
-			GLFramebuffer *previous) { }
-		virtual void UnbindScribeTextures() { }
+		virtual void RegisterScribeTextures(GLFramebuffer *previous) { }
+		virtual void UnregisterScribeTextures() { }
+		virtual void UpdateScribeParameters(GLProgram *scribe) { }
 
-		virtual void BindPainterTextures(GLProgram *painter, 
-			GLFramebuffer *current, GLFramebuffer *previous) { }
-		virtual void UnbindPainterTextures() { }
+		virtual void RegisterPainterTextures(GLFramebuffer *current, 
+			GLFramebuffer *previous) { }
+		virtual void UnregisterPainterTextures() { }
+		virtual void UpdatePainterParameters(GLProgram *painter) { }
+
+	protected:
+		GLTextureManager *tm;
 
 	private:
 		// Not implemented

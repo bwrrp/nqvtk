@@ -24,7 +24,7 @@ namespace NQVTK
 	class Renderer
 	{
 	public:
-		Renderer() : camera(0), style(0), 
+		Renderer() : camera(0), tm(0), style(0), 
 			fbo1(0), fbo2(0), fboTarget(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
@@ -37,6 +37,7 @@ namespace NQVTK
 		{ 
 			DeleteAllRenderables();
 			if (camera) delete camera;
+			if (tm) delete tm;
 			if (style) delete style;
 
 			if (fbo1) delete fbo1;
@@ -54,11 +55,23 @@ namespace NQVTK
 
 			if (!camera) camera = new Camera();
 
+			if (!tm)
+			{
+				tm = GLTextureManager::New();
+				if (!tm)
+				{
+					qDebug("Failed to create texture manager! Check hardware requirements...");
+					return false;
+				}
+			}
+			tm->BeginNewPass();
+
 			if (!style) 
 			{
 				qDebug("No style set! Can not initialize renderer!");
 				return false;
 			}
+			style->Initialize(tm);
 
 			if (fbo1) delete fbo1;
 			fbo1 = 0;
@@ -207,34 +220,36 @@ namespace NQVTK
 			fbo1->Bind();
 
 			// TODO: we could initialize info buffers here (and swap)
+			// this way shaders can skip the check for layer 0
 
 			// Depth peeling
 			bool done = false;
 			int layer = 0;
 			while (!done)
 			{
-				GLTexture *depthBuffer = 0;
-				GLTexture *infoBuffer = 0;
-
 				// Start Scribe program
 				scribe->Start();
 				scribe->SetUniform1i("layer", layer);
 				scribe->SetUniform1f("farPlane", camera->farZ);
 				scribe->SetUniform1f("nearPlane", camera->nearZ);
+				style->UpdateScribeParameters(scribe);
 
-				style->BindScribeTextures(scribe, fbo2);
+				// Set up textures used by the scribe
+				style->RegisterScribeTextures(fbo2);
+				tm->SetupProgram(scribe);
+				tm->Bind();
 				
 				Clear();
 
 				query->Start();
-
 				DrawRenderables();
-
 				query->Stop();
 
 				scribe->Stop();
 
-				style->UnbindScribeTextures();
+				// Clean up references in the texture manager
+				tm->Unbind();
+				style->UnregisterScribeTextures();
 
 				// Blend results to screen or to target FBO
 				fbo1->Unbind();
@@ -250,15 +265,21 @@ namespace NQVTK
 					GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 				glEnable(GL_BLEND);
 
+				// Start painter program
 				painter->Start();
 				painter->SetUniform1i("layer", layer);
 				painter->SetUniform1f("farPlane", camera->farZ);
 				painter->SetUniform1f("nearPlane", camera->nearZ);
 				painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
 				painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
+				style->UpdatePainterParameters(painter);
 
-				style->BindPainterTextures(painter, fbo1, fbo2);
+				// Set up textures used by the painter
+				style->RegisterPainterTextures(fbo1, fbo2);
+				tm->SetupProgram(painter);
+				tm->Bind();
 
+				// Draw a full screen quad for the painter pass
 				glColor3d(1.0, 1.0, 1.0);
 				glBegin(GL_QUADS);
 				glVertex3d(-1.0, -1.0, 0.0);
@@ -269,7 +290,9 @@ namespace NQVTK
 
 				painter->Stop();
 
-				style->UnbindPainterTextures();
+				// Clean up references in the texture manager
+				tm->Unbind();
+				style->UnregisterPainterTextures();
 
 				glDisable(GL_BLEND);
 				glEnable(GL_DEPTH_TEST);
@@ -445,6 +468,8 @@ namespace NQVTK
 
 		Camera *camera;
 		std::vector<Renderable*> renderables;
+
+		GLTextureManager *tm;
 
 		RenderStyle *style;
 

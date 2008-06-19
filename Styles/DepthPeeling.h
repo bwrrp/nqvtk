@@ -19,7 +19,7 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			DepthPeeling() : depthBuffer(0), colors(0) { }
+			DepthPeeling() { }
 			virtual ~DepthPeeling() { }
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
@@ -106,50 +106,32 @@ namespace NQVTK
 				return painter;
 			}
 
-			virtual void BindScribeTextures(GLProgram *scribe, 
-				GLFramebuffer *previous) 
+			virtual void RegisterScribeTextures(GLFramebuffer *previous) 
 			{
-				assert(!depthBuffer);
-				depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
-				glActiveTexture(GL_TEXTURE0);
-				depthBuffer->BindToCurrent();
+				GLTexture *depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
+				assert(depthBuffer);
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
-				scribe->UseTexture("depthBuffer", 0);
+				tm->AddTexture("depthBuffer", depthBuffer, false);
 			}
 
-			virtual void UnbindScribeTextures() 
+			virtual void UnregisterScribeTextures() 
 			{
-				assert(depthBuffer);
-				glActiveTexture(GL_TEXTURE0);
-				depthBuffer->UnbindCurrent();
-				depthBuffer = 0;
+				//tm->RemoveTexture("depthBuffer");
 			}
 
-			virtual void BindPainterTextures(GLProgram *painter, 
-				GLFramebuffer *current, GLFramebuffer *previous) 
+			virtual void RegisterPainterTextures(GLFramebuffer *current, GLFramebuffer *previous) 
 			{
-				assert(!colors);
-				colors = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
-				glActiveTexture(GL_TEXTURE0);
-				colors->BindToCurrent();
-				painter->UseTexture("colors", 0);
-			}
-
-			virtual void UnbindPainterTextures() 
-			{
+				GLTexture *colors = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 				assert(colors);
-				glActiveTexture(GL_TEXTURE0);
-				colors->UnbindCurrent();
-				colors = 0;
+				tm->AddTexture("colors", colors, false);
 			}
 
-		protected:
-			// Scribe textures
-			GLTexture *depthBuffer;
-			// Painter textures
-			GLTexture *colors;
+			virtual void UnregisterPainterTextures() 
+			{
+				//tm->RemoveTexture("colors");
+			}
 
 		private:
 			// Not implemented
