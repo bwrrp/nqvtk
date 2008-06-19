@@ -15,6 +15,7 @@ namespace NQVTK
 			otherStyle = new NQVTK::Styles::ShadowMap();
 			otherFbo1 = otherFbo2 = 0;
 			shadowBuffer = 0;
+			// Initially, our superclass is set up for a normal pass
 			shadowPass = false;
 		}
 
@@ -42,10 +43,13 @@ namespace NQVTK
 			if (otherFbo2) delete otherFbo2;
 			otherFbo2 = 0;
 
-			// The RenderStyle may have changed. If this was a shadow pass, we lost our style.
+			// The RenderStyle may have changed. If the next pass is a shadow pass, we lost our style.
 			if (shadowPass)
 			{
-				otherStyle = new NQVTK::Styles::ShadowMap();
+				// Get the new style
+				otherStyle = style;
+				// Recreate the shadow style
+				style = new NQVTK::Styles::ShadowMap();
 			}
 			else
 			{
@@ -133,6 +137,7 @@ namespace NQVTK
 				// Get the shadow map
 				GLTexture *shadowMap = shadowBuffer->GetTexture2D(
 					GL_COLOR_ATTACHMENT0_EXT);
+				tm->AddTexture("shadowMap", shadowMap, false);
 			}
 
 			// Draw the pass

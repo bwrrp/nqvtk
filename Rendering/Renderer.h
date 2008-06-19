@@ -438,7 +438,8 @@ namespace NQVTK
 				bool ok = Initialize();
 				// TODO: subclasses might need this call
 				// problems occur if a subclass modifies the size, so we call this
-				Renderer::Resize(viewportWidth, viewportHeight);
+				//Renderer::Resize(viewportWidth, viewportHeight);
+				Resize(viewportWidth, viewportHeight);
 				return ok;
 			}
 			return true;
