@@ -46,7 +46,7 @@ namespace NQVTK
 			{
 				GLFramebuffer *fbo = GLFramebuffer::New(w, h);
 				// We only need a color texture to store the shadow map
-				fbo->CreateColorTextureRectangle();
+				fbo->CreateColorTexture();
 				if (!fbo->IsOk()) qDebug("WARNING! shadow buffer fbo not ok!");
 				fbo->Unbind();
 

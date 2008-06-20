@@ -80,6 +80,8 @@ namespace NQVTK
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
+					"varying vec4 shadowCoord;"
+					"varying float depthInShadow;"
 					// Shader main function
 					"void main() {"
 					// HACK: find a better way to pass these transforms
@@ -91,6 +93,9 @@ namespace NQVTK
 					"  depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;"
 					"  gl_Position = ftransform();"
 					"  gl_TexCoord[0] = gl_MultiTexCoord0;"
+					"  shadowCoord = gl_TextureMatrix[2] * gl_ModelViewMatrix * gl_Vertex;"
+					// TODO: this is WRONG
+					"  depthInShadow = (-shadowCoord.z / shadowCoord.w - nearPlane) / depthRange;"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
 					"#extension GL_ARB_texture_rectangle : enable\n"
@@ -98,6 +103,11 @@ namespace NQVTK
 					"#ifdef GL_EXT_gpu_shader4\n"
 					"#extension GL_EXT_gpu_shader4 : enable\n"
 					"#endif\n"
+					//"\n#ifdef NQVTK_USE_SHADOWMAP\n"
+					"uniform sampler2D shadowMap;"
+					"varying vec4 shadowCoord;"
+					"varying float depthInShadow;"
+					//"\n#endif\n"
 					"uniform sampler2DRectShadow depthBuffer;"
 					"uniform sampler2DRect infoBuffer;"
 					"uniform sampler3D distanceField;"
@@ -183,6 +193,11 @@ namespace NQVTK
 					"  result.x -= result.y / factors.y;"
 					"  return result;"
 					"}"
+					// Unpacks a float from two 8 bit channels
+					"float decodeDepth(vec2 coded) {"
+					"  vec2 factors = vec2(1.0, 0.00390625);"
+					"  return dot(coded, factors);"
+					"}"
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
@@ -263,6 +278,12 @@ namespace NQVTK
 					"    }"
 					"  }"
 					//*/
+					// Shadow mapping
+					"  vec4 shadow = texture2DProj(shadowMap, shadowCoord);"
+					"  if (shadow.a > 0.0 && depthInShadow > decodeDepth(shadow.xy)) {"
+					"    col *= vec4(0.5, 0.5, 0.5, 1.0);"
+					"  }"
+					"  col = vec4(encodeDepth(depthInShadow), 0.0, col.a);"
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
 					"  if (objectId >= 0) {"
