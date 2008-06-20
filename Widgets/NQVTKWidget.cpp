@@ -49,9 +49,11 @@ void NQVTKWidget::initializeGL()
 	}
 
 	qDebug("Initializing renderer...");
+	//if (!renderer) renderer = new NQVTK::Renderer();
 	//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
 	if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
-	//if (!renderer) renderer = new NQVTK::Renderer();
+
+	// Create the styles
 	depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 	ibisStyle = new NQVTK::Styles::IBIS();
 	distfieldStyle = new NQVTK::Styles::DistanceFields();

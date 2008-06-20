@@ -18,10 +18,7 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			ShadowMap() : depthBuffer(0), infoBuffer(0), infoCurrent(0), infoPrevious(0) 
-			{
-			}
-			
+			ShadowMap() { }
 			virtual ~ShadowMap() { }
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
@@ -260,6 +257,8 @@ namespace NQVTK
 					"  vec4 info0 = texture2DRect(infoCurrent, r0.xy);"
 					"  vec4 info1 = texture2DRect(infoPrevious, r0.xy);"
 					"  if (layer == 0) info1 = vec4(0.0);"
+					// Discard fragments not belonging to our objects
+					"  if (info0.r == 0.0) discard;"
 					// Apply CSG
 					"  float mask0 = info0.y;"
 					"  float mask1 = info1.y;"
@@ -282,81 +281,46 @@ namespace NQVTK
 				return painter;
 			}
 
-			virtual void BindScribeTextures(GLProgram *scribe, 
-				GLFramebuffer *previous) 
+			virtual void RegisterScribeTextures(GLFramebuffer *previous) 
 			{
-				assert(!depthBuffer && !infoBuffer);
-
 				// Get the previous layer's info buffer
-				infoBuffer = previous->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				GLTexture *infoBuffer = previous->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 				assert(infoBuffer);
-				glActiveTexture(GL_TEXTURE1);
-				infoBuffer->BindToCurrent();
-				scribe->UseTexture("infoBuffer", 1);
+				tm->AddTexture("infoBuffer", infoBuffer, false);
 
 				// Get the previous layer's depth buffer
-				depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
+				GLTexture *depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
 				assert(depthBuffer);
-				glActiveTexture(GL_TEXTURE0);
-				depthBuffer->BindToCurrent();
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
-				scribe->UseTexture("depthBuffer", 0);
-			}
-
-			virtual void UnbindScribeTextures() 
-			{
-				assert(depthBuffer && infoBuffer);
-
-				glActiveTexture(GL_TEXTURE1);
-				infoBuffer->UnbindCurrent();
-				infoBuffer = 0;
-				glActiveTexture(GL_TEXTURE0);
-				glTexParameteri(depthBuffer->GetTextureTarget(), 
-						GL_TEXTURE_COMPARE_MODE, GL_NONE);
 				depthBuffer->UnbindCurrent();
-				depthBuffer = 0;
+				tm->AddTexture("depthBuffer", depthBuffer, false);
 			}
 
-			virtual void BindPainterTextures(GLProgram *painter, 
-				GLFramebuffer *current, GLFramebuffer *previous) 
+			virtual void UnregisterScribeTextures() 
 			{
-				assert(!infoCurrent && !infoPrevious);
+				//tm->RemoveTexture("infoBuffer");
+				//tm->RemoveTexture("depthBuffer");
+			}
 
+			virtual void RegisterPainterTextures(GLFramebuffer *current, GLFramebuffer *previous) 
+			{
 				// Previous layer info buffer
-				infoPrevious = previous->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				GLTexture *infoPrevious = previous->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 				assert(infoPrevious);
-				glActiveTexture(GL_TEXTURE1);
-				infoPrevious->BindToCurrent();
-				painter->UseTexture("infoPrevious", 1);
+				tm->AddTexture("infoPrevious", infoPrevious, false);
 				// Current layer info buffer
-				infoCurrent = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				GLTexture *infoCurrent = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 				assert(infoCurrent);
-				glActiveTexture(GL_TEXTURE0);
-				infoCurrent->BindToCurrent();
-				painter->UseTexture("infoCurrent", 0);
+				tm->AddTexture("infoCurrent", infoCurrent, false);
 			}
 
-			virtual void UnbindPainterTextures() 
+			virtual void UnregisterPainterTextures() 
 			{
-				assert(infoCurrent && infoPrevious);
-
-				glActiveTexture(GL_TEXTURE1);
-				infoPrevious->UnbindCurrent();
-				infoPrevious = 0;
-				glActiveTexture(GL_TEXTURE0);
-				infoCurrent->UnbindCurrent();
-				infoCurrent = 0;
+				//tm->RemoveTexture("infoPrevious");
+				//tm->RemoveTexture("infoCurrent");
 			}
-
-		protected:
-			// Scribe textures
-			GLTexture *depthBuffer;
-			GLTexture *infoBuffer;
-			// Painter textures
-			GLTexture *infoCurrent;
-			GLTexture *infoPrevious;
 
 		private:
 			// Not implemented

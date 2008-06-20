@@ -212,11 +212,19 @@ namespace NQVTK
 			DrawCamera();
 
 			// Prepare for rendering
+			if (fboTarget)
+			{
+				fboTarget->Bind();
+			}
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			Clear();
 			glClearColor(0.0, 0.0, 0.0, 0.0);
 			glDisable(GL_CULL_FACE);
 			glEnable(GL_COLOR_MATERIAL);
+			if (fboTarget)
+			{
+				fboTarget->Unbind();
+			}
 			fbo1->Bind();
 
 			// TODO: we could initialize info buffers here (and swap)
@@ -414,6 +422,13 @@ namespace NQVTK
 				delete *it;
 			}
 			renderables.clear();
+		}
+
+		void SetRenderables(std::vector<Renderable*> renderables)
+		{
+			// Replace the renderables with the given set
+			// Beware of memory leaks!
+			this->renderables = renderables;
 		}
 
 		void ResetRenderables()

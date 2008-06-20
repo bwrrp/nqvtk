@@ -113,6 +113,7 @@ namespace NQVTK
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GREATER);
+				depthBuffer->UnbindCurrent();
 				tm->AddTexture("depthBuffer", depthBuffer, false);
 			}
 
