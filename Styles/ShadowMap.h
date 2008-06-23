@@ -141,12 +141,13 @@ namespace NQVTK
 					"  return (fract(mask) > 0.25);"
 					"\n#endif\n"
 					"}"
-					// Packs a float in two 8 bit channels
-					"vec2 encodeDepth(float depth) {"
+					// Packs a float in three 8 bit channels
+					"vec3 encodeShadow(float depth) {"
 					"  depth = clamp(depth, 0.0, 1.0);"
-					"  vec2 factors = vec2(1.0, 256.0);"
-					"  vec2 result = fract(depth * factors);"
+					"  vec3 factors = vec3(1.0, 256.0, 65536.0);"
+					"  vec3 result = fract(depth * factors);"
 					"  result.x -= result.y / factors.y;"
+					"  result.y -= result.z / factors.z;"
 					"  return result;"
 					"}"
 					// Shader main function
@@ -165,22 +166,18 @@ namespace NQVTK
 					"    prevInfo = texture2DRect(infoBuffer, r0.xy);"
 					"  }"
 					// Coplanarity peeling
-					"  if (getBit(prevInfo.y, objectId) == gl_FrontFacing) {"
+					"  float inOutMask = prevInfo.x;"
+					"  if (getBit(inOutMask, objectId) == gl_FrontFacing) {"
 					"    discard;"
 					"  }"
-					// Encode identity
-					"  float id = float(objectId) + 1.0;"
-					"  if (id < 0.0) id = 0.0;"
-					"  float identity = id / 9.0;"
 					// Encode in-out mask
-					"  float inOutMask = prevInfo.y;"
 					"  if (objectId >= 0) {"
 					"    inOutMask = setBit(inOutMask, objectId, gl_FrontFacing);"
 					"  }"
 					// Encode depth
-					"  vec2 depthVec = encodeDepth(depthInCamera);"
+					"  vec3 depthVec = encodeShadow(depthInCamera);"
 					// Store data
-					"  gl_FragData[0] = vec4(identity, inOutMask, depthVec);"
+					"  gl_FragData[0] = vec4(inOutMask, depthVec);"
 					"}");
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
@@ -217,11 +214,6 @@ namespace NQVTK
 					"  return floor(x + 0.5);"
 					"}"
 					"\n#endif\n"
-					// Unpacks a float from two 8 bit channels
-					"float decodeDepth(vec2 coded) {"
-					"  vec2 factors = vec2(1.0, 0.00390625);"
-					"  return dot(coded, factors);"
-					"}"
 					// CSG formula
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
@@ -257,18 +249,16 @@ namespace NQVTK
 					"  vec4 info0 = texture2DRect(infoCurrent, r0.xy);"
 					"  vec4 info1 = texture2DRect(infoPrevious, r0.xy);"
 					"  if (layer == 0) info1 = vec4(0.0);"
-					// Discard fragments not belonging to our objects
-					"  if (info0.r == 0.0) discard;"
 					// Apply CSG
-					"  float mask0 = info0.y;"
-					"  float mask1 = info1.y;"
+					"  float mask0 = info0.x;"
+					"  float mask1 = info1.x;"
 					"  if (CSG(mask0) == CSG(mask1)) {"
 					// this is a transparent surface, which could be textured
 					// TODO: store depths? accumulate opacity? 
 					"    gl_FragColor = vec4(0.0);"
 					"  } else {"
 					// this is a solid surface, store the depth
-					"    gl_FragColor = vec4(info0.zw, 0.0, 1.0);"
+					"    gl_FragColor = vec4(info0.yzw, 1.0);"
 					"  }"
 					"}");
 				if (res) res = painter->Link();

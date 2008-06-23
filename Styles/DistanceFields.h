@@ -73,15 +73,24 @@ namespace NQVTK
 			{
 				GLProgram *scribe = GLProgram::New();
 				bool res = scribe->AddVertexShader(
+					"#define NQVTK_USE_SHADOWMAP\n"
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
 					"uniform int objectId;"
+					// For shadow mapping
+					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
+					"uniform float shadowNearPlane;"
+					"uniform float shadowFarPlane;"
+					"uniform mat4 shadowMVM;"
+					"uniform mat4 shadowPM;"
+					"varying vec4 shadowCoord;"
+					"varying float depthInShadow;"
+					"\n#endif\n"
+					// Varyings
 					"varying vec4 vertex;"
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
-					"varying vec4 shadowCoord;"
-					"varying float depthInShadow;"
 					// Shader main function
 					"void main() {"
 					// HACK: find a better way to pass these transforms
@@ -91,23 +100,29 @@ namespace NQVTK
 					"  vec4 pos = gl_ModelViewMatrix * gl_Vertex;"
 					"  float depthRange = (farPlane - nearPlane);"
 					"  depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;"
-					"  gl_Position = ftransform();"
+					"  gl_Position = gl_ProjectionMatrix * pos;"
 					"  gl_TexCoord[0] = gl_MultiTexCoord0;"
+					// Shadow mapping again
+					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
 					"  shadowCoord = gl_TextureMatrix[2] * gl_ModelViewMatrix * gl_Vertex;"
-					// TODO: this is WRONG
-					"  depthInShadow = (-shadowCoord.z / shadowCoord.w - nearPlane) / depthRange;"
+					"  vec4 shadowPos = shadowMVM * gl_TextureMatrix[objectId] * gl_Vertex;"
+					"  float shadowDepthRange = (shadowFarPlane - shadowNearPlane);"
+					"  depthInShadow = (-shadowPos.z / shadowPos.w - shadowNearPlane) / shadowDepthRange;"
+					"\n#endif\n"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
+					"#define NQVTK_USE_SHADOWMAP\n"
 					"#extension GL_ARB_texture_rectangle : enable\n"
 					"#extension GL_ARB_draw_buffers : enable\n"
 					"#ifdef GL_EXT_gpu_shader4\n"
 					"#extension GL_EXT_gpu_shader4 : enable\n"
 					"#endif\n"
-					//"\n#ifdef NQVTK_USE_SHADOWMAP\n"
+					// Shadow mapping
+					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
 					"uniform sampler2D shadowMap;"
 					"varying vec4 shadowCoord;"
 					"varying float depthInShadow;"
-					//"\n#endif\n"
+					"\n#endif\n"
 					"uniform sampler2DRectShadow depthBuffer;"
 					"uniform sampler2DRect infoBuffer;"
 					"uniform sampler3D distanceField;"
@@ -198,6 +213,11 @@ namespace NQVTK
 					"  vec2 factors = vec2(1.0, 0.00390625);"
 					"  return dot(coded, factors);"
 					"}"
+					// Unpacks a float from three 8 bit channels
+					"float decodeShadow(vec3 coded) {"
+					"  vec3 factors = vec3(1.0, 0.00390625, 0.0000152587890625);"
+					"  return dot(coded, factors);"
+					"}"
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
@@ -279,11 +299,12 @@ namespace NQVTK
 					"  }"
 					//*/
 					// Shadow mapping
+					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
 					"  vec4 shadow = texture2DProj(shadowMap, shadowCoord);"
-					"  if (shadow.a > 0.0 && depthInShadow > decodeDepth(shadow.xy)) {"
+					"  if (shadow.a < 1.0 && depthInShadow > decodeShadow(shadow.xyz)) {"
 					"    col *= vec4(0.5, 0.5, 0.5, 1.0);"
 					"  }"
-					"  col = vec4(encodeDepth(depthInShadow), 0.0, col.a);"
+					"\n#endif\n"
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
 					"  if (objectId >= 0) {"

@@ -15,6 +15,7 @@ namespace NQVTK
 			shadowBuffer = 0;
 			shadowStyle = new NQVTK::Styles::ShadowMap();
 			shadowRenderer = new NQVTK::Renderer();
+			shadowRenderer->drawBackground = false;
 		}
 
 		virtual ~ShadowMappingRenderer() 
@@ -43,7 +44,7 @@ namespace NQVTK
 			// Resize or recreate shadow buffer
 			if (!shadowBuffer)
 			{
-				shadowBuffer = shadowStyle->CreateShadowBufferFBO(w, h);
+				shadowBuffer = shadowStyle->CreateShadowBufferFBO(2048, 2048);
 				shadowRenderer->SetTarget(shadowBuffer);
 			}
 			else
@@ -58,6 +59,8 @@ namespace NQVTK
 		virtual void Draw()
 		{
 			shadowRenderer->SetRenderables(renderables);
+			shadowRenderer->GetCamera()->rotateX = camera->rotateX;
+			shadowRenderer->GetCamera()->rotateY = camera->rotateY - 45.0;
 			shadowRenderer->Draw();
 			
 			// Get the shadow map
@@ -66,7 +69,9 @@ namespace NQVTK
 			tm->AddTexture("shadowMap", shadowMap, false);
 
 			// Get the modelview and projection matrices for the light's camera
-			shadowRenderer->DrawCamera();
+			shadowRenderer->GetCamera()->Draw();
+			float shadowNear = shadowRenderer->GetCamera()->nearZ;
+			float shadowFar = shadowRenderer->GetCamera()->farZ;
 			float lmvm[16];
 			float lpm[16];
 			glGetFloatv(GL_MODELVIEW_MATRIX, lmvm);
@@ -77,6 +82,7 @@ namespace NQVTK
 			float mvm[16];
 			float inv[16];
 			glGetFloatv(GL_MODELVIEW_MATRIX, mvm);
+			glGetFloatv(GL_PROJECTION_MATRIX, inv);
 			Matrix4x4Inverse(mvm, inv);
 			// Load the third texture matrix with the transform for shadow mapping
 			// (the first two are currently used for object transforms)
@@ -93,6 +99,14 @@ namespace NQVTK
 			// - Finally, add the inverse modelview transform
 			glMultMatrixf(inv);
 			glMatrixMode(GL_MODELVIEW);
+
+			// Set some extra shadow parameters
+			scribe->Start();
+			scribe->SetUniform1f("shadowNearPlane", shadowNear);
+			scribe->SetUniform1f("shadowFarPlane", shadowFar);
+			scribe->SetUniformMatrix4fv("shadowMVM", 1, lmvm);
+			scribe->SetUniformMatrix4fv("shadowPM", 1, lpm);
+			scribe->Stop();
 
 			// Draw the normal pass
 			Superclass::Draw();

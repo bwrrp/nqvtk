@@ -31,6 +31,7 @@ namespace NQVTK
 			viewportX = 0;
 			viewportY = 0;
 			maxLayers = 6;
+			drawBackground = true;
 		};
 
 		virtual ~Renderer() 
@@ -149,6 +150,9 @@ namespace NQVTK
 			if (!tex) return;
 			glColor3d(1.0, 1.0, 1.0);
 			glDisable(GL_BLEND);
+			glMatrixMode(GL_TEXTURE);
+			glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
 			tex->BindToCurrent();
 			glEnable(tex->GetTextureTarget());
 			if (tex->GetTextureTarget() == GL_TEXTURE_RECTANGLE_ARB)
@@ -327,19 +331,22 @@ namespace NQVTK
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
 
-			glDisable(GL_LIGHTING);
-			glEnable(GL_BLEND);
+			if (drawBackground)
+			{
+				glDisable(GL_LIGHTING);
+				glEnable(GL_BLEND);
 
-			glBegin(GL_QUADS);
-			glColor4d(0.2, 0.2, 0.25, 0.0);
-			glVertex3d(-1.0, -1.0, 0.0);
-			glVertex3d(1.0, -1.0, 0.0);
-			glColor4d(0.6, 0.6, 0.65, 0.0);
-			glVertex3d(1.0, 1.0, 0.0);
-			glVertex3d(-1.0, 1.0, 0.0);
-			glEnd();
+				glBegin(GL_QUADS);
+				glColor4d(0.2, 0.2, 0.25, 0.0);
+				glVertex3d(-1.0, -1.0, 0.0);
+				glVertex3d(1.0, -1.0, 0.0);
+				glColor4d(0.6, 0.6, 0.65, 0.0);
+				glVertex3d(1.0, 1.0, 0.0);
+				glVertex3d(-1.0, 1.0, 0.0);
+				glEnd();
 
-			glDisable(GL_BLEND);
+				glDisable(GL_BLEND);
+			}
 
 			/* Debug views
 			GLenum top = GL_COLOR_ATTACHMENT0_EXT;
@@ -474,6 +481,7 @@ namespace NQVTK
 		}
 
 		int maxLayers;
+		bool drawBackground;
 
 	protected:
 		// Area to draw in
