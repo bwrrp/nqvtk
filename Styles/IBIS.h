@@ -93,7 +93,7 @@ namespace NQVTK
 					"float setBit(float byte, int bit, bool on) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
@@ -106,7 +106,7 @@ namespace NQVTK
 					"\n#else\n"
 					// - no gpu-shader4, use float arith for bit masks
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(f, N) - 1.0;"
 					"  byte = round(byte * max);"
 					"  float bf = pow(f, float(bit));"
@@ -122,7 +122,7 @@ namespace NQVTK
 					"\nbool getBit(float byte, int bit) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
@@ -130,7 +130,7 @@ namespace NQVTK
 					"\n#else\n"
 					// - no gpu-shader4, use float arith for bit masks
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  if (bit > int(N)) return false;"
 					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
 					"  int i;"
@@ -236,7 +236,7 @@ namespace NQVTK
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
 					"bool getBit(float byte, int bit) {"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
@@ -249,7 +249,7 @@ namespace NQVTK
 					// - no gpu-shader4, use float arith for bit masks
 					"bool CSG(float mask) {"
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
@@ -263,18 +263,18 @@ namespace NQVTK
 					"bool CSGFog(float mask) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
-					"  return getBit(mask, 0) || getBit(mask, 1);"
+					"  return getBit(mask, 0) ^^ getBit(mask, 1);"
 					"\n#else\n"
 					// - no gpu-shader4, use float arith for bit masks
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor1 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
-					"  return inActor0 || inActor1;"
+					"  return inActor0 ^^ inActor1;"
 					"\n#endif\n"
 					"}"
 					// Phong shading helper
@@ -329,6 +329,15 @@ namespace NQVTK
 					"    litFragment = vec3(0.0);"
 					"    color.a = 1.0;"
 					"  }"
+					// Clipping: objectId 2 is our clipping object
+					"\n#ifdef GL_EXT_gpu_shader4\n"
+					// TODO: Clipping object should probably be configurable
+					"  if (getBit(mask0, 2) && !getBit(mask1, 2)) {"
+					"    color.a = 0.0;" // Just render the fog for this slab
+					"  } else if ((getBit(mask0, 2) || getBit(mask1, 2))) {"
+					"    discard;" // Nothing to render for this slab
+					"  }"
+					"\n#endif\n"
 					// Apply fogging
 					"  if (useFog && CSGFog(mask1)) {"
 					"    vec3 fogColor = vec3(1.0, 0.0, 0.2);"
@@ -362,7 +371,6 @@ namespace NQVTK
 				// Get the previous layer's depth buffer
 				GLTexture *depthBuffer = previous->GetTexture2D(GL_DEPTH_ATTACHMENT_EXT);
 				assert(depthBuffer);
-				// TODO: find out if parameters should be stored in the GLTexture
 				GLUtility::SetDefaultDepthTextureParameters(depthBuffer);
 				glTexParameteri(depthBuffer->GetTextureTarget(), 
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);

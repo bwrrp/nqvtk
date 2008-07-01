@@ -18,6 +18,7 @@ SET( VTK_lib
     vtkFiltering
     vtkImaging
     vtkIO
+    vtkGraphics
 )
 
 # We need Qt

@@ -94,7 +94,7 @@ namespace NQVTK
 					"float setBit(float byte, int bit, bool on) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
@@ -107,7 +107,7 @@ namespace NQVTK
 					"\n#else\n"
 					// - no gpu-shader4, use float arith for bit masks
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(f, N) - 1.0;"
 					"  byte = round(byte * max);"
 					"  float bf = pow(f, float(bit));"
@@ -123,7 +123,7 @@ namespace NQVTK
 					"\nbool getBit(float byte, int bit) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
@@ -131,7 +131,7 @@ namespace NQVTK
 					"\n#else\n"
 					// - no gpu-shader4, use float arith for bit masks
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  if (bit > int(N)) return false;"
 					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
 					"  int i;"
@@ -218,7 +218,7 @@ namespace NQVTK
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
 					"bool getBit(float byte, int bit) {"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
@@ -231,7 +231,7 @@ namespace NQVTK
 					// - no gpu-shader4, use float arith for bit masks
 					"bool CSG(float mask) {"
 					"  float f = 2.0;"
-					"  float N = 2.0;"
+					"  float N = 4.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
 					"  bool inActor0 = fract(mask) > 0.25;"
 					"  mask = floor(mask) / f;"
@@ -259,6 +259,12 @@ namespace NQVTK
 					"  } else {"
 					// this is a solid surface, store the depth
 					"    gl_FragColor = vec4(info0.yzw, 1.0);"
+					"  }"
+					// Clipping: objectId 2 is our clipping object
+					"\n#ifdef GL_EXT_gpu_shader4\n"
+					// TODO: Clipping object should probably be configurable
+					"  if ((getBit(mask0, 2) || getBit(mask1, 2))) {"
+					"    discard;" // Nothing to render for this slab
 					"  }"
 					"}");
 				if (res) res = painter->Link();

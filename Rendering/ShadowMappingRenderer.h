@@ -58,9 +58,13 @@ namespace NQVTK
 
 		virtual void Draw()
 		{
+			// Synchronize renderer state
 			shadowRenderer->SetRenderables(renderables);
 			shadowRenderer->GetCamera()->rotateX = camera->rotateX;
 			shadowRenderer->GetCamera()->rotateY = camera->rotateY - 45.0;
+			shadowRenderer->maxLayers = maxLayers;
+
+			// Draw the shadow map
 			shadowRenderer->Draw();
 			
 			// Get the shadow map
@@ -87,7 +91,7 @@ namespace NQVTK
 			// Load the third texture matrix with the transform for shadow mapping
 			// (the first two are currently used for object transforms)
 			// TODO: this assumes two renderables, it's probably better to use custom uniforms
-			glActiveTexture(GL_TEXTURE2);
+			glActiveTexture(GL_TEXTURE3);
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
 			// - Screen coordinates to texture coordinates

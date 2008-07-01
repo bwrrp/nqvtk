@@ -69,11 +69,28 @@ namespace NQVTK
 			}
 			hasTCoords = (tcoords != 0);
 			qDebug("Has texcoords: %s", (hasNormals ? "yes" : "no"));
-			int tcoordsSize = 0; 
+			int tcoordsSize = 0;
+			int tcoordsType = GL_NONE;
 			if (hasTCoords)
 			{
-				tcoordsSize = tcoords->GetNumberOfTuples() * 
-					tcoords->GetNumberOfComponents() * sizeof(GLdouble);
+				int type = tcoords->GetDataType();
+				switch (type)
+				{
+				case VTK_FLOAT:
+					tcoordsSize = tcoords->GetNumberOfTuples() * 
+						tcoords->GetNumberOfComponents() * sizeof(GLfloat);
+					tcoordsType = GL_FLOAT;
+					break;
+
+				case VTK_DOUBLE:
+					tcoordsSize = tcoords->GetNumberOfTuples() * 
+						tcoords->GetNumberOfComponents() * sizeof(GLdouble);
+					tcoordsType = GL_DOUBLE;
+					break;
+
+				default:
+					qDebug("Error: texcoords use unknown type: %d", type);
+				}
 			}
 			int totalSize = pointsSize + normalsSize + tcoordsSize;
 
@@ -94,7 +111,7 @@ namespace NQVTK
 				vertexBuffer->SetSubData(pointsSize + normalsSize, 
 					tcoordsSize, tcoords->GetVoidPointer(0));
 				TexCoordPointer(0, tcoords->GetNumberOfComponents(), 
-					GL_DOUBLE, 0, pointsSize + normalsSize);
+					tcoordsType, 0, pointsSize + normalsSize);
 			}
 			vertexBuffer->Unbind();
 

@@ -17,6 +17,11 @@
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLImageDataReader.h>
 
+#include <vtkCylinderSource.h>
+#include <vtkTriangleFilter.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkTransform.h>
+
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QApplication>
@@ -49,9 +54,9 @@ void NQVTKWidget::initializeGL()
 	}
 
 	qDebug("Initializing renderer...");
-	//if (!renderer) renderer = new NQVTK::Renderer();
+	if (!renderer) renderer = new NQVTK::Renderer();
 	//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
-	if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
+	//if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
 
 	// Create the styles
 	depthpeelStyle = new NQVTK::Styles::DepthPeeling();
@@ -145,6 +150,40 @@ void NQVTKWidget::initializeGL()
 		++i;
 	}
 
+	// Add a clipping cylinder for testing
+	// TODO: add option to toggle clipper object on or off
+	// TODO: add interaction to move / rotate the clipper object
+	// TODO: make clipper object id adaptive to number of renderables
+	{
+		// Create a cylinder
+		vtkSmartPointer<vtkCylinderSource> source = 
+			vtkSmartPointer<vtkCylinderSource>::New();
+		source->SetResolution(40);
+		source->SetHeight(100);
+		source->SetRadius(10);
+		source->CappingOn();
+		// Rotate the cylinder to the Z axis (otherwise we can't rotate it properly)
+		vtkSmartPointer<vtkTransformPolyDataFilter> transformer = 
+			vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+		vtkSmartPointer<vtkTransform> transform = 
+			vtkSmartPointer<vtkTransform>::New();
+		transform->RotateX(90.0);
+		transformer->SetInputConnection(source->GetOutputPort());
+		transformer->SetTransform(transform);
+		// NOTE: we need to triangulate this, because NQVTK::PolyData only supports tris
+		vtkSmartPointer<vtkTriangleFilter> triangulate = 
+			vtkSmartPointer<vtkTriangleFilter>::New();
+		triangulate->SetInputConnection(transformer->GetOutputPort());
+		triangulate->Update();
+		// Create the renderable
+		NQVTK::Renderable *renderable = new NQVTK::PolyData(triangulate->GetOutput());
+		renderer->AddRenderable(renderable);
+		renderable->position = renderer->GetRenderable(0)->GetCenter();
+		// For display in non-clipping styles
+		renderable->opacity = 0.3;
+		renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
+	}
+
 	// Render-on-idle timer
 	startTimer(0);
 	// FPS display timer
@@ -199,7 +238,7 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Escape:
 		qApp->quit();
 		break;
-	case Qt::Key_C:
+	case Qt::Key_S:
 		{
 			QDateTime now = QDateTime::currentDateTime();
 			QImage screenshot = this->grabFrameBuffer(true);
@@ -212,7 +251,25 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 			break;
 		}
 	case Qt::Key_R:
-		renderer->ResetRenderables();
+		{
+			renderer->ResetRenderables();
+			// Reset clipper position
+			NQVTK::Renderable *clipper = renderer->GetRenderable(2);
+			if (clipper)
+			{
+				clipper->position = renderer->GetRenderable(0)->GetCenter();
+			}
+		}
+		break;
+	case Qt::Key_C:
+		{
+			// Toggle clipper visibility
+			NQVTK::Renderable *clipper = renderer->GetRenderable(2);
+			if (clipper)
+			{
+				clipper->visible = !clipper->visible;
+			}
+		}
 		break;
 	case Qt::Key_V:
 		// Viewpoint for the heightfield data, as used in the paper
@@ -251,10 +308,20 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if (event->modifiers() & Qt::ControlModifier) 
+	if (event->modifiers() & Qt::ControlModifier || event->modifiers() & Qt::AltModifier) 
 	{
-		NQVTK::Renderable *renderable = renderer->GetRenderable(0);
-		// Mouse controls object 0
+		NQVTK::Renderable *renderable;
+		if (event->modifiers() & Qt::ControlModifier)
+		{
+			// Mouse controls object 0
+			renderable = renderer->GetRenderable(0);
+		}
+		else
+		{
+			// Mouse controls clipper object (if it's there)
+			renderable = renderer->GetRenderable(2);
+		}
+
 		if (renderable && event->buttons() & Qt::LeftButton)
 		{
 			// Rotate
