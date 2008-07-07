@@ -220,6 +220,10 @@ namespace NQVTK
 			{
 				fboTarget->Bind();
 			}
+			else
+			{
+				glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+			}
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			Clear();
 			glClearColor(0.0, 0.0, 0.0, 0.0);

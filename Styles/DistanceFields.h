@@ -73,7 +73,7 @@ namespace NQVTK
 			{
 				GLProgram *scribe = GLProgram::New();
 				bool res = scribe->AddVertexShader(
-					//"#define NQVTK_USE_SHADOWMAP\n"
+					"#define NQVTK_USE_SHADOWMAP\n"
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
 					"uniform int objectId;"

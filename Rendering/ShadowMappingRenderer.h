@@ -41,6 +41,9 @@ namespace NQVTK
 			// Resize buffers managed by the parent class
 			Superclass::Resize(w, h);
 
+			// Resize the shadow renderer
+			shadowRenderer->Resize(2048, 2048);
+
 			// Resize or recreate shadow buffer
 			if (!shadowBuffer)
 			{
@@ -49,11 +52,8 @@ namespace NQVTK
 			}
 			else
 			{
-				if (!shadowBuffer->Resize(w, h)) qDebug("WARNING! shadowBuffer resize failed!");
+				//if (!shadowBuffer->Resize(w, h)) qDebug("WARNING! shadowBuffer resize failed!");
 			}
-
-			// Resize the shadow renderer
-			shadowRenderer->Resize(w, h);
 		}
 
 		virtual void Draw()
