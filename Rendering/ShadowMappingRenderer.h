@@ -117,7 +117,7 @@ namespace NQVTK
 
 			// DEBUG: show shadow buffer
 			glDisable(GL_DEPTH_TEST);
-			TestDrawTexture(shadowMap, 0.0, 1.0, 0.0, 1.0);
+			TestDrawTexture(shadowMap, 0.5, 1.0, 0.5, 1.0);
 			glEnable(GL_DEPTH_TEST);
 		}
 

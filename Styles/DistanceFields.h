@@ -366,22 +366,35 @@ namespace NQVTK
 					"  vec2 factors = vec2(1.0, 0.00390625);"
 					"  return dot(coded, factors);"
 					"}"
-					// CSG formula
+					// Gets a single bit from a float-encoded bit set
+					"\nbool getBit(float byte, int bit) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// - gpu-shader4, use bitwise operators
-					"bool getBit(float byte, int bit) {"
 					"  float N = 4.0;"
 					"  float max = pow(2.0, N) - 1.0;"
 					"  int pattern = int(round(byte * max));"
 					"  int mask = 1 << bit;"
 					"  return (pattern & mask) != 0;"
-					"}"
-					"bool CSG(float mask) {"
-					"  return getBit(mask, 0) && getBit(mask, 1);"
-					"}"
 					"\n#else\n"
 					// - no gpu-shader4, use float arith for bit masks
+					"  float f = 2.0;"
+					"  float N = 4.0;"
+					"  if (bit > int(N)) return false;"
+					"  float mask = round(byte * (pow(f, N) - 1.0)) / f;"
+					"  int i;"
+					"  for (i = 0; i <= bit - 1; ++i) {"
+					"    mask = floor(mask) / f;"
+					"  }"
+					"  return (fract(mask) > 0.25);"
+					"\n#endif\n"
+					"}"
+					// CSG formula
 					"bool CSG(float mask) {"
+					"\n#ifdef GL_EXT_gpu_shader4\n"
+					// - gpu-shader4, use bitwise operators
+					"  return getBit(mask, 0) && getBit(mask, 1);"
+					"\n#else\n"
+					// - no gpu-shader4, use float arith for bit masks
 					"  float f = 2.0;"
 					"  float N = 4.0;"
 					"  mask = round(mask * (pow(f, N) - 1.0)) / f;"
@@ -391,8 +404,8 @@ namespace NQVTK
 					"  mask = floor(mask) / f;"
 					"  bool inActor2 = fract(mask) > 0.25;"
 					"  return inActor0 && inActor1;"
-					"}"
 					"\n#endif\n"
+					"}"
 					// CSG formula for fogging volumes
 					"bool CSGFog(float mask) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
@@ -465,14 +478,12 @@ namespace NQVTK
 					"    color.a = 1.0;"
 					"  }"
 					// Clipping: objectId 2 is our clipping object
-					"\n#ifdef GL_EXT_gpu_shader4\n"
 					// TODO: Clipping object should probably be configurable
 					"  if (getBit(mask0, 2) && !getBit(mask1, 2)) {"
 					"    color.a = 0.0;" // Just render the fog for this slab
 					"  } else if ((getBit(mask0, 2) || getBit(mask1, 2))) {"
 					"    discard;" // Nothing to render for this slab
 					"  }"
-					"\n#endif\n"
 					// Apply fogging
 					"  if (useFog && CSGFog(mask1)) {"
 					"\n#ifdef GL_EXT_gpu_shader4\n"
