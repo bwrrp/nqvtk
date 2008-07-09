@@ -54,9 +54,9 @@ void NQVTKWidget::initializeGL()
 	}
 
 	qDebug("Initializing renderer...");
-	if (!renderer) renderer = new NQVTK::Renderer();
+	//if (!renderer) renderer = new NQVTK::Renderer();
 	//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
-	//if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
+	if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
 
 	// Create the styles
 	depthpeelStyle = new NQVTK::Styles::DepthPeeling();

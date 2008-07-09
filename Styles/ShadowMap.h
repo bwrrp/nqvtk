@@ -31,7 +31,8 @@ namespace NQVTK
 				};
 				for (int i = 0; i < nBufs; ++i)
 				{
-					fbo->CreateColorTextureRectangle(bufs[i]);
+					fbo->CreateColorTextureRectangle(
+						bufs[i], GL_RGBA16F_ARB, GL_RGBA, GL_FLOAT);
 					GLUtility::SetDefaultColorTextureParameters(
 						fbo->GetTexture2D(bufs[i]));
 				}
@@ -46,7 +47,9 @@ namespace NQVTK
 			{
 				GLFramebuffer *fbo = GLFramebuffer::New(w, h);
 				// We only need a color texture to store the shadow map
-				fbo->CreateColorTexture();
+				fbo->CreateColorTexture(
+					GL_COLOR_ATTACHMENT0_EXT, 
+					GL_RGBA16F_ARB, GL_RGBA, GL_FLOAT);
 				if (!fbo->IsOk()) qDebug("WARNING! shadow buffer fbo not ok!");
 				fbo->Unbind();
 
@@ -141,15 +144,6 @@ namespace NQVTK
 					"  return (fract(mask) > 0.25);"
 					"\n#endif\n"
 					"}"
-					// Packs a float in three 8 bit channels
-					"vec3 encodeShadow(float depth) {"
-					"  depth = clamp(depth, 0.0, 1.0);"
-					"  vec3 factors = vec3(1.0, 256.0, 65536.0);"
-					"  vec3 result = fract(depth * factors);"
-					"  result.x -= result.y / factors.y;"
-					"  result.y -= result.z / factors.z;"
-					"  return result;"
-					"}"
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
@@ -175,9 +169,9 @@ namespace NQVTK
 					"    inOutMask = setBit(inOutMask, objectId, gl_FrontFacing);"
 					"  }"
 					// Encode depth
-					"  vec3 depthVec = encodeShadow(depthInCamera);"
+					//"  vec3 depthVec = encodeShadow(depthInCamera);"
 					// Store data
-					"  gl_FragData[0] = vec4(inOutMask, depthVec);"
+					"  gl_FragData[0] = vec4(inOutMask, depthInCamera, 0.0, 0.0);"
 					"}");
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());

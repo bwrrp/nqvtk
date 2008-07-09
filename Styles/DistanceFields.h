@@ -213,11 +213,6 @@ namespace NQVTK
 					"  vec2 factors = vec2(1.0, 0.00390625);"
 					"  return dot(coded, factors);"
 					"}"
-					// Unpacks a float from three 8 bit channels
-					"float decodeShadow(vec3 coded) {"
-					"  vec3 factors = vec3(1.0, 0.00390625, 0.0000152587890625);"
-					"  return dot(coded, factors);"
-					"}"
 					// Shader main function
 					"void main() {"
 					"  vec4 r0 = gl_FragCoord;"
@@ -301,7 +296,7 @@ namespace NQVTK
 					// Shadow mapping
 					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
 					"  vec4 shadow = texture2DProj(shadowMap, shadowCoord);"
-					"  if (shadow.a < 1.0 && depthInShadow > decodeShadow(shadow.xyz)) {"
+					"  if (shadow.a < 1.0 && depthInShadow > shadow.x + 0.001) {"
 					"    col *= vec4(0.5, 0.5, 0.5, 1.0);"
 					"  }"
 					"\n#endif\n"
