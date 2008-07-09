@@ -50,6 +50,14 @@ namespace NQVTK
 				fbo->CreateColorTexture(
 					GL_COLOR_ATTACHMENT0_EXT, 
 					GL_RGBA16F_ARB, GL_RGBA, GL_FLOAT);
+				GLTexture *tex = fbo->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+				// With variance shadow mapping we can linearly interpolate the texture
+				tex->BindToCurrent();
+				glTexParameteri(tex->GetTextureTarget(), 
+					GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(tex->GetTextureTarget(), 
+					GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				tex->UnbindCurrent();
 				if (!fbo->IsOk()) qDebug("WARNING! shadow buffer fbo not ok!");
 				fbo->Unbind();
 
@@ -264,8 +272,8 @@ namespace NQVTK
 					// TODO: store depths? accumulate opacity? 
 					"    gl_FragColor = vec4(0.0);"
 					"  } else {"
-					// this is a solid surface, store the depth
-					"    gl_FragColor = vec4(info0.yzw, 1.0);"
+					// this is a solid surface, store the depth and depth^2
+					"    gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);"
 					"  }"
 					// Clipping: objectId 2 is our clipping object
 					// TODO: Clipping object should probably be configurable
@@ -322,6 +330,22 @@ namespace NQVTK
 			{
 				//tm->RemoveTexture("infoPrevious");
 				//tm->RemoveTexture("infoCurrent");
+			}
+
+			virtual void DrawBackground()
+			{
+				glDisable(GL_LIGHTING);
+				glEnable(GL_BLEND);
+
+				glBegin(GL_QUADS);
+				glColor4d(1.0, 1.0, 0.0, 1.0);
+				glVertex3d(-1.0, -1.0, 0.0);
+				glVertex3d(1.0, -1.0, 0.0);
+				glVertex3d(1.0, 1.0, 0.0);
+				glVertex3d(-1.0, 1.0, 0.0);
+				glEnd();
+
+				glDisable(GL_BLEND);
 			}
 
 		private:

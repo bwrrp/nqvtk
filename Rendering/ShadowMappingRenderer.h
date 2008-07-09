@@ -15,7 +15,6 @@ namespace NQVTK
 			shadowBuffer = 0;
 			shadowStyle = new NQVTK::Styles::ShadowMap();
 			shadowRenderer = new NQVTK::Renderer();
-			shadowRenderer->drawBackground = false;
 		}
 
 		virtual ~ShadowMappingRenderer() 
@@ -42,12 +41,12 @@ namespace NQVTK
 			Superclass::Resize(w, h);
 
 			// Resize the shadow renderer
-			shadowRenderer->Resize(2048, 2048);
+			shadowRenderer->Resize(512, 512);
 
 			// Resize or recreate shadow buffer
 			if (!shadowBuffer)
 			{
-				shadowBuffer = shadowStyle->CreateShadowBufferFBO(2048, 2048);
+				shadowBuffer = shadowStyle->CreateShadowBufferFBO(512, 512);
 				shadowRenderer->SetTarget(shadowBuffer);
 			}
 			else
@@ -69,7 +68,6 @@ namespace NQVTK
 			
 			// Get the shadow map
 			GLTexture *shadowMap = shadowBuffer->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
-			GLUtility::SetDefaultColorTextureParameters(shadowMap);
 			tm->AddTexture("shadowMap", shadowMap, false);
 
 			// Get the modelview and projection matrices for the light's camera

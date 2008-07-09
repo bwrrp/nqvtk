@@ -111,7 +111,8 @@ namespace NQVTK
 					"\n#endif\n"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
-					"#define NQVTK_USE_SHADOWMAP\n"
+					"#define NQVTK_USE_SHADOWMAP\n" // use shadow mapping (also see above)
+					"#define NQVTK_USE_VSM\n" // use variance shadow mapping method
 					"#extension GL_ARB_texture_rectangle : enable\n"
 					"#extension GL_ARB_draw_buffers : enable\n"
 					"#ifdef GL_EXT_gpu_shader4\n"
@@ -293,12 +294,21 @@ namespace NQVTK
 					"    }"
 					"  }"
 					//*/
-					// Shadow mapping
+					// Variance shadow mapping
 					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
-					"  vec4 shadow = texture2DProj(shadowMap, shadowCoord);"
-					"  if (shadow.a < 1.0 && depthInShadow > shadow.x + 0.001) {"
+					"  vec4 moments = texture2DProj(shadowMap, shadowCoord);"
+					"\n#ifdef NQVTK_USE_VSM\n"
+					"  float E_x2 = moments.y;"
+					"  float Ex_2 = moments.x * moments.x;"
+					"  float variance = min(max(E_x2 - Ex_2, 0.0) + 0.0001, 1.0);"
+					"  float m_d = (moments.x - (depthInShadow - 0.001));"
+					"  float p = variance / (variance + m_d * m_d);"
+					"  col *= vec4(vec3(p * 0.5 + 0.5), 1.0);"
+					"\n#else\n"
+					"  if (depthInShadow - 0.001 > moments.x) {"
 					"    col *= vec4(0.5, 0.5, 0.5, 1.0);"
 					"  }"
+					"\n#endif\n"
 					"\n#endif\n"
 					// Encode in-out mask
 					"  float inOutMask = prevInfo.y;"
