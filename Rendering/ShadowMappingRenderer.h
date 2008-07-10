@@ -41,12 +41,12 @@ namespace NQVTK
 			Superclass::Resize(w, h);
 
 			// Resize the shadow renderer
-			shadowRenderer->Resize(512, 512);
+			shadowRenderer->Resize(1024, 1024);
 
 			// Resize or recreate shadow buffer
 			if (!shadowBuffer)
 			{
-				shadowBuffer = shadowStyle->CreateShadowBufferFBO(512, 512);
+				shadowBuffer = shadowStyle->CreateShadowBufferFBO(1024, 1024);
 				shadowRenderer->SetTarget(shadowBuffer);
 			}
 			else
@@ -60,8 +60,15 @@ namespace NQVTK
 			// Synchronize renderer state
 			shadowRenderer->SetRenderables(renderables);
 			shadowRenderer->GetCamera()->rotateX = camera->rotateX;
-			shadowRenderer->GetCamera()->rotateY = camera->rotateY - 45.0;
+			shadowRenderer->GetCamera()->rotateY = camera->rotateY - 30.0;
 			shadowRenderer->maxLayers = maxLayers;
+			NQVTK::Styles::DistanceFields *dfStyle = 
+				dynamic_cast<NQVTK::Styles::DistanceFields*>(style);
+			if (dfStyle)
+			{
+				shadowStyle->useGlyphTexture = dfStyle->useGlyphTexture;
+				shadowStyle->useGridTexture = dfStyle->useGridTexture;
+			}
 
 			// Draw the shadow map
 			shadowRenderer->Draw();

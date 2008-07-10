@@ -30,8 +30,9 @@ namespace NQVTK
 		{ 
 			viewportX = 0;
 			viewportY = 0;
-			maxLayers = 6;
+			maxLayers = 8;
 			drawBackground = true;
+			fboTarget = 0;
 		};
 
 		virtual ~Renderer() 
@@ -78,9 +79,6 @@ namespace NQVTK
 			fbo1 = 0;
 			if (fbo2) delete fbo2;
 			fbo2 = 0;
-
-			// This will be managed by someone else
-			fboTarget = 0;
 
 			// Set up shader programs
 			if (scribe) delete scribe;

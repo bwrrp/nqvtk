@@ -18,7 +18,12 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			ShadowMap() { }
+			ShadowMap() 
+			{
+				useGridTexture = false;
+				useGlyphTexture = false;
+			}
+
 			virtual ~ShadowMap() { }
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
@@ -81,6 +86,7 @@ namespace NQVTK
 					"  float depthRange = (farPlane - nearPlane);"
 					"  depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;"
 					"  gl_Position = ftransform();"
+					"  gl_TexCoord[0] = gl_MultiTexCoord0;"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
 					"#extension GL_ARB_texture_rectangle : enable\n"
@@ -179,7 +185,7 @@ namespace NQVTK
 					// Encode depth
 					//"  vec3 depthVec = encodeShadow(depthInCamera);"
 					// Store data
-					"  gl_FragData[0] = vec4(inOutMask, depthInCamera, 0.0, 0.0);"
+					"  gl_FragData[0] = vec4(inOutMask, depthInCamera, gl_TexCoord[0].xy);"
 					"}");
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
@@ -210,6 +216,9 @@ namespace NQVTK
 					"uniform float nearPlane;"
 					"uniform float viewportX;"
 					"uniform float viewportY;"
+					// Parameters
+					"uniform bool useGridTexture;"
+					"uniform bool useGlyphTexture;"
 					// Rounds a float to the nearest integer
 					"\n#ifndef GL_EXT_gpu_shader4\n"
 					"float round(float x) {"
@@ -269,12 +278,26 @@ namespace NQVTK
 					"  float mask1 = info1.x;"
 					"  if (CSG(mask0) == CSG(mask1)) {"
 					// this is a transparent surface, which could be textured
-					// TODO: store depths? accumulate opacity? 
 					"    gl_FragColor = vec4(0.0);"
-					"  } else {"
-					// this is a solid surface, store the depth and depth^2
-					"    gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);"
+					// - Grid texture
+					"    if (useGridTexture) {"
+					"      vec2 tc = fract(abs(info0.zw));"
+					"      float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
+					"      grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
+					"      if (pow(grid, 5.0) > 0.5) {"
+					"        gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);"
+					"      }"
+					"    }"
+					// - Glyph texture
+					"    if (useGlyphTexture) {"
+					"      vec2 tc = abs(2.0 * info0.zw - vec2(1.0));"
+					"      if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {"
+					"        gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);"
+					"      }"
+					"    }"
 					"  }"
+					// otherwise this is a solid surface, store the depth and depth^2
+					"  else gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);"
 					// Clipping: objectId 2 is our clipping object
 					// TODO: Clipping object should probably be configurable
 					"  if ((getBit(mask0, 2) || getBit(mask1, 2))) {"
@@ -332,6 +355,12 @@ namespace NQVTK
 				//tm->RemoveTexture("infoCurrent");
 			}
 
+			virtual void UpdatePainterParameters(GLProgram *scribe)
+			{
+				scribe->SetUniform1i("useGridTexture", useGridTexture);
+				scribe->SetUniform1i("useGlyphTexture", useGlyphTexture);
+			}
+
 			virtual void DrawBackground()
 			{
 				glDisable(GL_LIGHTING);
@@ -347,6 +376,11 @@ namespace NQVTK
 
 				glDisable(GL_BLEND);
 			}
+
+			// Program parameters
+			// - Painter
+			bool useGridTexture;
+			bool useGlyphTexture;
 
 		private:
 			// Not implemented

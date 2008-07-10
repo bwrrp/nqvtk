@@ -13,19 +13,25 @@
    <string>NQVTK</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>19</y>
+     <width>800</width>
+     <height>562</height>
+    </rect>
+   </property>
    <layout class="QHBoxLayout" >
-    <property name="margin" >
+    <property name="spacing" >
      <number>0</number>
     </property>
-    <property name="spacing" >
+    <property name="margin" >
      <number>0</number>
     </property>
     <item>
      <widget class="NQVTKWidget" native="1" name="nqvtkwidget" >
       <property name="sizePolicy" >
-       <sizepolicy>
-        <hsizetype>7</hsizetype>
-        <vsizetype>7</vsizetype>
+       <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -38,9 +44,7 @@
     <item>
      <widget class="QFrame" name="frame" >
       <property name="sizePolicy" >
-       <sizepolicy>
-        <hsizetype>0</hsizetype>
-        <vsizetype>3</vsizetype>
+       <sizepolicy vsizetype="MinimumExpanding" hsizetype="Fixed" >
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -52,11 +56,11 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
        <property name="spacing" >
         <number>6</number>
+       </property>
+       <property name="margin" >
+        <number>9</number>
        </property>
        <item>
         <widget class="QGroupBox" name="groupBox_3" >
@@ -64,11 +68,11 @@
           <string>General</string>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="margin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label_5" >
@@ -86,7 +90,7 @@
              <number>50</number>
             </property>
             <property name="value" >
-             <number>6</number>
+             <number>8</number>
             </property>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -145,11 +149,11 @@
           <bool>false</bool>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="margin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QCheckBox" name="useGridTexture" >
@@ -178,9 +182,7 @@
           <item>
            <widget class="QSlider" name="contourDepthEpsilon" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -192,7 +194,7 @@
              <number>400</number>
             </property>
             <property name="value" >
-             <number>4</number>
+             <number>5</number>
             </property>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -216,9 +218,7 @@
           <item>
            <widget class="QSlider" name="depthCueRange" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -230,7 +230,7 @@
              <number>30000</number>
             </property>
             <property name="value" >
-             <number>1000</number>
+             <number>10000</number>
             </property>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -253,9 +253,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox" >
          <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>1</hsizetype>
-           <vsizetype>1</vsizetype>
+          <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -264,18 +262,16 @@
           <string>DistanceFields</string>
          </property>
          <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="margin" >
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>1</hsizetype>
-              <vsizetype>1</vsizetype>
+             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -288,9 +284,7 @@
           <item>
            <widget class="QSlider" name="classificationThreshold" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -299,7 +293,7 @@
              <number>750</number>
             </property>
             <property name="value" >
-             <number>105</number>
+             <number>0</number>
             </property>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -321,7 +315,7 @@
          <property name="orientation" >
           <enum>Qt::Vertical</enum>
          </property>
-         <property name="sizeHint" >
+         <property name="sizeHint" stdset="0" >
           <size>
            <width>20</width>
            <height>40</height>
@@ -344,7 +338,16 @@
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
+  <widget class="QStatusBar" name="statusbar" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>581</y>
+     <width>800</width>
+     <height>19</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>

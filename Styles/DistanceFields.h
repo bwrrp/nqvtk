@@ -28,11 +28,11 @@ namespace NQVTK
 
 				// Set default parameters
 				useDistanceColorMap = false;
-				classificationThreshold = 1.05;
+				classificationThreshold = 0.0;
 				useGridTexture = false;
 				useGlyphTexture = false;
 				useFatContours = false;
-				contourDepthEpsilon = 0.001;
+				contourDepthEpsilon = 0.005;
 				useFog = true;
 				depthCueRange = 10.0;
 			}
@@ -274,17 +274,14 @@ namespace NQVTK
 					"    col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));"
 					"  }"
 					//*/
-					//*
-					// TEST: grid texture
+					// Grid texture
 					"  if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {"
 					"    vec2 tc = fract(abs(gl_TexCoord[0].xy));"
 					"    float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);"
 					"    grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));"
 					"    col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));"
 					"  }"
-					//*/
-					//*/
-					// TEST: glyph texture
+					// Glyph texture
 					"  if (useGlyphTexture && (col.a < 1.0 || !hasDistanceField)) {"
 					"    vec2 tc = abs(2.0 * gl_TexCoord[0].xy - vec2(1.0));"
 					"    if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {"
@@ -293,7 +290,6 @@ namespace NQVTK
 					"      col.a = min(col.a + 0.15, 1.0);"
 					"    }"
 					"  }"
-					//*/
 					// Variance shadow mapping
 					"\n#ifdef NQVTK_USE_SHADOWMAP\n"
 					"  vec4 moments = texture2DProj(shadowMap, shadowCoord);"

@@ -179,6 +179,8 @@ void NQVTKWidget::initializeGL()
 		NQVTK::Renderable *renderable = new NQVTK::PolyData(triangulate->GetOutput());
 		renderer->AddRenderable(renderable);
 		renderable->position = renderer->GetRenderable(0)->GetCenter();
+		// Initially invisible
+		renderable->visible = false;
 		// For display in non-clipping styles
 		renderable->opacity = 0.3;
 		renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
