@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>600</height>
+    <height>750</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -18,7 +18,7 @@
      <x>0</x>
      <y>19</y>
      <width>800</width>
-     <height>562</height>
+     <height>712</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" >
@@ -311,6 +311,47 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_4" >
+         <property name="title" >
+          <string>Lighting</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout" >
+          <item>
+           <widget class="QDial" name="lightOffsetDirection" >
+            <property name="maximum" >
+             <number>360</number>
+            </property>
+            <property name="singleStep" >
+             <number>5</number>
+            </property>
+            <property name="pageStep" >
+             <number>15</number>
+            </property>
+            <property name="wrapping" >
+             <bool>true</bool>
+            </property>
+            <property name="notchTarget" >
+             <double>5.000000000000000</double>
+            </property>
+            <property name="notchesVisible" >
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="lightRelativeToCamera" >
+            <property name="text" >
+             <string>lightRelativeToCamera</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer>
          <property name="orientation" >
           <enum>Qt::Vertical</enum>
@@ -342,7 +383,7 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>581</y>
+     <y>731</y>
      <width>800</width>
      <height>19</height>
     </rect>
