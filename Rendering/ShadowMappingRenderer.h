@@ -120,10 +120,12 @@ namespace NQVTK
 			// Draw the normal pass
 			Superclass::Draw();
 
+			/*
 			// DEBUG: show shadow buffer
 			glDisable(GL_DEPTH_TEST);
 			TestDrawTexture(shadowMap, 0.5, 1.0, 0.5, 1.0);
 			glEnable(GL_DEPTH_TEST);
+			//*/
 		}
 
 	protected:
