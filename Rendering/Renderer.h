@@ -215,9 +215,29 @@ namespace NQVTK
 			camera->Draw();
 		}
 
+		virtual void UpdateLighting()
+		{
+			if (lightRelativeToCamera)
+			{
+				camera->Update();
+				const double DEGREES_TO_RADIANS = 0.0174532925199433;
+				Vector3 viewDir = (camera->focus - camera->position);
+				Vector3 sideDir = viewDir.cross(camera->up).normalized();
+				Vector3 offset = -sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
+					cos(lightOffsetDirection * DEGREES_TO_RADIANS) * camera->up;
+				offset *= viewDir.length() / 2.0;
+				lightPos = camera->position + offset;
+			}
+
+			// TODO: update OpenGL lights
+			float lpos[] = {lightPos.x, lightPos.y, lightPos.z, 0.0};
+			glLightfv(GL_LIGHT0, GL_POSITION, lpos);
+		}
+
 		virtual void Draw()
 		{
 			DrawCamera();
+			UpdateLighting();
 
 			// Prepare for rendering
 			if (fboTarget)
@@ -493,6 +513,7 @@ namespace NQVTK
 
 		Camera *camera;
 		std::vector<Renderable*> renderables;
+		NQVTK::Vector3 lightPos;
 
 		GLTextureManager *tm;
 
