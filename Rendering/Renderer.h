@@ -28,11 +28,15 @@ namespace NQVTK
 			fbo1(0), fbo2(0), fboTarget(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
+			fboTarget = 0;
+
 			viewportX = 0;
 			viewportY = 0;
 			maxLayers = 8;
 			drawBackground = true;
-			fboTarget = 0;
+
+			lightOffsetDirection = 270.0;
+			lightRelativeToCamera = true;
 		};
 
 		virtual ~Renderer() 
@@ -55,7 +59,10 @@ namespace NQVTK
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_DEPTH_TEST);
 
-			if (!camera) camera = new Camera();
+			if (!camera) 
+			{
+				camera = new Camera();
+			}
 
 			if (!tm)
 			{
@@ -202,7 +209,6 @@ namespace NQVTK
 		{
 			// TODO: replace this, add camera reset to focus on all renderables
 			Renderable *renderable = renderables[0];
-			camera->position = renderable->GetCenter() - Vector3(0.0, 0.0, 1.0);
 			camera->FocusOn(renderable);
 
 			// Set up the camera (matrices)
@@ -442,7 +448,7 @@ namespace NQVTK
 		{ 
 			this->style = style;
 			// Re-initialize if we're initialized
-			if (camera) 
+			if (query) 
 			{
 				bool ok = Initialize();
 				// TODO: subclasses might need this call
@@ -467,8 +473,16 @@ namespace NQVTK
 			return oldTarget;
 		}
 
+		void SetCamera(Camera *cam)
+		{
+			if (camera) delete camera;
+			camera = cam;
+		}
+
 		int maxLayers;
 		bool drawBackground;
+		double lightOffsetDirection;
+		bool lightRelativeToCamera;
 
 	protected:
 		// Area to draw in

@@ -9,7 +9,7 @@
 #include "Rendering/CrossEyedStereoRenderer.h"
 #include "Rendering/ShadowMappingRenderer.h"
 
-#include "Rendering/Camera.h"
+#include "Rendering/OrbitCamera.h"
 #include "Rendering/PolyData.h"
 #include "Rendering/ImageDataTexture3D.h"
 
@@ -65,6 +65,9 @@ void NQVTKWidget::initializeGL()
 
 	renderer->SetStyle(distfieldStyle);
 	//renderer->SetStyle(new NQVTK::Styles::ShadowMap());
+
+	renderer->SetCamera(new NQVTK::OrbitCamera());
+
 	initialized = renderer->Initialize();
 
 	if (!initialized)
@@ -274,10 +277,16 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 	case Qt::Key_V:
-		// Viewpoint for the heightfield data, as used in the paper
-		renderer->GetCamera()->zoom = 0.62;
-		renderer->GetCamera()->rotateX = 29.0;
-		renderer->GetCamera()->rotateY = 180.0;
+		{
+			// Viewpoint for the heightfield data, as used in the paper
+			NQVTK::OrbitCamera *cam = dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
+			if (cam)
+			{
+			cam->zoom = 0.62;
+			cam->rotateX = 29.0;
+			cam->rotateY = 180.0;
+			}
+		}
 		break;
 	case Qt::Key_1:
 		{
@@ -353,34 +362,25 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 	else
 	{
-		// Mouse controls camera
-		if (event->buttons() & Qt::LeftButton)
+		NQVTK::OrbitCamera *cam = dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
+		if (cam)
 		{
-			// Rotate
-			renderer->GetCamera()->rotateY += event->x() - lastX;
-			renderer->GetCamera()->rotateX -= event->y() - lastY;
+			// Mouse controls camera
+			if (event->buttons() & Qt::LeftButton)
+			{
+				// Rotate
+				cam->rotateY += event->x() - lastX;
+				cam->rotateX -= event->y() - lastY;
+				if (cam->rotateX > 80.0) cam->rotateX = 80.0;
+				if (cam->rotateX < -80.0) cam->rotateX = -80.0;
+			}
 
-			if (renderer->GetCamera()->rotateX > 80.0) 
+			if (event->buttons() & Qt::RightButton)
 			{
-				renderer->GetCamera()->rotateX = 80.0;
-			}
-			if (renderer->GetCamera()->rotateX < -80.0) 
-			{
-				renderer->GetCamera()->rotateX = -80.0;
-			}
-		}
-
-		if (event->buttons() & Qt::RightButton)
-		{
-			// Zoom
-			renderer->GetCamera()->zoom += (event->y() - lastY) * 0.01f;
-			if (renderer->GetCamera()->zoom < 0.05) 
-			{
-				renderer->GetCamera()->zoom = 0.05;
-			}
-			if (renderer->GetCamera()->zoom > 20.0) 
-			{
-				renderer->GetCamera()->zoom = 20.0;
+				// Zoom
+				cam->zoom += (event->y() - lastY) * 0.01f;
+				if (cam->zoom < 0.05) cam->zoom = 0.05;
+				if (cam->zoom > 20.0) cam->zoom = 20.0;
 			}
 		}
 	}

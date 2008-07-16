@@ -21,14 +21,9 @@ namespace NQVTK
 		double nearZ;
 		double farZ;
 
-		double rotateX;
-		double rotateY;
-		double zoom;
+		Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0) { };
 
-		Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0), 
-			rotateX(0.0), rotateY(0.0), zoom(1.0) { };
-
-		void FocusOn(const Renderable *obj)
+		virtual void FocusOn(const Renderable *obj)
 		{
 			// Get object info
 			double bounds[6];
@@ -43,17 +38,18 @@ namespace NQVTK
 			// TODO: calculate actual size of bounding box instead
 			double radius = 0.7 * std::max(size[0], std::max(size[1], size[2]));
 
-			focus = obj->GetCenter();
-			// Scale the position to the correct zoom level
-			Vector3 focusToPos = (position - focus).normalized();
-			focusToPos *= 3.0 * radius * zoom;
-			position = focus + focusToPos;
-			//position = focus - Vector3(0.0, 0.0, 3.0 * radius * zoom);
-			nearZ = std::max(0.01, 3.0 * radius * zoom - radius);
-			farZ = 3.0 * radius * zoom + radius;
+			// TODO: this assumes our focus is the center of obj
+			double focusToPos = (position - focus).length();
+			
+			nearZ = std::max(1.0, focusToPos - radius);
+			farZ = focusToPos + radius;
 		}
 
-		void Draw()
+		// For use by more complicated camera controls
+		// Update base camera info
+		virtual void Update() { };
+
+		virtual void Draw()
 		{
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
@@ -64,13 +60,6 @@ namespace NQVTK
 				position.x, position.y, position.z, 
 				focus.x, focus.y, focus.z, 
 				up.x, up.y, up.z);
-
-			// TODO: instead of "world transformations" we should transform position and up
-			// TODO: zoom should be handled here instead of modifying position
-			glTranslated(focus.x, focus.y, focus.z);
-			glRotated(rotateX, 1.0, 0.0, 0.0);
-			glRotated(rotateY, 0.0, 1.0, 0.0);
-			glTranslated(-focus.x, -focus.y, -focus.z);
 		}
 
 	private:

@@ -97,4 +97,17 @@ private slots:
 		if (stereoRenderer) stereoRenderer->eyeSpacing = 
 			static_cast<double>(val) / 1000.0;
 	}
+
+	void on_lightOffsetDirection_valueChanged(int val)
+	{
+		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
+		renderer->lightOffsetDirection = val;
+	}
+
+	void on_lightRelativeToCamera_toggled(bool val)
+	{
+		ui.lightOffsetDirection->setEnabled(val);
+		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
+		renderer->lightRelativeToCamera = val;
+	}
 };

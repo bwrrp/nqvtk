@@ -59,8 +59,6 @@ namespace NQVTK
 		{
 			// Synchronize renderer state
 			shadowRenderer->SetRenderables(renderables);
-			shadowRenderer->GetCamera()->rotateX = camera->rotateX;
-			shadowRenderer->GetCamera()->rotateY = camera->rotateY - 30.0;
 			shadowRenderer->maxLayers = maxLayers;
 			NQVTK::Styles::DistanceFields *dfStyle = 
 				dynamic_cast<NQVTK::Styles::DistanceFields*>(style);
@@ -68,6 +66,22 @@ namespace NQVTK
 			{
 				shadowStyle->useGlyphTexture = dfStyle->useGlyphTexture;
 				shadowStyle->useGridTexture = dfStyle->useGridTexture;
+			}
+
+			// TODO: move this to UpdateLight
+			// TODO: add a parallel projection camera so zoom doesn't affect shadowmap bounds
+			camera->Update();
+			if (lightRelativeToCamera)
+			{
+				const double DEGREES_TO_RADIANS = 0.0174532925199433;
+				Vector3 viewDir = (camera->focus - camera->position);
+				Vector3 sideDir = viewDir.cross(camera->up).normalized();
+				Vector3 offset = -sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir + 
+					-cos(lightOffsetDirection * DEGREES_TO_RADIANS) * camera->up;
+				// TODO: This should probably scale along with the radius
+				offset *= viewDir.length() / 2.0;
+				shadowRenderer->GetCamera()->position = camera->position + offset;
+				shadowRenderer->GetCamera()->focus = camera->focus;
 			}
 
 			// Draw the shadow map
@@ -78,7 +92,7 @@ namespace NQVTK
 			tm->AddTexture("shadowMap", shadowMap, false);
 
 			// Get the modelview and projection matrices for the light's camera
-			shadowRenderer->GetCamera()->Draw();
+			shadowRenderer->DrawCamera();
 			float shadowNear = shadowRenderer->GetCamera()->nearZ;
 			float shadowFar = shadowRenderer->GetCamera()->farZ;
 			float lmvm[16];
@@ -120,7 +134,7 @@ namespace NQVTK
 			// Draw the normal pass
 			Superclass::Draw();
 
-			/*
+			//*
 			// DEBUG: show shadow buffer
 			glDisable(GL_DEPTH_TEST);
 			TestDrawTexture(shadowMap, 0.5, 1.0, 0.5, 1.0);

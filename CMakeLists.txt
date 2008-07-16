@@ -107,6 +107,7 @@ SET( ${ProjectName}_Rendering_Classes
     PolyData
     ImageDataTexture3D
     Camera
+    OrbitCamera
     Renderer
     CrossEyedStereoRenderer
     ShadowMappingRenderer
