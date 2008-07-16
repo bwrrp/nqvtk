@@ -76,8 +76,8 @@ namespace NQVTK
 				const double DEGREES_TO_RADIANS = 0.0174532925199433;
 				Vector3 viewDir = (camera->focus - camera->position);
 				Vector3 sideDir = viewDir.cross(camera->up).normalized();
-				Vector3 offset = -sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir + 
-					-cos(lightOffsetDirection * DEGREES_TO_RADIANS) * camera->up;
+				Vector3 offset = -sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
+					cos(lightOffsetDirection * DEGREES_TO_RADIANS) * camera->up;
 				// TODO: This should probably scale along with the radius
 				offset *= viewDir.length() / 2.0;
 				shadowRenderer->GetCamera()->position = camera->position + offset;
@@ -134,7 +134,7 @@ namespace NQVTK
 			// Draw the normal pass
 			Superclass::Draw();
 
-			//*
+			/*
 			// DEBUG: show shadow buffer
 			glDisable(GL_DEPTH_TEST);
 			TestDrawTexture(shadowMap, 0.5, 1.0, 0.5, 1.0);
