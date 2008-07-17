@@ -1,20 +1,20 @@
 #pragma once
 
-#include "Renderer.h"
+#include "LayeredRenderer.h"
 #include "Styles/ShadowMap.h"
 
 namespace NQVTK
 {
-	class ShadowMappingRenderer : public Renderer
+	class ShadowMappingRenderer : public LayeredRenderer
 	{
 	public:
-		typedef Renderer Superclass;
+		typedef LayeredRenderer Superclass;
 
-		ShadowMappingRenderer() : Renderer() 
+		ShadowMappingRenderer() : LayeredRenderer() 
 		{
 			shadowBuffer = 0;
 			shadowStyle = new NQVTK::Styles::ShadowMap();
-			shadowRenderer = new NQVTK::Renderer();
+			shadowRenderer = new NQVTK::LayeredRenderer();
 		}
 
 		virtual ~ShadowMappingRenderer() 
@@ -135,7 +135,7 @@ namespace NQVTK
 	protected:
 		GLFramebuffer *shadowBuffer;
 		NQVTK::Styles::ShadowMap *shadowStyle;
-		NQVTK::Renderer *shadowRenderer;
+		NQVTK::LayeredRenderer *shadowRenderer;
 
 		void Matrix4x4Inverse(const float (&mat)[16], float (&inv)[16]) 
 		{

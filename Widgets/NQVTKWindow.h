@@ -85,16 +85,17 @@ private slots:
 
 	void on_maxLayers_valueChanged(int val)
 	{
-		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
-		renderer->maxLayers = val;
+		NQVTK::LayeredRenderer *renderer = 
+			dynamic_cast<NQVTK::LayeredRenderer*>(ui.nqvtkwidget->GetRenderer());
+		if (renderer) renderer->maxLayers = val;
 	}
 
 	void on_eyeSpacing_valueChanged(int val)
 	{
 		// Do we have a stereo renderer?
-		NQVTK::CrossEyedStereoRenderer *stereoRenderer = 
+		NQVTK::CrossEyedStereoRenderer *renderer = 
 			dynamic_cast<NQVTK::CrossEyedStereoRenderer*>(ui.nqvtkwidget->GetRenderer());
-		if (stereoRenderer) stereoRenderer->eyeSpacing = 
+		if (renderer) stereoRenderer->eyeSpacing = 
 			static_cast<double>(val) / 1000.0;
 	}
 

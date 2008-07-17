@@ -22,7 +22,7 @@ public:
 	NQVTK::Renderer *GetRenderer() { return renderer; }
 
 signals:
-	void fpsChanged(int);
+	void fpsChanged(int fps);
 
 protected:
 	void initializeGL();

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Renderer.h"
+#include "LayeredRenderer.h"
 
 namespace NQVTK
 {
-	class CrossEyedStereoRenderer : public Renderer
+	class CrossEyedStereoRenderer : public LayeredRenderer
 	{
 	public:
-		typedef Renderer Superclass;
+		typedef LayeredRenderer Superclass;
 
-		CrossEyedStereoRenderer() : Renderer() 
+		CrossEyedStereoRenderer() : LayeredRenderer() 
 		{
 			leftEye = true;
 			eyeSpacing = 0.1;

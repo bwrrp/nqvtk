@@ -21,10 +21,10 @@
 
 namespace NQVTK 
 {
-	class Renderer
+	class LayeredRenderer : public NQVTK::Renderer
 	{
 	public:
-		Renderer() : camera(0), tm(0), style(0), 
+		LayeredRenderer() : camera(0), tm(0), style(0), 
 			fbo1(0), fbo2(0), fboTarget(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
@@ -39,7 +39,7 @@ namespace NQVTK
 			lightRelativeToCamera = true;
 		};
 
-		virtual ~Renderer() 
+		virtual ~LayeredRenderer() 
 		{ 
 			DeleteAllRenderables();
 			if (camera) delete camera;
@@ -473,7 +473,7 @@ namespace NQVTK
 				bool ok = Initialize();
 				// TODO: subclasses might need this call
 				// problems occur if a subclass modifies the size, so we call this
-				//Renderer::Resize(viewportWidth, viewportHeight);
+				//LayeredRenderer::Resize(viewportWidth, viewportHeight);
 				Resize(viewportWidth, viewportHeight);
 				return ok;
 			}
@@ -528,7 +528,7 @@ namespace NQVTK
 
 	private:
 		// Not implemented
-		Renderer(const Renderer&);
-		void operator=(const Renderer&);
+		LayeredRenderer(const LayeredRenderer&);
+		void operator=(const LayeredRenderer&);
 	};
 }

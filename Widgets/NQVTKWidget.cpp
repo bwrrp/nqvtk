@@ -5,7 +5,7 @@
 
 #include "Math/Vector3.h"
 
-#include "Rendering/Renderer.h"
+#include "Rendering/LayeredRenderer.h"
 #include "Rendering/CrossEyedStereoRenderer.h"
 #include "Rendering/ShadowMappingRenderer.h"
 
@@ -54,7 +54,7 @@ void NQVTKWidget::initializeGL()
 	}
 
 	qDebug("Initializing renderer...");
-	//if (!renderer) renderer = new NQVTK::Renderer();
+	//if (!renderer) renderer = new NQVTK::LayeredRenderer();
 	//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
 	if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
 
@@ -279,12 +279,13 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_V:
 		{
 			// Viewpoint for the heightfield data, as used in the paper
-			NQVTK::OrbitCamera *cam = dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
+			NQVTK::OrbitCamera *cam = 
+				dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
 			if (cam)
 			{
-			cam->zoom = 0.62;
-			cam->rotateX = 29.0;
-			cam->rotateY = 180.0;
+				cam->zoom = 0.62;
+				cam->rotateX = 29.0;
+				cam->rotateY = 180.0;
 			}
 		}
 		break;
@@ -319,7 +320,8 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if (event->modifiers() & Qt::ControlModifier || event->modifiers() & Qt::AltModifier) 
+	if (event->modifiers() & Qt::ControlModifier 
+		|| event->modifiers() & Qt::AltModifier) 
 	{
 		NQVTK::Renderable *renderable;
 		if (event->modifiers() & Qt::ControlModifier)
@@ -362,7 +364,8 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 	}
 	else
 	{
-		NQVTK::OrbitCamera *cam = dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
+		NQVTK::OrbitCamera *cam = 
+			dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
 		if (cam)
 		{
 			// Mouse controls camera
