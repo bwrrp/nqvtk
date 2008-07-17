@@ -54,9 +54,12 @@ void NQVTKWidget::initializeGL()
 	}
 
 	qDebug("Initializing renderer...");
+	NQVTK::LayeredRenderer *renderer = 0;
 	//if (!renderer) renderer = new NQVTK::LayeredRenderer();
 	//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
 	if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
+	
+	this->renderer = renderer;
 
 	// Create the styles
 	depthpeelStyle = new NQVTK::Styles::DepthPeeling();
@@ -302,13 +305,25 @@ void NQVTKWidget::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 	case Qt::Key_F1:
-		initialized = renderer->SetStyle(depthpeelStyle);
+		{
+			NQVTK::LayeredRenderer *renderer = 
+				dynamic_cast<NQVTK::LayeredRenderer*>(this->renderer);
+			if (renderer) initialized = renderer->SetStyle(depthpeelStyle);
+		}
 		break;
 	case Qt::Key_F2:
-		initialized = renderer->SetStyle(ibisStyle);
+		{
+			NQVTK::LayeredRenderer *renderer = 
+				dynamic_cast<NQVTK::LayeredRenderer*>(this->renderer);
+			if (renderer) initialized = renderer->SetStyle(ibisStyle);
+		}
 		break;
 	case Qt::Key_F3:
-		initialized = renderer->SetStyle(distfieldStyle);
+		{
+			NQVTK::LayeredRenderer *renderer = 
+				dynamic_cast<NQVTK::LayeredRenderer*>(this->renderer);
+			if (renderer) initialized = renderer->SetStyle(distfieldStyle);
+		}
 		break;
 	default:
 		event->ignore();

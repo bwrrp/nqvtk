@@ -95,7 +95,7 @@ private slots:
 		// Do we have a stereo renderer?
 		NQVTK::CrossEyedStereoRenderer *renderer = 
 			dynamic_cast<NQVTK::CrossEyedStereoRenderer*>(ui.nqvtkwidget->GetRenderer());
-		if (renderer) stereoRenderer->eyeSpacing = 
+		if (renderer) renderer->eyeSpacing = 
 			static_cast<double>(val) / 1000.0;
 	}
 
