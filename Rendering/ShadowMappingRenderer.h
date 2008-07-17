@@ -1,7 +1,9 @@
 #pragma once
 
 #include "LayeredRenderer.h"
+
 #include "Styles/ShadowMap.h"
+#include "Styles/DistanceFields.h"
 
 namespace NQVTK
 {

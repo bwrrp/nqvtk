@@ -3,10 +3,6 @@
 #include "Rendering/Renderer.h"
 #include <QGLWidget>
 
-#include "Styles/DepthPeeling.h"
-#include "Styles/IBIS.h"
-#include "Styles/DistanceFields.h"
-
 class NQVTKWidget : public QGLWidget {
 	Q_OBJECT
 
@@ -14,11 +10,13 @@ public:
 	// TODO: add full QGLWidget constructors
 	NQVTKWidget(QWidget *parent = 0);
 	virtual ~NQVTKWidget();
+	
+	void SetRenderer(NQVTK::Renderer *renderer)
+	{
+		assert(!this->renderer);
+		this->renderer = renderer;
+	}
 
-	// HACK: exposed this way for now... improve later...
-	NQVTK::Styles::DepthPeeling *depthpeelStyle;
-	NQVTK::Styles::IBIS *ibisStyle;
-	NQVTK::Styles::DistanceFields *distfieldStyle;
 	NQVTK::Renderer *GetRenderer() { return renderer; }
 
 signals:
@@ -31,7 +29,6 @@ protected:
 
 private:
 	void timerEvent(QTimerEvent *event);
-	void keyPressEvent(QKeyEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 
 	// The renderer
