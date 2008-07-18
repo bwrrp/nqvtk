@@ -84,8 +84,8 @@ void NQVTKWidget::paintGL()
 	// Draw crosshairs
 	if (crosshairOn)
 	{
-		double x = crosshairX * 2.0 - 1.0;
-		double y = 1.0 - crosshairY * 2.0;
+		double x = (crosshairX / renderer->GetCamera()->aspect);
+		double y = -crosshairY;
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -210,7 +210,8 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 
 	event->accept();
 
-	emit cursorPosChanged(
-		static_cast<double>(event->x()) / static_cast<double>(this->width()), 
-		static_cast<double>(event->y()) / static_cast<double>(this->height()));
+	// Compute projection-netral coordinates
+	double x = (2.0 * static_cast<double>(event->x()) / this->width() - 1.0) * renderer->GetCamera()->aspect;
+	double y = 2.0 * static_cast<double>(event->y()) / this->height() - 1.0;
+	emit cursorPosChanged(x, y);
 }
