@@ -109,6 +109,7 @@ SET( ${ProjectName}_Rendering_Classes
     Camera
     OrbitCamera
     Renderer
+    SimpleRenderer
     LayeredRenderer
     CrossEyedStereoRenderer
     ShadowMappingRenderer

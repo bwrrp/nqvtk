@@ -19,12 +19,17 @@ NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
 : QGLWidget(QGLFormat(QGL::AlphaChannel), parent), renderer(0), initialized(false)
 {
 	setMouseTracking(true);
+	crosshairOn = false;
 }
 
 // ----------------------------------------------------------------------------
 NQVTKWidget::~NQVTKWidget()
 {
-	if (renderer) delete renderer;
+	if (renderer) 
+	{
+		makeCurrent();
+		delete renderer;
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -66,6 +71,7 @@ void NQVTKWidget::resizeGL(int w, int h)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::paintGL()
 {
+	// Draw if we can, otherwise just clear the screen
 	if (initialized && renderer->GetNumberOfRenderables() > 0) 
 	{
 		renderer->Draw();
@@ -74,6 +80,38 @@ void NQVTKWidget::paintGL()
 	{
 		renderer->Clear();
 	}
+
+	// Draw crosshairs
+	if (crosshairOn)
+	{
+		double x = crosshairX * 2.0 - 1.0;
+		double y = 1.0 - crosshairY * 2.0;
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glEnable(GL_BLEND);
+
+		glBegin(GL_LINES);
+		glColor4d(1.0, 0.0, 0.0, 0.7);
+		glVertex2d(x, -1.0);
+		glVertex2d(x, 1.0);
+		glVertex2d(-1.0, y);
+		glVertex2d(1.0, y);
+		glEnd();
+
+		glPopAttrib();
+	}
+	
+	// Increase fps count
 	++frames;
 }
 
@@ -168,4 +206,8 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 	lastY = event->y();
 
 	event->accept();
+
+	emit cursorPosChanged(
+		static_cast<double>(event->x()) / static_cast<double>(this->width()), 
+		static_cast<double>(event->y()) / static_cast<double>(this->height()));
 }

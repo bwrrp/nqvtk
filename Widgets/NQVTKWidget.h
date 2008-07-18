@@ -19,8 +19,16 @@ public:
 
 	NQVTK::Renderer *GetRenderer() { return renderer; }
 
+public slots:
+	void toggleCrosshair(bool on) { crosshairOn = on; }
+	void setCrosshairPos(double x, double y)
+	{
+		crosshairX = x; crosshairY = y;
+	}
+
 signals:
 	void fpsChanged(int fps);
+	void cursorPosChanged(double x, double y);
 
 protected:
 	void initializeGL();
@@ -42,4 +50,9 @@ private:
 	// Previous mouse coordinates
 	int lastX;
 	int lastY;
+
+	// Crosshair
+	bool crosshairOn;
+	double crosshairX;
+	double crosshairY;
 };
