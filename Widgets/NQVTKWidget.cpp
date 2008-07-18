@@ -199,6 +199,9 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 				if (cam->zoom < 0.05) cam->zoom = 0.05;
 				if (cam->zoom > 20.0) cam->zoom = 20.0;
 			}
+
+			cam->Update();
+			emit cameraUpdated(cam);
 		}
 	}
 

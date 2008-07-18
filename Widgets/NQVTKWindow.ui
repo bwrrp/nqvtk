@@ -21,7 +21,7 @@
      <height>712</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" >
+   <layout class="QHBoxLayout" name="horizontalLayout" >
     <property name="spacing" >
      <number>0</number>
     </property>
@@ -29,16 +29,29 @@
      <number>0</number>
     </property>
     <item>
-     <widget class="NQVTKWidget" native="1" name="nqvtkwidget" >
-      <property name="sizePolicy" >
-       <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <widget class="QSplitter" name="splitter" >
+      <property name="orientation" >
+       <enum>Qt::Vertical</enum>
       </property>
-      <property name="focusPolicy" >
-       <enum>Qt::StrongFocus</enum>
-      </property>
+      <widget class="NQVTKWidget" native="1" name="nqvtkwidget" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="focusPolicy" >
+        <enum>Qt::StrongFocus</enum>
+       </property>
+      </widget>
+      <widget class="QFrame" name="simpleViewFrame" >
+       <property name="frameShape" >
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow" >
+        <enum>QFrame::Raised</enum>
+       </property>
+      </widget>
      </widget>
     </item>
     <item>

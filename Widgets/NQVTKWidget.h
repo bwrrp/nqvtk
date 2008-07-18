@@ -25,10 +25,18 @@ public slots:
 	{
 		crosshairX = x; crosshairY = y;
 	}
+	void syncCamera(NQVTK::Camera *cam)
+	{
+		if (!renderer) return;
+		renderer->GetCamera()->position = cam->position;
+		renderer->GetCamera()->focus = cam->focus;
+		renderer->GetCamera()->up = cam->up;
+	}
 
 signals:
 	void fpsChanged(int fps);
 	void cursorPosChanged(double x, double y);
+	void cameraUpdated(NQVTK::Camera *cam);
 
 protected:
 	void initializeGL();

@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <QDateTime>
+#include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QString>
 
@@ -69,6 +70,9 @@ public:
 	{
 		// Renderables should be created in the right GL context
 		ui.nqvtkwidget->makeCurrent();
+
+		QHBoxLayout *layout = new QHBoxLayout(ui.simpleViewFrame);
+		layout->setMargin(0);
 
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		if (!renderer) return;
@@ -138,12 +142,14 @@ public:
 				renderer->AddRenderable(renderable);
 
 				// TESTING
-				NQVTKWidget *simpleView = new NQVTKWidget();
+				NQVTKWidget *simpleView = new NQVTKWidget(ui.simpleViewFrame);
+				layout->addWidget(simpleView);
 				NQVTK::SimpleRenderer *simpleRen = new NQVTK::SimpleRenderer();
-				simpleRen->SetCamera(renderer->GetCamera());
 				simpleView->SetRenderer(simpleRen);
 				connect(ui.nqvtkwidget, SIGNAL(cursorPosChanged(double, double)), 
 					simpleView, SLOT(setCrosshairPos(double, double)));
+				connect(ui.nqvtkwidget, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
+					simpleView, SLOT(syncCamera(NQVTK::Camera*)));
 				simpleView->toggleCrosshair(true);
 				simpleView->resize(128,128);
 				simpleView->show();
@@ -166,6 +172,9 @@ public:
 			}
 			++i;
 		}
+
+		//layout->addStretch();
+		ui.simpleViewFrame->setLayout(layout);
 
 		// Add a clipping cylinder for testing
 		// TODO: add option to toggle clipper object on or off
