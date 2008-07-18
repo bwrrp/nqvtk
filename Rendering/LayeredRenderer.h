@@ -31,9 +31,6 @@ namespace NQVTK
 
 			maxLayers = 8;
 			drawBackground = true;
-
-			lightOffsetDirection = 270.0;
-			lightRelativeToCamera = true;
 		};
 
 		virtual ~LayeredRenderer() 

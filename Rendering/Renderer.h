@@ -23,6 +23,9 @@ namespace NQVTK
 		{
 			viewportX = 0;
 			viewportY = 0;
+
+			lightOffsetDirection = 270.0;
+			lightRelativeToCamera = true;
 		}
 
 		virtual ~Renderer() 
@@ -124,9 +127,10 @@ namespace NQVTK
 				lightPos = camera->position + offset;
 			}
 
-			// Update OpenGL light position
-			float lpos[] = {lightPos.x, lightPos.y, lightPos.z, 0.0};
-			glLightfv(GL_LIGHT0, GL_POSITION, lpos);
+			// Update OpenGL light direction
+			Vector3 lightDir = (lightPos - camera->focus).normalized();
+			float ldir[] = {lightDir.x, lightDir.y, lightDir.z, 0.0};
+			glLightfv(GL_LIGHT0, GL_POSITION, ldir);
 		}
 
 		// To be implemented in derived classes

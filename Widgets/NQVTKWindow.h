@@ -406,6 +406,7 @@ private slots:
 	{
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightOffsetDirection = val;
+		// TODO: do the same for all SimpleRenderers
 	}
 
 	void on_lightRelativeToCamera_toggled(bool val)
@@ -413,5 +414,6 @@ private slots:
 		ui.lightOffsetDirection->setEnabled(val);
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightRelativeToCamera = val;
+		// TODO: do the same for all SimpleRenderers
 	}
 };
