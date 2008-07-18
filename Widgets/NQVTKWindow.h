@@ -9,6 +9,7 @@
 
 #include "ui_NQVTKWindow.h"
 
+#include "Rendering/SimpleRenderer.h"
 #include "Rendering/LayeredRenderer.h"
 #include "Rendering/CrossEyedStereoRenderer.h"
 #include "Rendering/ShadowMappingRenderer.h"
@@ -135,6 +136,22 @@ public:
 				renderable->color = colors[std::min(i, 1)];
 				renderable->opacity = 0.3;
 				renderer->AddRenderable(renderable);
+
+				// TESTING
+				NQVTKWidget *simpleView = new NQVTKWidget();
+				NQVTK::SimpleRenderer *simpleRen = new NQVTK::SimpleRenderer();
+				simpleRen->SetCamera(renderer->GetCamera());
+				simpleView->SetRenderer(simpleRen);
+				connect(ui.nqvtkwidget, SIGNAL(cursorPosChanged(double, double)), 
+					simpleView, SLOT(setCrosshairPos(double, double)));
+				simpleView->toggleCrosshair(true);
+				simpleView->resize(128,128);
+				simpleView->show();
+				simpleView->makeCurrent();
+				NQVTK::Renderable *obj2 = new NQVTK::PolyData(reader->GetOutput()); 
+				obj2->color = colors[std::min(i, 1)];
+				simpleRen->AddRenderable(obj2);
+				ui.nqvtkwidget->makeCurrent();
 			}
 			else
 			{
