@@ -141,8 +141,8 @@ public:
 				renderable->opacity = 0.3;
 				renderer->AddRenderable(renderable);
 
-				// TESTING
-				NQVTKWidget *simpleView = new NQVTKWidget(ui.simpleViewFrame);
+				// Create a simple view showing just this renderable
+				NQVTKWidget *simpleView = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
 				layout->addWidget(simpleView);
 				NQVTK::SimpleRenderer *simpleRen = new NQVTK::SimpleRenderer();
 				simpleView->SetRenderer(simpleRen);
@@ -151,12 +151,20 @@ public:
 				connect(ui.nqvtkwidget, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
 					simpleView, SLOT(syncCamera(NQVTK::Camera*)));
 				simpleView->toggleCrosshair(true);
-				simpleView->resize(128,128);
-				simpleView->show();
-				simpleView->makeCurrent();
-				NQVTK::Renderable *obj2 = new NQVTK::PolyData(reader->GetOutput()); 
-				obj2->color = colors[std::min(i, 1)];
-				simpleRen->AddRenderable(obj2);
+				if (!simpleView->isSharing())
+				{
+					qDebug("WARNING! NQVTKWidgets can't share GL resources!");
+					// TODO: we need to manually sync transformations between these objects
+					simpleView->makeCurrent();
+					NQVTK::Renderable *obj2 = new NQVTK::PolyData(reader->GetOutput()); 
+					obj2->color = colors[std::min(i, 1)];
+					simpleRen->AddRenderable(obj2);
+				}
+				else
+				{
+					// GL resources are shared, just add the original renderable
+					simpleRen->AddRenderable(renderable);
+				}
 				ui.nqvtkwidget->makeCurrent();
 			}
 			else
@@ -177,8 +185,6 @@ public:
 		ui.simpleViewFrame->setLayout(layout);
 
 		// Add a clipping cylinder for testing
-		// TODO: add option to toggle clipper object on or off
-		// TODO: add interaction to move / rotate the clipper object
 		// TODO: make clipper object id adaptive to number of renderables
 		{
 			// Create a cylinder
@@ -196,7 +202,7 @@ public:
 			transform->RotateX(90.0);
 			transformer->SetInputConnection(source->GetOutputPort());
 			transformer->SetTransform(transform);
-			// NOTE: we need to triangulate this, because NQVTK::PolyData only supports tris
+			// NOTE: we need to triangulate, because NQVTK::PolyData currently only supports tris
 			vtkSmartPointer<vtkTriangleFilter> triangulate = 
 				vtkSmartPointer<vtkTriangleFilter>::New();
 			triangulate->SetInputConnection(transformer->GetOutputPort());
@@ -207,7 +213,7 @@ public:
 			renderable->position = renderer->GetRenderable(0)->GetCenter();
 			// Initially invisible
 			renderable->visible = false;
-			// For display in non-clipping styles
+			// For display in styles that don't support clipping
 			renderable->opacity = 0.3;
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}

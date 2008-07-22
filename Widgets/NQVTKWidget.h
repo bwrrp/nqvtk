@@ -8,7 +8,7 @@ class NQVTKWidget : public QGLWidget {
 
 public:
 	// TODO: add full QGLWidget constructors
-	NQVTKWidget(QWidget *parent = 0);
+	NQVTKWidget(QWidget *parent = 0, const QGLWidget *shareWidget = 0);
 	virtual ~NQVTKWidget();
 	
 	void SetRenderer(NQVTK::Renderer *renderer)

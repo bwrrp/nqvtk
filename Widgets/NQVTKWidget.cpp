@@ -15,8 +15,9 @@
 #include <algorithm>
 
 // ----------------------------------------------------------------------------
-NQVTKWidget::NQVTKWidget(QWidget *parent /* = 0 */)
-: QGLWidget(QGLFormat(QGL::AlphaChannel), parent), renderer(0), initialized(false)
+NQVTKWidget::NQVTKWidget(QWidget *parent, const QGLWidget *shareWidget)
+: QGLWidget(QGLFormat(QGL::AlphaChannel), parent, shareWidget), 
+renderer(0), initialized(false)
 {
 	setMouseTracking(true);
 	crosshairOn = false;
