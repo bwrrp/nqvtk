@@ -3,7 +3,8 @@
 #include "Rendering/Renderer.h"
 #include <QGLWidget>
 
-class NQVTKWidget : public QGLWidget {
+class NQVTKWidget : public QGLWidget 
+{
 	Q_OBJECT
 
 public:

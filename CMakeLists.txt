@@ -108,6 +108,7 @@ SET( ${ProjectName}_Rendering_Classes
     ImageDataTexture3D
     Camera
     OrbitCamera
+    OrthoCamera
     Renderer
     SimpleRenderer
     LayeredRenderer
