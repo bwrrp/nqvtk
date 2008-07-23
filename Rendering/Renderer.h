@@ -106,8 +106,11 @@ namespace NQVTK
 		virtual void DrawCamera()
 		{
 			// TODO: replace this, add camera reset to focus on all renderables
-			Renderable *renderable = renderables[0];
-			camera->FocusOn(renderable);
+			if (renderables.size() > 0)
+			{
+				Renderable *renderable = renderables[0];
+				camera->FocusOn(renderable);
+			}
 
 			// Set up the camera (matrices)
 			camera->Draw();
@@ -221,5 +224,10 @@ namespace NQVTK
 		Camera *camera;
 		std::vector<Renderable*> renderables;
 		NQVTK::Vector3 lightPos;
+
+	private:
+		// Not implemented
+		Renderer(const Renderer&);
+		void operator=(const Renderer&);
 	};
 }

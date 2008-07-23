@@ -44,5 +44,10 @@ namespace NQVTK
 			DrawRenderables();
 			GLUtility::CheckOpenGLError("SimpleRenderer::Draw()");
 		}
+
+	private:
+		// Not implemented
+		SimpleRenderer(const SimpleRenderer&);
+		void operator=(const SimpleRenderer&);
 	};
 }

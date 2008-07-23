@@ -14,10 +14,12 @@ namespace NQVTK
 
 		double width;
 		double height;
+		bool preserveAspect;
 
 		OrthoCamera()
 		{
 			width = height = 100.0;
+			preserveAspect = false;
 		}
 
 		virtual void FocusOn(const Renderable *obj)
@@ -37,8 +39,10 @@ namespace NQVTK
 
 			focus = obj->GetCenter();
 
-			width = 2.0 * radius * aspect;
+			width = 2.0 * radius;
 			height = 2.0 * radius;
+
+			if (preserveAspect) width *= aspect;
 
 			// Set near and far clipping planes
 			Superclass::FocusOn(obj);

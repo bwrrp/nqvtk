@@ -6,7 +6,7 @@
 #include "Math/Vector3.h"
 
 #include "Rendering/LayeredRenderer.h"
-
+#include "Rendering/BrushingRenderer.h"
 #include "Rendering/OrbitCamera.h"
 
 #include <QMouseEvent>
@@ -73,7 +73,7 @@ void NQVTKWidget::resizeGL(int w, int h)
 void NQVTKWidget::paintGL()
 {
 	// Draw if we can, otherwise just clear the screen
-	if (initialized && renderer->GetNumberOfRenderables() > 0) 
+	if (initialized)
 	{
 		renderer->Draw();
 	}
@@ -135,9 +135,12 @@ void NQVTKWidget::timerEvent(QTimerEvent *event)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 {
+	// TODO: this should really be refactored into separate interactors
+
 	if (event->modifiers() & Qt::ControlModifier 
 		|| event->modifiers() & Qt::AltModifier) 
 	{
+		// Ctrl and Alt are used to control renderables
 		NQVTK::Renderable *renderable;
 		if (event->modifiers() & Qt::ControlModifier)
 		{
@@ -177,8 +180,20 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 				(lastY - event->y()) * factor * up;
 		}
 	}
+	else if (event->modifiers() & Qt::ShiftModifier)
+	{
+		// Shift modifier: (very primitive) experimental brushing
+		// TODO: this should be integrated into the main view eventually
+		// for now we only do this if our renderer is a BrushingRenderer
+		NQVTK::BrushingRenderer *bren = dynamic_cast<NQVTK::BrushingRenderer*>(renderer);
+		if (bren)
+		{
+			bren->LineTo(event->x(), this->height() - event->y(), event->buttons() & Qt::LeftButton);
+		}
+	}
 	else
 	{
+		// No modifiers: camera control
 		NQVTK::OrbitCamera *cam = 
 			dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
 		if (cam)

@@ -14,6 +14,7 @@
 #include "Rendering/LayeredRenderer.h"
 #include "Rendering/CrossEyedStereoRenderer.h"
 #include "Rendering/ShadowMappingRenderer.h"
+#include "Rendering/BrushingRenderer.h"
 
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
@@ -216,6 +217,15 @@ public:
 			// For display in styles that don't support clipping
 			renderable->opacity = 0.3;
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
+		}
+
+		// Add a brushing test widget
+		{
+			NQVTKWidget *brushWidget = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
+			layout->addWidget(brushWidget);
+			NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
+			brushWidget->SetRenderer(brushRen);
+			ui.nqvtkwidget->makeCurrent();
 		}
 	}
 

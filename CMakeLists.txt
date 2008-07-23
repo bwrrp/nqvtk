@@ -83,14 +83,16 @@ SET( ${ProjectName}_Modules
     Rendering
     Styles
     Widgets
+    Interactors
 )
 
 # Friendly names for the modules
 SET( ${ProjectName}_ModuleNames
-	"NQVTK Math"
-    "NQVTK Rendering"
-    "NQVTK Render Styles"
+	"Math"
+    "Rendering"
+    "Render Styles"
     "Widgets"
+    "Interactors"
 )
 
 # --------------------------------------------------
@@ -112,6 +114,7 @@ SET( ${ProjectName}_Rendering_Classes
     Renderer
     SimpleRenderer
     LayeredRenderer
+    BrushingRenderer
     CrossEyedStereoRenderer
     ShadowMappingRenderer
 )
@@ -122,6 +125,10 @@ SET( ${ProjectName}_Styles_Classes
     IBIS
     DistanceFields
     ShadowMap
+)
+
+SET( ${ProjectName}_Interactors_Classes
+    # TODO
 )
 
 # Widgets has its own sources.cmake (for moc / uic)
