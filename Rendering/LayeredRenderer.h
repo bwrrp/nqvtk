@@ -24,11 +24,9 @@ namespace NQVTK
 		typedef Renderer Superclass;
 
 		LayeredRenderer() : tm(0), style(0), 
-			fbo1(0), fbo2(0), fboTarget(0), 
+			fbo1(0), fbo2(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
-			fboTarget = 0;
-
 			maxLayers = 8;
 			drawBackground = true;
 		};
@@ -118,10 +116,6 @@ namespace NQVTK
 			else
 			{
 				if (!fbo2->Resize(w, h)) qDebug("WARNING! fbo2 resize failed!");
-			}
-			if (fboTarget)
-			{
-				if (!fboTarget->Resize(w, h)) qDebug("WARNING! fboTarget resize failed!");
 			}
 		}
 
@@ -339,19 +333,6 @@ namespace NQVTK
 			return true;
 		}
 
-		GLFramebuffer *SetTarget(GLFramebuffer *target)
-		{
-			GLFramebuffer *oldTarget = this->fboTarget;
-			this->fboTarget = target;
-			if (target)
-			{
-				// Make sure it's the right size
-				bool ok = target->Resize(viewportWidth, viewportHeight);
-				assert(ok);
-			}
-			return oldTarget;
-		}
-
 		int maxLayers;
 		bool drawBackground;
 
@@ -362,7 +343,6 @@ namespace NQVTK
 
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
-		GLFramebuffer *fboTarget;
 		GLProgram *scribe;
 		GLProgram *painter;
 		GLOcclusionQuery *query;

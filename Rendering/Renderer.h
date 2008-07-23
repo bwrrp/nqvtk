@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "GLBlaat/GLTexture.h"
+#include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLUtility.h"
 
 #include <QObject> // for qDebug
@@ -19,7 +20,7 @@ namespace NQVTK
 	class Renderer
 	{
 	public:
-		Renderer() : camera(0) 
+		Renderer() : camera(0), fboTarget(0)
 		{
 			viewportX = 0;
 			viewportY = 0;
@@ -54,6 +55,11 @@ namespace NQVTK
 
 			glViewport(viewportX, viewportY, w, h);
 			camera->aspect = static_cast<double>(w) / static_cast<double>(h);
+
+			if (fboTarget)
+			{
+				if (!fboTarget->Resize(w, h)) qDebug("WARNING! fboTarget resize failed!");
+			}
 		}
 
 		virtual void Clear()
@@ -211,6 +217,19 @@ namespace NQVTK
 			camera = cam;
 		}
 
+		GLFramebuffer *SetTarget(GLFramebuffer *target)
+		{
+			GLFramebuffer *oldTarget = this->fboTarget;
+			this->fboTarget = target;
+			if (target)
+			{
+				// Make sure it's the right size
+				bool ok = target->Resize(viewportWidth, viewportHeight);
+				assert(ok);
+			}
+			return oldTarget;
+		}
+
 		double lightOffsetDirection;
 		bool lightRelativeToCamera;
 
@@ -224,6 +243,8 @@ namespace NQVTK
 		Camera *camera;
 		std::vector<Renderable*> renderables;
 		NQVTK::Vector3 lightPos;
+
+		GLFramebuffer *fboTarget;
 
 	private:
 		// Not implemented

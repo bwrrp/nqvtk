@@ -38,11 +38,26 @@ namespace NQVTK
 
 		virtual void Draw()
 		{
+			// Prepare for rendering
+			if (fboTarget)
+			{
+				fboTarget->Bind();
+			}
+			else
+			{
+				glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+			}
+
 			Clear();
 			DrawCamera();
 			UpdateLighting();
 			DrawRenderables();
 			GLUtility::CheckOpenGLError("SimpleRenderer::Draw()");
+
+			if (fboTarget)
+			{
+				fboTarget->Unbind();
+			}
 		}
 
 	private:

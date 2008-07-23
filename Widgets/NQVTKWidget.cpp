@@ -188,7 +188,10 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 		NQVTK::BrushingRenderer *bren = dynamic_cast<NQVTK::BrushingRenderer*>(renderer);
 		if (bren)
 		{
-			bren->LineTo(event->x(), this->height() - event->y(), event->buttons() & Qt::LeftButton);
+			int pen = 0;
+			if (event->buttons() & Qt::LeftButton) pen = 1;
+			if (event->buttons() & Qt::RightButton) pen = 2;
+			bren->LineTo(event->x(), this->height() - event->y(), pen);
 		}
 	}
 	else
