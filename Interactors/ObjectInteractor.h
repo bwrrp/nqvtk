@@ -15,6 +15,7 @@ namespace NQVTK
 		{
 			assert(obj);
 			renderable = obj;
+			lastX = lastY = 0;
 		}
 
 		virtual bool MouseMoveEvent(QMouseEvent *event)

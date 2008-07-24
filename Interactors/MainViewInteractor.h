@@ -4,8 +4,11 @@
 
 #include "CameraInteractor.h"
 #include "ObjectInteractor.h"
+#include "BrushingInteractor.h"
 
 #include "Rendering/Renderer.h"
+#include "Rendering/OverlayRenderer.h"
+#include "Rendering/BrushingRenderer.h"
 
 namespace NQVTK
 {
@@ -15,8 +18,20 @@ namespace NQVTK
 		typedef Interactor Superclass;
 
 		MainViewInteractor(NQVTK::Renderer *ren) 
-			: Interactor(), cameraInt(0), objectInt(0), clipperInt(0)
+			: Interactor(), cameraInt(0), objectInt(0), clipperInt(0), brushInt(0)
 		{
+			// Is it an overlay renderer?
+			NQVTK::OverlayRenderer *oren = dynamic_cast<NQVTK::OverlayRenderer*>(ren);
+			if (oren)
+			{
+				// TODO: we probably want to simply switch the interactor while brushing
+				// This is a bit of a hack to test everything
+				NQVTK::BrushingRenderer *bren = 
+					dynamic_cast<NQVTK::BrushingRenderer*>(oren->GetOverlayRenderer());
+				if (bren) brushInt = new NQVTK::BrushingInteractor(bren);
+				ren = oren->GetBaseRenderer();
+			}
+
 			NQVTK::OrbitCamera *ocam = dynamic_cast<NQVTK::OrbitCamera*>(ren->GetCamera());
 			if (ocam) cameraInt = new NQVTK::CameraInteractor(ocam);
 			NQVTK::Renderable *renderable = ren->GetRenderable(0);
@@ -45,6 +60,11 @@ namespace NQVTK
 				// Alt controls the clipper (renderable 2)
 				return clipperInt->MouseMoveEvent(event);
 			}
+			else if (event->modifiers() & Qt::ShiftModifier && brushInt)
+			{
+				// HACK: Shift controls brushing
+				return brushInt->MouseMoveEvent(event);
+			}
 			else if (cameraInt)
 			{
 				// No modifiers: camera control
@@ -60,6 +80,7 @@ namespace NQVTK
 		NQVTK::CameraInteractor *cameraInt;
 		NQVTK::ObjectInteractor *objectInt;
 		NQVTK::ObjectInteractor *clipperInt;
+		NQVTK::BrushingInteractor *brushInt;
 
 	private:
 		// Not implemented

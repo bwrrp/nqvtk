@@ -63,6 +63,8 @@ namespace NQVTK
 
 			DrawCamera();
 
+			glPushAttrib(GL_ALL_ATTRIB_BITS);
+
 			glDisable(GL_LIGHTING);
 			glDisable(GL_DEPTH_TEST);
 
@@ -106,6 +108,8 @@ namespace NQVTK
 
 				lastPos = toPos;
 			}
+
+			glPopAttrib();
 
 			if (fboTarget)
 			{

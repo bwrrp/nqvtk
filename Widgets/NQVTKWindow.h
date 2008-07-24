@@ -15,6 +15,7 @@
 #include "Rendering/CrossEyedStereoRenderer.h"
 #include "Rendering/ShadowMappingRenderer.h"
 #include "Rendering/BrushingRenderer.h"
+#include "Rendering/OverlayRenderer.h"
 
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
@@ -67,7 +68,10 @@ public:
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
 
-		ui.nqvtkwidget->SetRenderer(renderer);
+		NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
+
+		//ui.nqvtkwidget->SetRenderer(renderer);
+		ui.nqvtkwidget->SetRenderer(new NQVTK::OverlayRenderer(renderer, brushRen));
 	}
 
 	void LoadData()
@@ -224,7 +228,7 @@ public:
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
 
-		// Add a brushing test widget
+		//* Add a brushing test widget
 		{
 			NQVTKWidget *brushWidget = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
 			layout->addWidget(brushWidget);
@@ -234,10 +238,12 @@ public:
 			brushWidget->SetInteractor(brushInt);
 			ui.nqvtkwidget->makeCurrent();
 		}
+		//*/
 
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first
-		NQVTK::MainViewInteractor *mainInt = new NQVTK::MainViewInteractor(renderer);
+		NQVTK::MainViewInteractor *mainInt = new NQVTK::MainViewInteractor(
+			ui.nqvtkwidget->GetRenderer(false));
 		ui.nqvtkwidget->SetInteractor(mainInt);
 	}
 

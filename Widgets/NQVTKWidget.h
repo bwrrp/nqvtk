@@ -25,7 +25,7 @@ public:
 		this->interactor = interactor;
 	}
 
-	NQVTK::Renderer *GetRenderer() { return renderer; }
+	NQVTK::Renderer *GetRenderer(bool getInner = true);
 
 public slots:
 	void toggleCrosshair(bool on) { crosshairOn = on; }

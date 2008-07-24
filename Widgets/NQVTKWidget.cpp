@@ -5,9 +5,8 @@
 
 #include "Math/Vector3.h"
 
-#include "Rendering/LayeredRenderer.h"
-#include "Rendering/BrushingRenderer.h"
-#include "Rendering/OrbitCamera.h"
+#include "Rendering/Renderer.h"
+#include "Rendering/OverlayRenderer.h"
 
 #include <QMouseEvent>
 #include <QGLFormat>
@@ -32,6 +31,19 @@ NQVTKWidget::~NQVTKWidget()
 		makeCurrent();
 		delete renderer;
 	}
+}
+
+// ----------------------------------------------------------------------------
+NQVTK::Renderer *NQVTKWidget::GetRenderer(bool getInner)
+{
+	if (getInner)
+	{
+		// If the renderer is an OverlayRenderer, get the base renderer
+		NQVTK::OverlayRenderer *oren = dynamic_cast<NQVTK::OverlayRenderer*>(renderer);
+		if (oren) return oren->GetBaseRenderer();
+	}
+
+	return renderer;
 }
 
 // ----------------------------------------------------------------------------
@@ -142,7 +154,7 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 		if (interactor->MouseMoveEvent(event))
 		{
 			// TODO: this should probably not be emitted for each mouse event
-			emit cameraUpdated(renderer->GetCamera());
+			emit cameraUpdated(GetRenderer()->GetCamera());
 			event->accept();
 		}
 		else

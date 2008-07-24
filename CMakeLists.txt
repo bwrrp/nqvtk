@@ -115,6 +115,7 @@ SET( ${ProjectName}_Rendering_Classes
     SimpleRenderer
     LayeredRenderer
     BrushingRenderer
+    OverlayRenderer
     CrossEyedStereoRenderer
     ShadowMappingRenderer
 )

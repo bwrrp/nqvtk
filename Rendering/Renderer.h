@@ -70,8 +70,12 @@ namespace NQVTK
 			double ymin, double ymax)
 		{
 			if (!tex) return;
+
+			glPushAttrib(GL_ALL_ATTRIB_BITS);
+
 			glColor3d(1.0, 1.0, 1.0);
 			glDisable(GL_BLEND);
+			glDisable(GL_DEPTH_TEST);
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
@@ -105,6 +109,8 @@ namespace NQVTK
 			}
 			glDisable(tex->GetTextureTarget());
 			tex->UnbindCurrent();
+
+			glPopAttrib();
 		}
 
 		virtual void DrawCamera()

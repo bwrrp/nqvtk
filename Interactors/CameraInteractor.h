@@ -15,6 +15,7 @@ namespace NQVTK
 		{
 			assert(orbitCam);
 			camera = orbitCam;
+			lastX = lastY = 0;
 		}
 
 		virtual bool MouseMoveEvent(QMouseEvent *event)
