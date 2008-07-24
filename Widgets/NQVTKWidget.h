@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rendering/Renderer.h"
+#include "Interactors/Interactor.h"
 #include <QGLWidget>
 
 class NQVTKWidget : public QGLWidget 
@@ -51,6 +52,9 @@ private:
 	// The renderer
 	NQVTK::Renderer *renderer;
 	bool initialized;
+
+	// The interactor
+	NQVTK::Interactor *interactor;
 
 	// FPS measurement
 	int frames;

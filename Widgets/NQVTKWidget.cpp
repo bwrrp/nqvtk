@@ -17,7 +17,7 @@
 // ----------------------------------------------------------------------------
 NQVTKWidget::NQVTKWidget(QWidget *parent, const QGLWidget *shareWidget)
 : QGLWidget(QGLFormat(QGL::AlphaChannel), parent, shareWidget), 
-renderer(0), initialized(false)
+renderer(0), initialized(false), interactor(0)
 {
 	setMouseTracking(true);
 	crosshairOn = false;
@@ -135,8 +135,20 @@ void NQVTKWidget::timerEvent(QTimerEvent *event)
 // ----------------------------------------------------------------------------
 void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	// TODO: this should really be refactored into separate interactors
+	// Pass the event to the interactor
+	if (interactor)
+	{
+		if (interactor->MouseMoveEvent(event))
+		{
+			event->accept();
+		}
+		else
+		{
+			event->ignore();
+		}
+	}
 
+	// TODO: this should really be refactored into separate interactors
 	if (event->modifiers() & Qt::ControlModifier 
 		|| event->modifiers() & Qt::AltModifier) 
 	{
