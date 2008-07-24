@@ -19,7 +19,10 @@ namespace NQVTK
 	public:
 		typedef Renderer Superclass;
 
-		BrushingRenderer() { }
+		BrushingRenderer()
+		{
+			leftover = 0.0;
+		}
 
 		virtual bool Initialize()
 		{
@@ -77,6 +80,7 @@ namespace NQVTK
 				{
 				case 0:
 					lastPos = toPos;
+					leftover = 0.0;
 					continue;
 					break;
 
@@ -92,10 +96,13 @@ namespace NQVTK
 				toPos.z = 0.0;
 
 				Vector3 d = toPos - lastPos;
-				int nSteps = d.length() / 2;
-				for (int i = 0; i < nSteps; ++i)
+				double length = d.length();
+				d = d.normalized();
+				double stepsize = 2.0;
+				double i = leftover;
+				while (i <= length)
 				{
-					Vector3 pos = lastPos + i * d / nSteps;
+					Vector3 pos = lastPos + i * d;
 
 					// TESTING: draw simple cursor / brush
 					glBegin(GL_QUADS);
@@ -104,9 +111,12 @@ namespace NQVTK
 					glVertex3dv((pos + Vector3(5.0, -5.0, 0.0)).V);
 					glVertex3dv((pos + Vector3(5.0, 0.0, 0.0)).V);
 					glEnd();
+
+					i += stepsize;
 				}
 
 				lastPos = toPos;
+				leftover = i - length;
 			}
 
 			glPopAttrib();
@@ -127,6 +137,7 @@ namespace NQVTK
 	protected:
 		std::queue<NQVTK::Vector3> pointQueue;
 		Vector3 lastPos;
+		double leftover;
 
 	private:
 		// Not implemented
