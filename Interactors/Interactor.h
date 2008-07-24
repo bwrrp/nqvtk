@@ -15,7 +15,7 @@ namespace NQVTK
 		// TODO: we might want to make this independent of Qt some day
 		virtual bool MouseMoveEvent(QMouseEvent *event)
 		{
-			return false
+			return false;
 		}
 
 	private:
