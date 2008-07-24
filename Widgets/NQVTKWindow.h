@@ -157,6 +157,8 @@ public:
 					simpleView, SLOT(setCrosshairPos(double, double)));
 				connect(ui.nqvtkwidget, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
 					simpleView, SLOT(syncCamera(NQVTK::Camera*)));
+				connect(simpleView, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
+					ui.nqvtkwidget, SLOT(updateGL()));
 				simpleView->toggleCrosshair(true);
 				layout->addWidget(simpleView);
 				// TODO: sync camera after all widgets are initialized
@@ -245,6 +247,8 @@ public:
 		NQVTK::MainViewInteractor *mainInt = new NQVTK::MainViewInteractor(
 			ui.nqvtkwidget->GetRenderer(false));
 		ui.nqvtkwidget->SetInteractor(mainInt);
+
+		//ui.nqvtkwidget->StartContinuousUpdate();
 	}
 
 private:
@@ -356,6 +360,9 @@ private:
 			return;
 		}
 		event->accept();
+
+		ui.nqvtkwidget->updateGL();
+		// TODO: also update all simple views
 	}
 
 private slots:

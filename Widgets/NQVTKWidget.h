@@ -27,11 +27,25 @@ public:
 
 	NQVTK::Renderer *GetRenderer(bool getInner = true);
 
+	void StartContinuousUpdate()
+	{
+		// Render-on-idle timer
+		startTimer(0);
+		// FPS display timer
+		fpsTimerId = startTimer(1000);
+		frames = 0;
+	}
+
 public slots:
-	void toggleCrosshair(bool on) { crosshairOn = on; }
+	void toggleCrosshair(bool on)
+	{ 
+		crosshairOn = on; 
+		updateGL();
+	}
 	void setCrosshairPos(double x, double y)
 	{
 		crosshairX = x; crosshairY = y;
+		updateGL();
 	}
 	void syncCamera(NQVTK::Camera *cam)
 	{
@@ -39,6 +53,7 @@ public slots:
 		renderer->GetCamera()->position = cam->position;
 		renderer->GetCamera()->focus = cam->focus;
 		renderer->GetCamera()->up = cam->up;
+		updateGL();
 	}
 
 signals:

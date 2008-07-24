@@ -21,7 +21,7 @@ namespace NQVTK
 			: Interactor(), cameraInt(0), objectInt(0), clipperInt(0), brushInt(0)
 		{
 			// Is it an overlay renderer?
-			NQVTK::OverlayRenderer *oren = dynamic_cast<NQVTK::OverlayRenderer*>(ren);
+			oren = dynamic_cast<NQVTK::OverlayRenderer*>(ren);
 			if (oren)
 			{
 				// TODO: we probably want to simply switch the interactor while brushing
@@ -50,6 +50,8 @@ namespace NQVTK
 		// TODO: we might want to make this independent of Qt some day
 		virtual bool MouseMoveEvent(QMouseEvent *event)
 		{
+			if (oren) oren->updateBase = true;
+
 			if (event->modifiers() & Qt::ControlModifier && objectInt)
 			{
 				// Control controls renderable 0
@@ -63,6 +65,7 @@ namespace NQVTK
 			else if (event->modifiers() & Qt::ShiftModifier && brushInt)
 			{
 				// HACK: Shift controls brushing
+				if (oren) oren->updateBase = false;
 				return brushInt->MouseMoveEvent(event);
 			}
 			else if (cameraInt)
@@ -81,6 +84,8 @@ namespace NQVTK
 		NQVTK::ObjectInteractor *objectInt;
 		NQVTK::ObjectInteractor *clipperInt;
 		NQVTK::BrushingInteractor *brushInt;
+
+		NQVTK::OverlayRenderer *oren;
 
 	private:
 		// Not implemented

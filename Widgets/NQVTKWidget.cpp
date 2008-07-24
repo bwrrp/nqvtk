@@ -67,12 +67,6 @@ void NQVTKWidget::initializeGL()
 		qDebug("Failed to initialize renderer...");
 	}
 
-	// Render-on-idle timer
-	startTimer(0);
-	// FPS display timer
-	fpsTimerId = startTimer(1000);
-	frames = 0;
-
 	qDebug("Init done!");
 }
 
@@ -156,6 +150,7 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 			// TODO: this should probably not be emitted for each mouse event
 			emit cameraUpdated(GetRenderer()->GetCamera());
 			event->accept();
+			updateGL();
 		}
 		else
 		{

@@ -23,6 +23,8 @@ namespace NQVTK
 			overlayRenderer = overlay;
 
 			baseFbo = overlayFbo = 0;
+
+			updateBase = updateOverlay = true;
 		}
 
 		virtual ~OverlayRenderer()
@@ -128,13 +130,10 @@ namespace NQVTK
 		virtual void Draw()
 		{
 			// Draw baseRenderer to fbo
-			if (baseRenderer) baseRenderer->Draw();
+			if (baseRenderer && updateBase) baseRenderer->Draw();
 			
 			// Draw overlayRenderer to fbo
-			if (overlayRenderer)
-			{
-				overlayRenderer->Draw();
-			}
+			if (overlayRenderer && updateOverlay) overlayRenderer->Draw();
 
 			// Prepare for rendering
 			if (fboTarget)
@@ -180,6 +179,9 @@ namespace NQVTK
 
 		NQVTK::Renderer *GetBaseRenderer() { return baseRenderer; }
 		NQVTK::Renderer *GetOverlayRenderer() { return overlayRenderer; }
+
+		bool updateBase;
+		bool updateOverlay;
 
 	protected:
 		NQVTK::Renderer *baseRenderer;
