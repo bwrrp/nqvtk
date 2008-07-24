@@ -377,44 +377,52 @@ private slots:
 	void on_useGridTexture_toggled(bool val) 
 	{
 		distfieldStyle->useGridTexture = val;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_useGlyphTexture_toggled(bool val) 
 	{
 		distfieldStyle->useGlyphTexture = val;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_classificationThreshold_valueChanged(int val) 
 	{
 		distfieldStyle->classificationThreshold = 
 			static_cast<double>(val) / 100.0;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_useDistanceColorMap_toggled(bool val) 
 	{
 		distfieldStyle->useDistanceColorMap = val;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_contourDepthEpsilon_valueChanged(int val) 
 	{
 		distfieldStyle->contourDepthEpsilon = 
 			static_cast<double>(val) / 1000.0;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_useFatContours_toggled(bool val) 
 	{ 
 		distfieldStyle->useFatContours = val;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_depthCueRange_valueChanged(int val) 
 	{
 		distfieldStyle->depthCueRange = 
 			static_cast<double>(val) / 1000.0;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_useFog_toggled(bool val) 
 	{
 		distfieldStyle->useFog = val;
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_opacity_valueChanged(int val)
@@ -425,13 +433,18 @@ private slots:
 			renderer->GetRenderable(i)->opacity = 
 				static_cast<double>(val) / 100.0;
 		}
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_maxLayers_valueChanged(int val)
 	{
 		NQVTK::LayeredRenderer *renderer = 
 			dynamic_cast<NQVTK::LayeredRenderer*>(ui.nqvtkwidget->GetRenderer());
-		if (renderer) renderer->maxLayers = val;
+		if (renderer)
+		{
+			renderer->maxLayers = val;
+			ui.nqvtkwidget->updateGL();
+		}
 	}
 
 	void on_eyeSpacing_valueChanged(int val)
@@ -439,8 +452,11 @@ private slots:
 		// Do we have a stereo renderer?
 		NQVTK::CrossEyedStereoRenderer *renderer = 
 			dynamic_cast<NQVTK::CrossEyedStereoRenderer*>(ui.nqvtkwidget->GetRenderer());
-		if (renderer) renderer->eyeSpacing = 
-			static_cast<double>(val) / 1000.0;
+		if (renderer)
+		{
+			renderer->eyeSpacing = 
+				static_cast<double>(val) / 1000.0;
+		}
 	}
 
 	void on_lightOffsetDirection_valueChanged(int val)
@@ -448,6 +464,7 @@ private slots:
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightOffsetDirection = val;
 		// TODO: do the same for all SimpleRenderers
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_lightRelativeToCamera_toggled(bool val)
@@ -456,5 +473,6 @@ private slots:
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightRelativeToCamera = val;
 		// TODO: do the same for all SimpleRenderers
+		ui.nqvtkwidget->updateGL();
 	}
 };
