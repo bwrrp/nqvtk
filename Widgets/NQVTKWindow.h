@@ -25,6 +25,9 @@
 #include "Rendering/PolyData.h"
 #include "Rendering/ImageDataTexture3D.h"
 
+#include "Interactors/MainViewInteractor.h"
+#include "Interactors/BrushingInteractor.h"
+
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLImageDataReader.h>
@@ -144,7 +147,6 @@ public:
 
 				// Create a simple view showing just this renderable
 				NQVTKWidget *simpleView = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
-				layout->addWidget(simpleView);
 				NQVTK::SimpleRenderer *simpleRen = new NQVTK::SimpleRenderer();
 				simpleView->SetRenderer(simpleRen);
 				connect(ui.nqvtkwidget, SIGNAL(cursorPosChanged(double, double)), 
@@ -152,6 +154,8 @@ public:
 				connect(ui.nqvtkwidget, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
 					simpleView, SLOT(syncCamera(NQVTK::Camera*)));
 				simpleView->toggleCrosshair(true);
+				layout->addWidget(simpleView);
+				// TODO: sync camera after all widgets are initialized
 				if (!simpleView->isSharing())
 				{
 					qDebug("WARNING! NQVTKWidgets can't share GL resources!");
@@ -166,6 +170,7 @@ public:
 					// GL resources are shared, just add the original renderable
 					simpleRen->AddRenderable(renderable);
 				}
+				simpleView->SetInteractor(new NQVTK::MainViewInteractor(simpleRen));
 				ui.nqvtkwidget->makeCurrent();
 			}
 			else
@@ -225,8 +230,15 @@ public:
 			layout->addWidget(brushWidget);
 			NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
 			brushWidget->SetRenderer(brushRen);
+			NQVTK::BrushingInteractor *brushInt = new NQVTK::BrushingInteractor(brushRen);
+			brushWidget->SetInteractor(brushInt);
 			ui.nqvtkwidget->makeCurrent();
 		}
+
+		// Set main view interactor
+		// NOTE: This requires the camera and renderables to be set first
+		NQVTK::MainViewInteractor *mainInt = new NQVTK::MainViewInteractor(renderer);
+		ui.nqvtkwidget->SetInteractor(mainInt);
 	}
 
 private:

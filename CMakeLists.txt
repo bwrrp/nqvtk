@@ -128,7 +128,11 @@ SET( ${ProjectName}_Styles_Classes
 )
 
 SET( ${ProjectName}_Interactors_Classes
-    # TODO
+    Interactor
+    CameraInteractor
+    ObjectInteractor
+    MainViewInteractor
+    BrushingInteractor
 )
 
 # Widgets has its own sources.cmake (for moc / uic)

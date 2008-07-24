@@ -40,10 +40,8 @@ namespace NQVTK
 			glEnable(GL_CULL_FACE);
 			glEnable(GL_DEPTH_TEST);
 
-			if (!camera) 
-			{
-				camera = new Camera();
-			}
+			// Make sure we have a camera
+			GetCamera();
 
 			return true;
 		}
@@ -209,7 +207,16 @@ namespace NQVTK
 			}
 		}
 
-		Camera *GetCamera() { return camera; }
+		Camera *GetCamera() 
+		{
+			// Create a default camera if we don't have one
+			if (!camera) 
+			{
+				camera = new Camera();
+			}
+
+			return camera; 
+		}
 
 		void SetCamera(Camera *cam)
 		{
@@ -230,6 +237,10 @@ namespace NQVTK
 			return oldTarget;
 		}
 
+		int GetWidth() { return this->viewportWidth; }
+		int GetHeight() { return this->viewportHeight; }
+
+		// TODO: should probably be made into properties
 		double lightOffsetDirection;
 		bool lightRelativeToCamera;
 

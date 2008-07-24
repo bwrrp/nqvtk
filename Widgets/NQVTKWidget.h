@@ -19,6 +19,12 @@ public:
 		this->renderer = renderer;
 	}
 
+	void SetInteractor(NQVTK::Interactor *interactor)
+	{
+		assert(!this->interactor);
+		this->interactor = interactor;
+	}
+
 	NQVTK::Renderer *GetRenderer() { return renderer; }
 
 public slots:
@@ -59,10 +65,6 @@ private:
 	// FPS measurement
 	int frames;
 	int fpsTimerId;
-
-	// Previous mouse coordinates
-	int lastX;
-	int lastY;
 
 	// Crosshair
 	bool crosshairOn;

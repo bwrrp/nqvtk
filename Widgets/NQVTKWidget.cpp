@@ -26,6 +26,7 @@ renderer(0), initialized(false), interactor(0)
 // ----------------------------------------------------------------------------
 NQVTKWidget::~NQVTKWidget()
 {
+	if (interactor) delete interactor;
 	if (renderer) 
 	{
 		makeCurrent();
@@ -140,6 +141,8 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 	{
 		if (interactor->MouseMoveEvent(event))
 		{
+			// TODO: this should probably not be emitted for each mouse event
+			emit cameraUpdated(renderer->GetCamera());
 			event->accept();
 		}
 		else
@@ -147,99 +150,6 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 			event->ignore();
 		}
 	}
-
-	// TODO: this should really be refactored into separate interactors
-	if (event->modifiers() & Qt::ControlModifier 
-		|| event->modifiers() & Qt::AltModifier) 
-	{
-		// Ctrl and Alt are used to control renderables
-		NQVTK::Renderable *renderable;
-		if (event->modifiers() & Qt::ControlModifier)
-		{
-			// Mouse controls object 0
-			renderable = renderer->GetRenderable(0);
-		}
-		else
-		{
-			// Mouse controls clipper object (if it's there)
-			renderable = renderer->GetRenderable(2);
-		}
-
-		if (renderable && event->buttons() & Qt::LeftButton)
-		{
-			// Rotate
-			renderable->rotateY += event->x() - lastX;
-			renderable->rotateX -= event->y() - lastY;
-
-			if (renderable->rotateX > 80.0) 
-			{
-				renderable->rotateX = 80.0;
-			}
-			if (renderable->rotateX < -80.0) 
-			{
-				renderable->rotateX = -80.0;
-			}
-		}
-		if (renderable && event->buttons() & Qt::MidButton)
-		{
-			// TODO: make translation relative to window
-			NQVTK::Vector3 right = NQVTK::Vector3(1.0, 0.0, 0.0);
-			NQVTK::Vector3 up = NQVTK::Vector3(0.0, 1.0, 0.0);
-			double factor = 0.6;
-			// Translate
-			renderable->position += 
-				(lastX - event->x()) * factor * right +
-				(lastY - event->y()) * factor * up;
-		}
-	}
-	else if (event->modifiers() & Qt::ShiftModifier)
-	{
-		// Shift modifier: (very primitive) experimental brushing
-		// TODO: this should be integrated into the main view eventually
-		// for now we only do this if our renderer is a BrushingRenderer
-		NQVTK::BrushingRenderer *bren = dynamic_cast<NQVTK::BrushingRenderer*>(renderer);
-		if (bren)
-		{
-			int pen = 0;
-			if (event->buttons() & Qt::LeftButton) pen = 1;
-			if (event->buttons() & Qt::RightButton) pen = 2;
-			bren->LineTo(event->x(), this->height() - event->y(), pen);
-		}
-	}
-	else
-	{
-		// No modifiers: camera control
-		NQVTK::OrbitCamera *cam = 
-			dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
-		if (cam)
-		{
-			// Mouse controls camera
-			if (event->buttons() & Qt::LeftButton)
-			{
-				// Rotate
-				cam->rotateY += event->x() - lastX;
-				cam->rotateX -= event->y() - lastY;
-				if (cam->rotateX > 80.0) cam->rotateX = 80.0;
-				if (cam->rotateX < -80.0) cam->rotateX = -80.0;
-			}
-
-			if (event->buttons() & Qt::RightButton)
-			{
-				// Zoom
-				cam->zoom += (event->y() - lastY) * 0.01f;
-				if (cam->zoom < 0.05) cam->zoom = 0.05;
-				if (cam->zoom > 20.0) cam->zoom = 20.0;
-			}
-
-			cam->Update();
-			emit cameraUpdated(cam);
-		}
-	}
-
-	lastX = event->x();
-	lastY = event->y();
-
-	event->accept();
 
 	// Compute projection-netral coordinates
 	double x = (2.0 * static_cast<double>(event->x()) / this->width() - 1.0) * renderer->GetCamera()->aspect;
