@@ -29,7 +29,7 @@ namespace NQVTK
 		{ 
 			maxLayers = 8;
 			drawBackground = true;
-		};
+		}
 
 		virtual ~LayeredRenderer() 
 		{ 
@@ -134,12 +134,81 @@ namespace NQVTK
 			fbo2 = fbo;
 		}
 
+		virtual void DrawScribePass(int layer)
+		{
+			// Start Scribe program
+			scribe->Start();
+			scribe->SetUniform1i("layer", layer);
+			scribe->SetUniform1f("farPlane", camera->farZ);
+			scribe->SetUniform1f("nearPlane", camera->nearZ);
+			style->UpdateScribeParameters(scribe);
+
+			// Set up textures used by the scribe
+			style->RegisterScribeTextures(fbo2);
+			tm->SetupProgram(scribe);
+			tm->Bind();
+			
+			Clear();
+
+			query->Start();
+			DrawRenderables();
+			query->Stop();
+
+			scribe->Stop();
+
+			// Clean up references in the texture manager
+			tm->Unbind();
+			style->UnregisterScribeTextures();
+		}
+
+		virtual void DrawPainterPass(int layer)
+		{
+			glDisable(GL_DEPTH_TEST);
+			// TODO: might want to make blend function customizable (in styles?)
+			glBlendFuncSeparate(
+				GL_DST_ALPHA, GL_ONE, 
+				GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_BLEND);
+
+			// Start painter program
+			painter->Start();
+			painter->SetUniform1i("layer", layer);
+			painter->SetUniform1f("farPlane", camera->farZ);
+			painter->SetUniform1f("nearPlane", camera->nearZ);
+			painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
+			painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
+			style->UpdatePainterParameters(painter);
+
+			// Set up textures used by the painter
+			style->RegisterPainterTextures(fbo1, fbo2);
+			tm->SetupProgram(painter);
+			tm->Bind();
+
+			// Draw a full screen quad for the painter pass
+			glColor3d(1.0, 1.0, 1.0);
+			glBegin(GL_QUADS);
+			glVertex3d(-1.0, -1.0, 0.0);
+			glVertex3d(1.0, -1.0, 0.0);
+			glVertex3d(1.0, 1.0, 0.0);
+			glVertex3d(-1.0, 1.0, 0.0);
+			glEnd();
+
+			painter->Stop();
+
+			// Clean up references in the texture manager
+			tm->Unbind();
+			style->UnregisterPainterTextures();
+
+			glDisable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
+		}
+
 		virtual void Draw()
 		{
 			DrawCamera();
 			UpdateLighting();
 
-			// Prepare for rendering
+			// Prepare target for rendering
 			if (fboTarget)
 			{
 				fboTarget->Bind();
@@ -148,18 +217,24 @@ namespace NQVTK
 			{
 				glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			}
+
+			// For front-to-back blending, we clear the target with alpha = 1.0
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			Clear();
-			glClearColor(0.0, 0.0, 0.0, 0.0);
-			glDisable(GL_CULL_FACE);
-			glEnable(GL_COLOR_MATERIAL);
+
 			if (fboTarget)
 			{
 				fboTarget->Unbind();
 			}
 			fbo1->Bind();
 
-			// TODO: we could initialize info buffers here (and swap)
+			// All infobuffers should be cleared to black
+			glClearColor(0.0, 0.0, 0.0, 0.0);
+
+			// Render both sides of the surface polys
+			glDisable(GL_CULL_FACE);
+
+			// TODO: we could initialize the info buffers here (and swap)
 			// this way shaders can skip the check for layer 0
 			// TODO: handle camera being inside of objects 
 			// this could be done using this method, possibly by pre-rendering 
@@ -170,29 +245,8 @@ namespace NQVTK
 			int layer = 0;
 			while (!done)
 			{
-				// Start Scribe program
-				scribe->Start();
-				scribe->SetUniform1i("layer", layer);
-				scribe->SetUniform1f("farPlane", camera->farZ);
-				scribe->SetUniform1f("nearPlane", camera->nearZ);
-				style->UpdateScribeParameters(scribe);
-
-				// Set up textures used by the scribe
-				style->RegisterScribeTextures(fbo2);
-				tm->SetupProgram(scribe);
-				tm->Bind();
-				
-				Clear();
-
-				query->Start();
-				DrawRenderables();
-				query->Stop();
-
-				scribe->Stop();
-
-				// Clean up references in the texture manager
-				tm->Unbind();
-				style->UnregisterScribeTextures();
+				// Draw the scribe pass (propagate information buffers)
+				DrawScribePass(layer);
 
 				// Blend results to screen or to target FBO
 				fbo1->Unbind();
@@ -201,44 +255,8 @@ namespace NQVTK
 					fboTarget->Bind();
 				}
 
-				glDisable(GL_DEPTH_TEST);
-				// TODO: might want to make blend function customizable (in styles?)
-				glBlendFuncSeparate(
-					GL_DST_ALPHA, GL_ONE, 
-					GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-				glEnable(GL_BLEND);
-
-				// Start painter program
-				painter->Start();
-				painter->SetUniform1i("layer", layer);
-				painter->SetUniform1f("farPlane", camera->farZ);
-				painter->SetUniform1f("nearPlane", camera->nearZ);
-				painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
-				painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
-				style->UpdatePainterParameters(painter);
-
-				// Set up textures used by the painter
-				style->RegisterPainterTextures(fbo1, fbo2);
-				tm->SetupProgram(painter);
-				tm->Bind();
-
-				// Draw a full screen quad for the painter pass
-				glColor3d(1.0, 1.0, 1.0);
-				glBegin(GL_QUADS);
-				glVertex3d(-1.0, -1.0, 0.0);
-				glVertex3d(1.0, -1.0, 0.0);
-				glVertex3d(1.0, 1.0, 0.0);
-				glVertex3d(-1.0, 1.0, 0.0);
-				glEnd();
-
-				painter->Stop();
-
-				// Clean up references in the texture manager
-				tm->Unbind();
-				style->UnregisterPainterTextures();
-
-				glDisable(GL_BLEND);
-				glEnable(GL_DEPTH_TEST);
+				// Draw the painter pass (visualize layer, blend with previous results)
+				DrawPainterPass(layer);
 
 				unsigned int numfragments = query->GetResultui();
 				++layer;
