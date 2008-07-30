@@ -106,7 +106,7 @@ public:
 			args.append("D:/Data/Cartilage/Lorena/femoral1-dist256.vti");
 			args.append("D:/Data/Cartilage/Lorena/femoral2-dist256.vti");
 			//*/
-			//* Ventricles
+			/* Ventricles
 			args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_textured.vtp");
 			args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_textured.vtp");
 			args.append("-"); // distance field marker
@@ -119,6 +119,10 @@ public:
 			args.append("-");
 			args.append("D:/Data/Surface/test4-small-dist256.vti");
 			args.append("D:/Data/Surface/test3-small-dist256.vti");
+			//*/
+			//* Luca's ventricles
+			args.append("D:/data/Luca/PolyDataG0/Patient00.vtp");
+			args.append("D:/data/Luca/PolyDataG3/Patient00.vtp");
 			//*/
 		}
 		// Load the polydata
