@@ -170,7 +170,7 @@ namespace NQVTK
 				// Each line consists of number N followed by N point indices
 				// This is translated to 2(N-1) points for line segments
 				int numPoints = lines->GetNumberOfConnectivityEntries() - numPolyLines;
-				numLines = 2 * (numPoints - numPolyLines);
+				numLines = numPoints - numPolyLines;
 				vtkIdType *pIds = lines->GetPointer();
 				vtkIdType *pEnd = pIds + lines->GetNumberOfConnectivityEntries();
 				lineIndices = GLBuffer::New();
@@ -203,6 +203,7 @@ namespace NQVTK
 						*indices = static_cast<unsigned int>(*pIds);
 						++ indices;
 					}
+					++pIds;
 				}
 				lineIndices->Unmap();
 				lineIndices->Unbind();
