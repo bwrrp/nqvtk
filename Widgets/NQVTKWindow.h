@@ -121,8 +121,11 @@ public:
 			args.append("D:/Data/Surface/test3-small-dist256.vti");
 			//*/
 			//* Luca's ventricles
-			args.append("D:/data/Luca/PolyDataG0/Patient00.vtp");
-			args.append("D:/data/Luca/PolyDataG3/Patient00.vtp");
+			args.append("D:/data/Luca/PolyDataG0/Patient00-textured.vtp");
+			args.append("D:/data/Luca/PolyDataG3/Patient00-textured.vtp");
+			args.append("-");
+			args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
+			args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
 			//*/
 		}
 		// Load the polydata
