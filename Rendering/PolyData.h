@@ -94,6 +94,22 @@ namespace NQVTK
 			}
 			int totalSize = pointsSize + normalsSize + tcoordsSize;
 
+			// Pointdata arrays can become custom attributes
+			int numArrays = data->GetPointData()->GetNumberOfArrays();
+			for (int arId = 0; arId < numArrays; ++arId)
+			{
+				vtkAbstractArray *ar = data->GetPointData()->GetArray(arId);
+				qDebug("Found array '%s': %d tuples of %d type %s components", 
+					ar->GetName(), ar->GetNumberOfTuples(), 
+					ar->GetNumberOfComponents(), ar->GetDataTypeAsString());
+				// TODO: if this is a "wanted" array:
+				// * load it into the VBO
+				// * add an AttributePointer with placeholder location (-1?) (wraps GLAttribute)
+				// * add this pointer to a name-to-pointer map
+				// TODO: add SetupProgram which queries active attribs and sets locations
+				// TODO: this AttributePointer should be noop for undefined locations
+			}
+
 			// Allocate VBO and copy data
 			vertexBuffer->BindAsVertexData();
 			vertexBuffer->SetData(totalSize, 0, GL_STATIC_DRAW);
