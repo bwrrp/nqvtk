@@ -2,7 +2,6 @@
 
 #include "VBOMesh.h"
 
-#include <string>
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -32,6 +31,13 @@ namespace NQVTK
 			DRAWPARTS_POLYS = 4,
 			DRAWPARTS_STRIPS = 8,
 			DRAWPARTS_ALL = 15
+		};
+
+		struct arrayLoadInfo
+		{
+			vtkAbstractArray *ar;
+			int size;
+			int type;
 		};
 
 		PolyData(vtkPolyData *data)
@@ -89,25 +95,57 @@ namespace NQVTK
 					break;
 
 				default:
-					qDebug("Error: texcoords use unknown type: %d", type);
+					qDebug("Error: texcoords use unsupported type: %s", 
+						tcoords->GetDataTypeAsString());
 				}
 			}
 			int totalSize = pointsSize + normalsSize + tcoordsSize;
 
 			// Pointdata arrays can become custom attributes
 			int numArrays = data->GetPointData()->GetNumberOfArrays();
+			std::vector<arrayLoadInfo> arraysToLoad;
 			for (int arId = 0; arId < numArrays; ++arId)
 			{
 				vtkAbstractArray *ar = data->GetPointData()->GetArray(arId);
 				qDebug("Found array '%s': %d tuples of %d type %s components", 
 					ar->GetName(), ar->GetNumberOfTuples(), 
 					ar->GetNumberOfComponents(), ar->GetDataTypeAsString());
-				// TODO: if this is a "wanted" array:
-				// * load it into the VBO
-				// * add an AttributePointer with placeholder location (-1?) (wraps GLAttribute)
-				// * add this pointer to a name-to-pointer map
-				// TODO: add SetupProgram which queries active attribs and sets locations
-				// TODO: this AttributePointer should be noop for undefined locations
+				
+				// TODO: only load the data if this is a "wanted" array
+				
+				// Skip null names
+				if (!ar->GetName()) continue;
+
+				assert(ar->GetNumberOfTuples() == numPoints);
+
+				arrayLoadInfo info;
+				info.ar = ar;
+				
+				// Check the data type
+				int type = ar->GetDataType();
+				switch (type)
+				{
+				case VTK_FLOAT:
+					info.size = ar->GetNumberOfTuples() * 
+						ar->GetNumberOfComponents() * sizeof(GLfloat);
+					info.type = GL_FLOAT;
+					break;
+
+				case VTK_DOUBLE:
+					info.size = ar->GetNumberOfTuples() * 
+						ar->GetNumberOfComponents() * sizeof(GLdouble);
+					info.type = GL_DOUBLE;
+					break;
+
+				default:
+					qDebug("Error: array '%s' uses unsupported type: %s", 
+						ar->GetName(), ar->GetDataTypeAsString());
+					info.size = 0;
+					info.type = GL_NONE;
+				}
+
+				totalSize += info.size;
+				arraysToLoad.push_back(info);
 			}
 
 			// Allocate VBO and copy data
@@ -129,19 +167,37 @@ namespace NQVTK
 				TexCoordPointer(0, tcoords->GetNumberOfComponents(), 
 					tcoordsType, 0, pointsSize + normalsSize);
 			}
+
+			// Load pointdata arrays
+			int offset = pointsSize + normalsSize + tcoordsSize;
+			for (std::vector<arrayLoadInfo>::const_iterator it = arraysToLoad.begin();
+				it != arraysToLoad.end(); ++it)
+			{
+				// Load it into the VBO
+				vertexBuffer->SetSubData(offset, it->size, 
+					it->ar->GetVoidPointer(0));
+				// Add a VertexAttribPointer with placeholder location
+				VertexAttribPointer(it->ar->GetName(), -1, 
+					it->ar->GetNumberOfComponents(), it->type, 
+					(it->type != GL_FLOAT && it->type != GL_DOUBLE), 
+					0, offset);
+				// Update offset
+				offset += it->size;
+			}
 			vertexBuffer->Unbind();
+			GLUtility::CheckOpenGLError("Loading vertex buffer data");
 
 			// Primitive types in the polydata
 			numVerts = data->GetNumberOfVerts();
-			qDebug("# verts: %d", numVerts);	//# verts: 0
+			qDebug("# verts: %d", numVerts);
 			numLines = data->GetNumberOfLines();
-			qDebug("# lines: %d", numLines);	//# lines: 0
+			qDebug("# lines: %d", numLines);
 			numPolys = data->GetNumberOfPolys();
-			qDebug("# polys: %d", numPolys);	//# polys: 66490
+			qDebug("# polys: %d", numPolys);
 			numStrips = data->GetNumberOfStrips();
-			qDebug("# strips: %d", numStrips);	//# strips: 0
+			qDebug("# strips: %d", numStrips);
 			// Not sure about this
-			qDebug("# pieces: %d", data->GetNumberOfPieces());	//# pieces: 1
+			qDebug("# pieces: %d", data->GetNumberOfPieces());
 
 			// Vertices
 			if (numVerts > 0)

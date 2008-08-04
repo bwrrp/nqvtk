@@ -105,23 +105,35 @@ namespace NQVTK
 		class VertexAttribPointer : public AttributePointer
 		{
 		public:
-			unsigned int index;
+			int index;
 			int size;
 			bool normalized;
 
-			VertexAttribPointer(unsigned int index, int size, 
+			VertexAttribPointer(int index, int size, 
 				GLenum type, bool normalized, int stride, int offset)
 				: AttributePointer(type, stride, offset), index(index), 
 				size(size), normalized(normalized) { }
 
 			virtual void Set() const
 			{
-				glVertexAttribPointer(index, size, type, 
-					(normalized ? GL_TRUE : GL_FALSE), 
-					stride, BUFFER_OFFSET(offset));
+				// Ignore placeholder pointers (index < 0)
+				if (index >= 0)
+				{
+					glVertexAttribPointer(index, size, type, 
+						(normalized ? GL_TRUE : GL_FALSE), 
+						stride, BUFFER_OFFSET(offset));
+					glEnableVertexAttribArray(index);
+				}
 			}
 
-			virtual void Unset() const { }
+			virtual void Unset() const 
+			{
+				// Ignore placeholder pointers (index < 0)
+				if (index >= 0)
+				{
+					glDisableVertexAttribArray(index);
+				}
+			}
 		};
 	}
 }

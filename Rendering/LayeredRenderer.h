@@ -3,6 +3,7 @@
 #include "GLBlaat/GL.h"
 
 #include "Renderer.h"
+#include "VBOMesh.h"
 
 #include "Styles/RenderStyle.h"
 
@@ -82,6 +83,14 @@ namespace NQVTK
 				qDebug("Failed to build Scribe!");
 				return false;
 			}
+			scribeAttribs = scribe->GetActiveAttributes();
+#ifndef NDEBUG
+			for (std::vector<GLAttribute>::const_iterator it = scribeAttribs.begin();
+				it != scribeAttribs.end(); ++it)
+			{
+				qDebug("Scribe uses attribute '%s' (%d)", it->name.c_str(), it->index);
+			}
+#endif
 			// - Painter (shading pass)
 			painter = style->CreatePainter();
 			if (!painter) 
@@ -307,6 +316,8 @@ namespace NQVTK
 
 		virtual void PrepareForRenderable(int objectId, NQVTK::Renderable *renderable)
 		{
+			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+			if (mesh) mesh->SetupAttributes(scribeAttribs);
 			style->PrepareForObject(scribe, objectId, renderable);
 		}
 
@@ -358,6 +369,7 @@ namespace NQVTK
 		GLTextureManager *tm;
 
 		RenderStyle *style;
+		std::vector<GLAttribute> scribeAttribs;
 
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
