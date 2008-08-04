@@ -74,6 +74,7 @@ namespace NQVTK
 				GLProgram *scribe = GLProgram::New();
 				bool res = scribe->AddVertexShader(
 					"#define NQVTK_USE_SHADOWMAP\n"
+					"#define NQVTK_USE_PVALS\n"
 					"uniform float farPlane;"
 					"uniform float nearPlane;"
 					"uniform int objectId;"
@@ -85,6 +86,10 @@ namespace NQVTK
 					"uniform mat4 shadowPM;"
 					"varying vec4 shadowCoord;"
 					"varying float depthInShadow;"
+					"\n#endif\n"
+					"\n#ifdef NQVTK_USE_PVALS\n"
+					"attribute float pvals;"
+					"varying float pvalue;"
 					"\n#endif\n"
 					// Varyings
 					"varying vec4 vertex;"
@@ -109,10 +114,14 @@ namespace NQVTK
 					"  float shadowDepthRange = (shadowFarPlane - shadowNearPlane);"
 					"  depthInShadow = (-shadowPos.z / shadowPos.w - shadowNearPlane) / shadowDepthRange;"
 					"\n#endif\n"
+					"\n#ifdef NQVTK_USE_PVALS\n"
+					"  pvalue = pvals;"
+					"\n#endif\n"
 					"}");
 				if (res) res = scribe->AddFragmentShader(
 					"#define NQVTK_USE_SHADOWMAP\n" // use shadow mapping (also see above)
 					"#define NQVTK_USE_VSM\n" // use variance shadow mapping method
+					"#define NQVTK_USE_PVALS\n" // use p-value thresholding
 					"#extension GL_ARB_texture_rectangle : enable\n"
 					"#extension GL_ARB_draw_buffers : enable\n"
 					"#ifdef GL_EXT_gpu_shader4\n"
@@ -144,6 +153,9 @@ namespace NQVTK
 					"varying vec3 normal;"
 					"varying vec4 color;"
 					"varying float depthInCamera;"
+					"\n#ifdef NQVTK_USE_PVALS\n"
+					"varying float pvalue;"
+					"\n#endif\n"
 					// Rounds a float to the nearest integer
 					"\n#ifndef GL_EXT_gpu_shader4\n"
 					"float round(float x) {"
@@ -249,7 +261,11 @@ namespace NQVTK
 					"    dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);"
 					//*
 					"    if (useDistanceColorMap) {"
+					"\n#ifdef NQVTK_USE_PVALS\n"
+					"      float d = clamp(pvalue, 0.0, 1.0);"
+					"\n#else\n"
 					"      float d = clamp(dist / 7.0, 0.0, 1.0);"
+					"\n#endif\n"
 					"      if (objectId == 0) {"
 					"        col = vec4(1.0, 1.0 - d, 1.0 - d, 1.0);"
 					"      } else {"
@@ -261,10 +277,17 @@ namespace NQVTK
 					//"    float d = clamp(dist / classificationThreshold, 0.0, 1.0);"
 					//"    col = vec4(col.rgb * d + vec3(0.5) * (1.0 - d), col.a);"
 					// Thresholding
+					"\n#ifdef NQVTK_USE_PVALS\n"
+					"    if (pvalue * 15.0 < classificationThreshold) {"
+					"      classification = 0.0;"
+					"      col = vec4(1.0);"
+					"    }"
+					"\n#else\n"
 					"    if (dist < classificationThreshold) {"
 					"      classification = 0.0;"
 					"      col = vec4(1.0);"
 					"    }"
+					"\n#endif\n"
 					"  }"
 					/* TEST: texcoord-less xy grid
 					"  if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {"
