@@ -77,35 +77,28 @@ int main(int argc, const char* argv[])
 	string headerFileName = outFileName + ".h";
 	string sourceFileName = outFileName + ".cpp";
 
-	// Header pre and post
-	string headerPre = 
-		"#pragma once\n"
-		"// This file is generated automatically during the build process\n"
-		"// DO NOT MODIFY!\n"
-		"// Change the corresponding text files instead!\n"
-		"\n"
-		"namespace strings\n"
-		"{\n";
-	string headerPost = 
-		"}\n";
-
-	// Source pre and post
-	string sourcePre = 
-		"// This file is generated automatically during the build process\n"
-		"// DO NOT MODIFY!\n"
-		"// Change the corresponding text files instead!\n"
-		"\n"
-		"namespace strings\n"
-		"{\n";
-	string sourcePost = 
-		"}\n";
-
 	ofstream header(headerFileName.c_str());
 	ofstream source(sourceFileName.c_str());
 
-	header << headerPre;
-	source << sourcePre;
+	// Generate header preamble
+	header 
+		<< "#pragma once\n"
+		<< "// This file is generated automatically during the build process\n"
+		<< "// DO NOT MODIFY!\n"
+		<< "// Change the corresponding text files instead!\n"
+		<< "\n"
+		<< "namespace " << outFileName << "\n"
+		<< "{\n";
 
+	// Generate source preamble
+	source 
+		<< "// This file is generated automatically during the build process\n"
+		<< "// DO NOT MODIFY!\n"
+		<< "// Change the corresponding text files instead!\n"
+		<< "\n"
+		<< "namespace " << outFileName << "\n"
+		<< "{\n";
+	
 	// Process input files
 	for (vector<string>::const_iterator it = inFileNames.begin(); 
 		it != inFileNames.end(); ++it)
@@ -129,8 +122,9 @@ int main(int argc, const char* argv[])
 		source << ";\n";
 	}
 
-	header << headerPost;
-	source << sourcePost;
+	// Finish the file contents
+	header << "}\n";
+	source << "}\n";
 
 	header.close();
 	source.close();
