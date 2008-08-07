@@ -1,0 +1,16 @@
+#extension GL_ARB_texture_rectangle : enable
+uniform sampler2DRectShadow depthBuffer;
+uniform int layer;
+
+// Shader main function
+void main() {
+	vec4 r0 = gl_FragCoord;
+	// Depth peeling
+	if (layer > 0) {
+		float r1 = shadow2DRect(depthBuffer, r0.xyz).x;
+		r1 = r1 - 0.5;
+	if (r1 < 0.0) { discard; }
+	}
+	// Store data
+	gl_FragData[0] = gl_Color;
+}

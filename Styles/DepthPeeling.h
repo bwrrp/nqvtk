@@ -8,6 +8,8 @@
 #include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLUtility.h"
 
+#include "Shaders.h"
+
 #include <cassert>
 
 namespace NQVTK
@@ -47,21 +49,7 @@ namespace NQVTK
 			{
 				GLProgram *scribe = GLProgram::New();
 				bool res = scribe->AddFragmentShader(
-					"#extension GL_ARB_texture_rectangle : enable\n"
-					"uniform sampler2DRectShadow depthBuffer;"
-					"uniform int layer;"
-					// Shader main function
-					"void main() {"
-					"  vec4 r0 = gl_FragCoord;"
-					// Depth peeling
-					"  if (layer > 0) {"
-					"    float r1 = shadow2DRect(depthBuffer, r0.xyz).x;"
-					"    r1 = r1 - 0.5;"
-					"    if (r1 < 0.0) { discard; }"
-					"  }"
-					// Store data
-					"  gl_FragData[0] = gl_Color;"
-					"}");
+					Shaders::DepthPeelingScribeFS);
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
 				if (!res)
@@ -76,26 +64,9 @@ namespace NQVTK
 			{
 				GLProgram *painter = GLProgram::New();
 				bool res = painter->AddVertexShader(
-					"void main() {"
-					"  gl_Position = gl_Vertex;"
-					"}");
+					Shaders::DepthPeelingPainterVS);
 				if (res) res = painter->AddFragmentShader(
-					"#extension GL_ARB_texture_rectangle : enable\n"
-					"uniform sampler2DRect colors;"
-					"uniform int layer;"
-					"uniform float viewportX;"
-					"uniform float viewportY;"
-					// Main shader function
-					"void main() {"
-					"  vec4 r0 = gl_FragCoord;"
-					"  r0.x -= viewportX;"
-					"  r0.y -= viewportY;"
-					"  vec4 color = texture2DRect(colors, r0.xy);"
-					// Pre-multiply colors by alpha
-					"  vec3 litFragment = color.rgb;"
-					"  litFragment *= color.a;"
-					"  gl_FragColor = vec4(litFragment, color.a);"
-					"}");
+					Shaders::DepthPeelingPainterFS);
 				if (res) res = painter->Link();
 				qDebug(painter->GetInfoLogs().c_str());
 				if (!res) 
