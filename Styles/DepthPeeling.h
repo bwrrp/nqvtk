@@ -64,7 +64,7 @@ namespace NQVTK
 			{
 				GLProgram *painter = GLProgram::New();
 				bool res = painter->AddVertexShader(
-					Shaders::DepthPeelingPainterVS);
+					Shaders::GenericPainterVS);
 				if (res) res = painter->AddFragmentShader(
 					Shaders::DepthPeelingPainterFS);
 				if (res) res = painter->Link();

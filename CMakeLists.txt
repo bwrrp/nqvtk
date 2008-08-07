@@ -147,9 +147,12 @@ SET( ${ProjectName}_TextHeaders
 )
 
 SET( ${ProjectName}_Shaders_Text
+	GenericPainterVS.txt
 	DepthPeelingScribeFS.txt
-	DepthPeelingPainterVS.txt
 	DepthPeelingPainterFS.txt
+	IBISScribeVS.txt
+	IBISScribeFS.txt
+	IBISPainterFS.txt
 )
 
 # --------------------------------------------------
