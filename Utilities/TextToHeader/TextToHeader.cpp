@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdio>
 
 using namespace std;
 
@@ -137,7 +138,16 @@ int main(int argc, const char* argv[])
 	header.close();
 	source.close();
 
-	cout << "Generated " << headerFileName << ", " << sourceFileName << endl;
+	if (res == 0)
+	{
+		cout << "Generated " << headerFileName << ", " << sourceFileName << endl;
+	}
+	else
+	{
+		// There was an error, remove the files
+		std::remove(headerFileName.c_str());
+		std::remove(sourceFileName.c_str());
+	}
 	cout << endl;
 
 	return res;
