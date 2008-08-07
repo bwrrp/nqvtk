@@ -75,6 +75,9 @@ SET( ${ProjectName}_Libraries
     ${GLBlaat_lib}
 )
 
+# We need the utilities
+add_subdirectory( Utilities )
+
 # --------------------------------------------------
 # Modules
 
