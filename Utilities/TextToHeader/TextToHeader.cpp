@@ -104,7 +104,7 @@ int main(int argc, const char* argv[])
 	
 	// Process input files
 	for (vector<string>::const_iterator it = inFileNames.begin(); 
-		it != inFileNames.end(); ++it)
+		it != inFileNames.end() && res == 0; ++it)
 	{
 		string file = fileNameFromPath(*it);
 		cout << "\t" << file << endl;
@@ -121,7 +121,7 @@ int main(int argc, const char* argv[])
 			line = escapeSpecialChars(line);
 			source << "\n\t\"" << line << "\\n\"";
 		}
-		if (inFile.fail())
+		if (inFile.fail() && !inFile.eof())
 		{
 			cerr << "Error reading " << *it << endl;
 			source << "\"\"";
