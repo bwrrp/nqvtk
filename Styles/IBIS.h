@@ -7,6 +7,8 @@
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLUtility.h"
 
+#include "Shaders.h"
+
 #include <cassert>
 
 namespace NQVTK

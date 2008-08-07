@@ -145,6 +145,9 @@ namespace NQVTK
 
 		virtual void DrawScribePass(int layer)
 		{
+			// For scribes that don't have a vertex shader
+			glEnable(GL_COLOR_MATERIAL);
+
 			// Start Scribe program
 			scribe->Start();
 			scribe->SetUniform1i("layer", layer);

@@ -153,6 +153,9 @@ SET( ${ProjectName}_Shaders_Text
 	IBISScribeVS.txt
 	IBISScribeFS.txt
 	IBISPainterFS.txt
+	DistanceFieldsScribeVS.txt
+	DistanceFieldsScribeFS.txt
+	DistanceFieldsPainterFS.txt
 )
 
 # --------------------------------------------------

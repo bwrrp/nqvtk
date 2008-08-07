@@ -1,0 +1,178 @@
+#extension GL_ARB_texture_rectangle : enable
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler2DRect normals;
+uniform sampler2DRect colors;
+uniform sampler2DRect infoPrevious;
+uniform sampler2DRect infoCurrent;
+uniform int layer;
+uniform float farPlane;
+uniform float nearPlane;
+uniform float viewportX;
+uniform float viewportY;
+
+// Parameters
+uniform bool useFatContours;
+uniform float contourDepthEpsilon;
+uniform bool useFog;
+uniform float depthCueRange;
+
+#ifndef GL_EXT_gpu_shader4
+// Rounds a float to the nearest integer
+float round(float x) {
+	return floor(x + 0.5);
+}
+#endif
+
+// Unpacks a float from two 8 bit channels
+float decodeDepth(vec2 coded) {
+	vec2 factors = vec2(1.0, 0.00390625);
+	return dot(coded, factors);
+}
+
+// Gets a single bit from a float-encoded bit set
+bool getBit(float byte, int bit) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	float N = 4.0;
+	float max = pow(2.0, N) - 1.0;
+	int pattern = int(round(byte * max));
+	int mask = 1 << bit;
+	return (pattern & mask) != 0;
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	if (bit > int(N)) return false;
+	float mask = round(byte * (pow(f, N) - 1.0)) / f;
+	int i;
+	for (i = 0; i <= bit - 1; ++i) {
+		mask = floor(mask) / f;
+	}
+	return (fract(mask) > 0.25);
+#endif
+}
+
+// CSG formula
+bool CSG(float mask) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	return getBit(mask, 0) && getBit(mask, 1);
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	mask = round(mask * (pow(f, N) - 1.0)) / f;
+	bool inActor0 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor1 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor2 = fract(mask) > 0.25;
+	return inActor0 && inActor1;
+#endif
+}
+
+// CSG formula for fogging volumes
+bool CSGFog(float mask) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	return getBit(mask, 0) ^^ getBit(mask, 1);
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	mask = round(mask * (pow(f, N) - 1.0)) / f;
+	bool inActor0 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor1 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor2 = fract(mask) > 0.25;
+	return inActor0 ^^ inActor1;
+#endif
+}
+
+// Phong shading helper
+vec3 phongShading(vec3 matColor, vec3 normal) {
+	vec3 l = normalize(vec3(gl_LightSource[0].position));
+	vec3 n = normalize(normal);
+	vec3 h = normalize(gl_LightSource[0].halfVector.xyz);
+	float NdotL = dot(n, l);
+	float diffuse = 0.5 + 0.5 * min(max(NdotL, 0.0), 1.0);
+	float specular = 0.0;
+	if (NdotL >= 0.0) {
+		specular = pow(max(dot(n, h), 0.0), 64.0);
+	}
+	return diffuse * matColor + specular * vec3(0.4);
+}
+
+// Main shader function
+void main() {
+	// Get info
+	vec4 r0 = gl_FragCoord;
+	r0.x -= viewportX;
+	r0.y -= viewportY;
+	vec3 normal = texture2DRect(normals, r0.xy).rgb;
+	normal = (2.0 * normal) - vec3(1.0);
+	vec4 color = texture2DRect(colors, r0.xy);
+	vec4 info0 = texture2DRect(infoCurrent, r0.xy);
+	vec4 info1 = texture2DRect(infoPrevious, r0.xy);
+	if (layer == 0) info1 = vec4(0.0);
+
+	// Apply lighting
+	vec3 litFragment = phongShading(color.rgb, normal);
+
+	// Apply CSG
+	float mask0 = info0.y;
+	float mask1 = info1.y;
+	if (CSG(mask0) != CSG(mask1)) {
+		color.a = 1.0;
+	}
+
+	// Apply contouring
+	vec4 left	 = texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));
+	vec4 right	= texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));
+	vec4 top		= texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));
+	vec4 bottom = texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));
+	float depth = decodeDepth(info0.zw);
+	float diffL = abs(decodeDepth(left.zw) - depth);
+	float diffR = abs(decodeDepth(right.zw) - depth);
+	float diffT = abs(decodeDepth(top.zw) - depth);
+	float diffB = abs(decodeDepth(bottom.zw) - depth);
+	bool contourL = (left.x != info0.x && diffL < contourDepthEpsilon);
+	bool contourR = (right.x != info0.x && diffR < contourDepthEpsilon);
+	bool contourT = (top.x != info0.x && diffT < contourDepthEpsilon);
+	bool contourB = (bottom.x != info0.x && diffB < contourDepthEpsilon);
+	if (contourL || contourT || (useFatContours && (contourR || contourB))) {
+		litFragment = vec3(0.0);
+		color.a = 1.0;
+	}
+
+	// Clipping: objectId 2 is our clipping object
+	// TODO: Clipping object should probably be configurable
+	if (getBit(mask0, 2) && !getBit(mask1, 2)) {
+		color.a = 0.0; // Just render the fog for this slab
+	} else if ((getBit(mask0, 2) || getBit(mask1, 2))) {
+		discard; // Nothing to render for this slab
+	}
+
+	// Apply fogging
+	if (useFog && CSGFog(mask1)) {
+		vec3 fogColor = vec3(1.0, 0.0, 0.2);
+		float depthRange = (farPlane - nearPlane);
+		float front = decodeDepth(info1.zw) * depthRange;
+		float back = decodeDepth(info0.zw) * depthRange;
+		float diff = back - front;
+		float fogAlpha = 1.0 - 
+			clamp(exp(-diff / depthCueRange), 0.0, 1.0);
+		litFragment = fogColor * fogAlpha + 
+			litFragment * color.a * (1.0 - fogAlpha);
+		color.a = fogAlpha + color.a * (1.0 - fogAlpha);
+		litFragment /= color.a;
+	}
+
+	// Pre-multiply colors by alpha
+	litFragment *= color.a;
+	gl_FragColor = vec4(litFragment, color.a);
+}

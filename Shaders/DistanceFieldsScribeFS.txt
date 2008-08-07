@@ -1,0 +1,247 @@
+// use shadow mapping (also see VS)
+#define NQVTK_USE_SHADOWMAP
+// use variance shadow mapping method
+#define NQVTK_USE_VSM
+// use p-value thresholding
+#define NQVTK_USE_PVALS
+
+#extension GL_ARB_texture_rectangle : enable
+#extension GL_ARB_draw_buffers : enable
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+#ifdef NQVTK_USE_SHADOWMAP
+uniform sampler2D shadowMap;
+varying vec4 shadowCoord;
+varying float depthInShadow;
+#endif
+
+uniform sampler2DRectShadow depthBuffer;
+uniform sampler2DRect infoBuffer;
+uniform sampler3D distanceField;
+uniform bool hasDistanceField;
+uniform float distanceFieldDataShift;
+uniform float distanceFieldDataScale;
+uniform vec3 distanceFieldOrigin;
+uniform vec3 distanceFieldSize;
+uniform int layer;
+uniform int objectId;
+
+// Parameters
+uniform bool useDistanceColorMap;
+uniform float classificationThreshold;
+uniform bool useGridTexture;
+uniform bool useGlyphTexture;
+
+// Varying
+varying vec4 vertex;
+varying vec3 normal;
+varying vec4 color;
+varying float depthInCamera;
+
+#ifdef NQVTK_USE_PVALS
+varying float pvalue;
+#endif
+
+// Rounds a float to the nearest integer
+#ifndef GL_EXT_gpu_shader4
+float round(float x) {
+	return floor(x + 0.5);
+}
+#endif
+
+// Encodes a bit set in a float, range [0..1]
+float setBit(float byte, int bit, bool on) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	float N = 4.0;
+	float max = pow(2.0, N) - 1.0;
+	int pattern = int(round(byte * max));
+	int mask = 1 << bit;
+	if (on) {
+		pattern = pattern | mask;
+	} else {
+		pattern = pattern & ~mask;
+	}
+	return float(pattern) / max;
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	float max = pow(f, N) - 1.0;
+	byte = round(byte * max);
+	float bf = pow(f, float(bit));
+	float b = fract(byte / bf);
+	float af = bf * f;
+	float a = floor(byte / af);
+	float r = bf * b + af * a;
+	if (on) r += f / 2.0 * bf;
+	return r / max;
+#endif
+}
+
+// Gets a single bit from a float-encoded bit set
+bool getBit(float byte, int bit) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	float N = 4.0;
+	float max = pow(2.0, N) - 1.0;
+	int pattern = int(round(byte * max));
+	int mask = 1 << bit;
+	return (pattern & mask) != 0;
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	if (bit > int(N)) return false;
+	float mask = round(byte * (pow(f, N) - 1.0)) / f;
+	int i;
+	for (i = 0; i <= bit - 1; ++i) {
+		mask = floor(mask) / f;
+	}
+	return (fract(mask) > 0.25);
+#endif
+}
+
+// Packs a float in two 8 bit channels
+vec2 encodeDepth(float depth) {
+	depth = clamp(depth, 0.0, 1.0);
+	vec2 factors = vec2(1.0, 256.0);
+	vec2 result = fract(depth * factors);
+	result.x -= result.y / factors.y;
+	return result;
+}
+
+// Unpacks a float from two 8 bit channels
+float decodeDepth(vec2 coded) {
+	vec2 factors = vec2(1.0, 0.00390625);
+	return dot(coded, factors);
+}
+
+// Shader main function
+void main() {
+	vec4 r0 = gl_FragCoord;
+	vec4 col = color;
+
+	// Depth peeling
+	if (layer > 0) {
+		float r1 = shadow2DRect(depthBuffer, r0.xyz).x;
+		r1 = r1 - 0.5;
+		if (r1 < 0.0) { discard; }
+	}
+
+	// Get the previous info buffer
+	vec4 prevInfo = vec4(0.0);
+	if (layer > 0) {
+		prevInfo = texture2DRect(infoBuffer, r0.xy);
+	}
+
+	// Coplanarity peeling
+	if (getBit(prevInfo.y, objectId) == gl_FrontFacing) {
+		discard;
+	}
+
+	// Distance classification
+	float classification = 0.0;
+	if (objectId >= 0) {
+		classification = 0.25 + float(objectId) * 0.25;
+	}
+	if (hasDistanceField) {
+		vec3 p = vertex.xyz / vertex.w;
+		// HACK: Beware! Hack! Distance field alignment is wrong!
+		//p = p + vec3(-3.5, -4.0, 9.0); // msdata
+		//p = p + vec3(-28.0, 57.0, 13.0); // cartilage
+		//p = p + vec3(98.0, 98.0, 100.0); // test
+		p = (p - distanceFieldOrigin) / distanceFieldSize;
+		float dist = texture3D(distanceField, p).x;
+		dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);
+
+		if (useDistanceColorMap) {
+#ifdef NQVTK_USE_PVALS
+			float d = clamp(pvalue, 0.0, 1.0);
+#else
+			float d = clamp(dist / 7.0, 0.0, 1.0);
+#endif
+			if (objectId == 0) {
+				col = vec4(1.0, 1.0 - d, 1.0 - d, 1.0);
+			} else {
+				col = vec4(1.0 - d, 1.0 - d, 1.0, 1.0);
+			}
+		}
+
+		// TEST: saturation color map
+		//float d = clamp(dist / classificationThreshold, 0.0, 1.0);
+		//col = vec4(col.rgb * d + vec3(0.5) * (1.0 - d), col.a);
+
+		// Thresholding
+#ifdef NQVTK_USE_PVALS
+		if (pvalue * 15.0 < classificationThreshold) {
+			classification = 0.0;
+			col = vec4(1.0);
+		}
+#else
+		if (dist < classificationThreshold) {
+			classification = 0.0;
+			col = vec4(1.0);
+		}
+#endif
+	}
+	/* TEST: texcoord-less xy grid
+	if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {
+		vec2 tc = fract(abs(0.03 * vertex.xy / vertex.w));
+		float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);
+		grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));
+		col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));
+	}
+	//*/
+
+	// Grid texture
+	if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {
+		vec2 tc = fract(abs(gl_TexCoord[0].xy));
+		float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);
+		grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));
+		col = vec4(col.rgb, col.a + 0.5 * pow(grid, 5.0));
+	}
+
+	// Glyph texture
+	if (useGlyphTexture && (col.a < 1.0 || !hasDistanceField)) {
+		vec2 tc = abs(2.0 * gl_TexCoord[0].xy - vec2(1.0));
+		if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {
+			col.a = min(col.a + 0.3, 1.0);
+		} else if ((tc.x < 0.15 && tc.y < 0.95) || (tc.y < 0.15 && tc.x < 0.65)) {
+			col.a = min(col.a + 0.15, 1.0);
+		}
+	}
+
+#ifdef NQVTK_USE_SHADOWMAP
+	vec4 moments = texture2DProj(shadowMap, shadowCoord);
+#ifdef NQVTK_USE_VSM
+	// Variance shadow mapping
+	float E_x2 = moments.y;
+	float Ex_2 = moments.x * moments.x;
+	float variance = min(max(E_x2 - Ex_2, 0.0) + 0.0001, 1.0);
+	float m_d = (moments.x - (depthInShadow - 0.001));
+	float p = variance / (variance + m_d * m_d);
+	col *= vec4(vec3(p * 0.5 + 0.5), 1.0);
+#else
+	if (depthInShadow - 0.001 > moments.x) {
+		col *= vec4(0.5, 0.5, 0.5, 1.0);
+	}
+#endif
+#endif
+
+	// Encode in-out mask
+	float inOutMask = prevInfo.y;
+	if (objectId >= 0) {
+		inOutMask = setBit(inOutMask, objectId, gl_FrontFacing);
+	}
+	// Encode depth
+	vec2 depthVec = encodeDepth(depthInCamera);
+	// Encode normal
+	vec3 n = (normalize(normal) + vec3(1.0)) / 2.0;
+	// Store data
+	gl_FragData[0] = col;
+	gl_FragData[1] = vec4(n, 1.0);
+	gl_FragData[2] = vec4(classification, inOutMask, depthVec);
+}
