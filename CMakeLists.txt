@@ -214,7 +214,7 @@ MACRO( text_to_header target )
 		OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.h" "${CMAKE_CURRENT_BINARY_DIR}/${target}.cpp"
 		COMMAND ${TextToHeaderExe}
 		ARGS ${target} ${ARGN}
-		DEPENDS ${TextToHeaderExe} ${ARGN}
+		DEPENDS ${TextToHeaderExe} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt" ${ARGN}
 		COMMENT "TextToHeader - Generating ${target}"
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		VERBATIM
