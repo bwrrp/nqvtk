@@ -80,6 +80,8 @@ int main(int argc, const char* argv[])
 	ofstream header(headerFileName.c_str());
 	ofstream source(sourceFileName.c_str());
 
+	int res = 0;
+
 	// Generate header preamble
 	header 
 		<< "#pragma once\n"
@@ -112,11 +114,17 @@ int main(int argc, const char* argv[])
 		source << "extern const char *" << varName << " = ";
 		string line;
 		ifstream inFile(it->c_str());
-		while (!inFile.eof())
+		while (inFile.good())
 		{
 			getline(inFile, line);
 			line = escapeSpecialChars(line);
 			source << "\n\t\"" << line << "\\n\"";
+		}
+		if (inFile.fail())
+		{
+			cerr << "Error reading " << *it << endl;
+			source << "\"\"";
+			res = 1;
 		}
 		inFile.close();
 		source << ";\n";
@@ -132,5 +140,5 @@ int main(int argc, const char* argv[])
 	cout << "Generated " << headerFileName << ", " << sourceFileName << endl;
 	cout << endl;
 
-	return 0;
+	return res;
 }
