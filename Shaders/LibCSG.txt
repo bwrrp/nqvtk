@@ -1,0 +1,47 @@
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+// Prototypes from LibUtility
+#ifndef GL_EXT_gpu_shader4
+float round(float x);
+#endif
+bool getBit(float byte, int bit);
+
+// CSG formula
+bool CSG(float mask) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	return getBit(mask, 0) && getBit(mask, 1);
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	mask = round(mask * (pow(f, N) - 1.0)) / f;
+	bool inActor0 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor1 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor2 = fract(mask) > 0.25;
+	return inActor0 && inActor1;
+#endif
+}
+
+// CSG formula for fogging volumes
+bool CSGFog(float mask) {
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	return getBit(mask, 0) ^^ getBit(mask, 1);
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float f = 2.0;
+	float N = 4.0;
+	mask = round(mask * (pow(f, N) - 1.0)) / f;
+	bool inActor0 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor1 = fract(mask) > 0.25;
+	mask = floor(mask) / f;
+	bool inActor2 = fract(mask) > 0.25;
+	return inActor0 ^^ inActor1;
+#endif
+}

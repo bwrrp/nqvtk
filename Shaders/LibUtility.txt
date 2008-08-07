@@ -1,0 +1,89 @@
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+#ifndef GL_EXT_gpu_shader4
+// Rounds a float to the nearest integer
+float round(float x) {
+	return floor(x + 0.5);
+}
+#endif
+
+// Packs a float in two 8 bit channels
+vec2 packFloat2(float depth) {
+	depth = clamp(depth, 0.0, 1.0);
+	vec2 factors = vec2(1.0, 256.0);
+	vec2 result = fract(depth * factors);
+	result.x -= result.y / factors.y;
+	return result;
+}
+
+// Unpacks a float from two 8 bit channels
+float unpackFloat(vec2 coded) {
+	vec2 factors = vec2(1.0, 0.00390625);
+	return dot(coded, factors);
+}
+
+// Gets a single bit from a float-encoded bit set
+bool getBit(float byte, int bit) {
+	float N = 4.0;
+	float f = 2.0;
+	if (bit > int(N)) return false;
+	float max = pow(f, N) - 1.0;
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	int pattern = int(round(byte * max));
+	int mask = 1 << bit;
+	return (pattern & mask) != 0;
+#else
+// - no gpu-shader4, use float arith for bit masks
+	float mask = round(byte * max) / f;
+	int i;
+	for (i = 0; i <= bit - 1; ++i) {
+		mask = floor(mask) / f;
+	}
+	return (fract(mask) > 0.25);
+#endif
+}
+
+// Encodes a bit set in a float, range [0..1]
+float setBit(float byte, int bit, bool on) {
+	float f = 2.0;
+	float N = 4.0;
+	float max = pow(f, N) - 1.0;
+#ifdef GL_EXT_gpu_shader4
+// - gpu-shader4, use bitwise operators
+	int pattern = int(round(byte * max));
+	int mask = 1 << bit;
+	if (on) {
+		pattern = pattern | mask;
+	} else {
+		pattern = pattern & ~mask;
+	}
+	return float(pattern) / max;
+#else
+// - no gpu-shader4, use float arith for bit masks
+	byte = round(byte * max);
+	float bf = pow(f, float(bit));
+	float b = fract(byte / bf);
+	float af = bf * f;
+	float a = floor(byte / af);
+	float r = bf * b + af * a;
+	if (on) r += f / 2.0 * bf;
+	return r / max;
+#endif
+}
+
+// Phong shading helper
+vec3 phongShading(vec3 matColor, vec3 normal) {
+	vec3 l = normalize(vec3(gl_LightSource[0].position));
+	vec3 n = normalize(normal);
+	vec3 h = normalize(gl_LightSource[0].halfVector.xyz);
+	float NdotL = dot(n, l);
+	float diffuse = 0.5 + 0.5 * min(max(NdotL, 0.0), 1.0);
+	float specular = 0.0;
+	if (NdotL >= 0.0) {
+		specular = pow(max(dot(n, h), 0.0), 64.0);
+	}
+	return diffuse * matColor + specular * vec3(0.4);
+}

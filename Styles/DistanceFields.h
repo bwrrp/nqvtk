@@ -74,10 +74,14 @@ namespace NQVTK
 			virtual GLProgram *CreateScribe()
 			{
 				GLProgram *scribe = GLProgram::New();
+				// Scribe vertex shaders
 				bool res = scribe->AddVertexShader(
 					Shaders::DistanceFieldsScribeVS);
+				// Scribe fragment shaders
 				if (res) res = scribe->AddFragmentShader(
 					Shaders::DistanceFieldsScribeFS);
+				if (res) res = scribe->AddFragmentShader(
+					Shaders::LibUtility);
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
 				if (!res)
@@ -91,10 +95,16 @@ namespace NQVTK
 			virtual GLProgram *CreatePainter()
 			{
 				GLProgram *painter = GLProgram::New();
+				// Painter vertex shaders
 				bool res = painter->AddVertexShader(
 					Shaders::GenericPainterVS);
+				// Painter fragment shaders
 				if (res) res = painter->AddFragmentShader(
 					Shaders::DistanceFieldsPainterFS);
+				if (res) res = painter->AddFragmentShader(
+					Shaders::LibUtility);
+				if (res) res = painter->AddFragmentShader(
+					Shaders::LibCSG);
 				if (res) res = painter->Link();
 				qDebug(painter->GetInfoLogs().c_str());
 				if (!res) 

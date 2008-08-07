@@ -44,80 +44,13 @@ varying float depthInCamera;
 varying float pvalue;
 #endif
 
-// Rounds a float to the nearest integer
+// Prototypes from LibUtility
 #ifndef GL_EXT_gpu_shader4
-float round(float x) {
-	return floor(x + 0.5);
-}
+float round(float x);
 #endif
-
-// Encodes a bit set in a float, range [0..1]
-float setBit(float byte, int bit, bool on) {
-#ifdef GL_EXT_gpu_shader4
-// - gpu-shader4, use bitwise operators
-	float N = 4.0;
-	float max = pow(2.0, N) - 1.0;
-	int pattern = int(round(byte * max));
-	int mask = 1 << bit;
-	if (on) {
-		pattern = pattern | mask;
-	} else {
-		pattern = pattern & ~mask;
-	}
-	return float(pattern) / max;
-#else
-// - no gpu-shader4, use float arith for bit masks
-	float f = 2.0;
-	float N = 4.0;
-	float max = pow(f, N) - 1.0;
-	byte = round(byte * max);
-	float bf = pow(f, float(bit));
-	float b = fract(byte / bf);
-	float af = bf * f;
-	float a = floor(byte / af);
-	float r = bf * b + af * a;
-	if (on) r += f / 2.0 * bf;
-	return r / max;
-#endif
-}
-
-// Gets a single bit from a float-encoded bit set
-bool getBit(float byte, int bit) {
-#ifdef GL_EXT_gpu_shader4
-// - gpu-shader4, use bitwise operators
-	float N = 4.0;
-	float max = pow(2.0, N) - 1.0;
-	int pattern = int(round(byte * max));
-	int mask = 1 << bit;
-	return (pattern & mask) != 0;
-#else
-// - no gpu-shader4, use float arith for bit masks
-	float f = 2.0;
-	float N = 4.0;
-	if (bit > int(N)) return false;
-	float mask = round(byte * (pow(f, N) - 1.0)) / f;
-	int i;
-	for (i = 0; i <= bit - 1; ++i) {
-		mask = floor(mask) / f;
-	}
-	return (fract(mask) > 0.25);
-#endif
-}
-
-// Packs a float in two 8 bit channels
-vec2 encodeDepth(float depth) {
-	depth = clamp(depth, 0.0, 1.0);
-	vec2 factors = vec2(1.0, 256.0);
-	vec2 result = fract(depth * factors);
-	result.x -= result.y / factors.y;
-	return result;
-}
-
-// Unpacks a float from two 8 bit channels
-float decodeDepth(vec2 coded) {
-	vec2 factors = vec2(1.0, 0.00390625);
-	return dot(coded, factors);
-}
+float setBit(float byte, int bit, bool on);
+bool getBit(float byte, int bit);
+vec2 packFloat2(float depth);
 
 // Shader main function
 void main() {
@@ -237,7 +170,7 @@ void main() {
 		inOutMask = setBit(inOutMask, objectId, gl_FrontFacing);
 	}
 	// Encode depth
-	vec2 depthVec = encodeDepth(depthInCamera);
+	vec2 depthVec = packFloat2(depthInCamera);
 	// Encode normal
 	vec3 n = (normalize(normal) + vec3(1.0)) / 2.0;
 	// Store data
