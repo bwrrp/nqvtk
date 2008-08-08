@@ -158,6 +158,9 @@ SET( ${ProjectName}_Shaders_Text
 	DistanceFieldsScribeVS.txt
 	DistanceFieldsScribeFS.txt
 	DistanceFieldsPainterFS.txt
+	ShadowMapScribeVS.txt
+	ShadowMapScribeFS.txt
+	ShadowMapPainterFS.txt
 )
 
 # --------------------------------------------------

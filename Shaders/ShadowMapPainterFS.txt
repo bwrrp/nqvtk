@@ -1,0 +1,64 @@
+#extension GL_ARB_texture_rectangle : enable
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler2DRect infoPrevious;
+uniform sampler2DRect infoCurrent;
+uniform int layer;
+uniform float farPlane;
+uniform float nearPlane;
+uniform float viewportX;
+uniform float viewportY;
+
+// Parameters
+uniform bool useGridTexture;
+uniform bool useGlyphTexture;
+
+// Prototypes from LibUtility
+bool getBit(float byte, int bit);
+
+// Prototypes from LibCSG
+bool CSG(float mask);
+
+// Main shader function
+void main() {
+	vec4 r0 = gl_FragCoord;
+	r0.x -= viewportX;
+	r0.y -= viewportY;
+	vec4 info0 = texture2DRect(infoCurrent, r0.xy);
+	vec4 info1 = texture2DRect(infoPrevious, r0.xy);
+	if (layer == 0) info1 = vec4(0.0);
+
+	// Apply CSG
+	float mask0 = info0.x;
+	float mask1 = info1.x;
+	if (CSG(mask0) == CSG(mask1)) {
+		// this is a transparent surface, which could be textured
+		gl_FragColor = vec4(0.0);
+		// - Grid texture
+		if (useGridTexture) {
+			vec2 tc = fract(abs(info0.zw));
+			float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);
+			grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));
+			if (pow(grid, 5.0) > 0.5) {
+				gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);
+			}
+		}
+		// - Glyph texture
+		if (useGlyphTexture) {
+			vec2 tc = abs(2.0 * info0.zw - vec2(1.0));
+			if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {
+				gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);
+			}
+		}
+	}
+	// otherwise this is a solid surface, which always casts shadows
+	else gl_FragColor = vec4(info0.y, info0.y * info0.y, 0.0, 1.0);
+
+	// Clipping: objectId 2 is our clipping object
+	// TODO: Clipping object should probably be configurable
+	if ((getBit(mask0, 2) || getBit(mask1, 2))) {
+		discard; // Nothing to render for this slab
+	}
+}
