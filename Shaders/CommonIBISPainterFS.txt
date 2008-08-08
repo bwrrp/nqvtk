@@ -1,0 +1,121 @@
+#extension GL_ARB_texture_rectangle : enable
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler2DRect infoPrevious;
+uniform sampler2DRect infoCurrent;
+uniform int layer;
+uniform float viewportX;
+uniform float viewportY;
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
+uniform sampler2DRect normals;
+uniform sampler2DRect colors;
+uniform float farPlane;
+uniform float nearPlane;
+
+// Parameters
+uniform bool useFatContours;
+uniform float contourDepthEpsilon; // = 0.001
+uniform bool useFog;
+uniform float depthCueRange; // = 10.0
+#endif
+
+// Prototypes from LibUtility
+bool getBit(float byte, int bit);
+#ifndef NQVTK_GENERATE_SHADOWMAP
+float unpackFloat(vec2 coded);
+vec3 phongShading(vec3 matColor, vec3 normal);
+#endif
+
+// Prototypes from LibCSG
+bool CSG(float mask);
+bool CSGFog(float mask);
+
+// Main shader function
+void main() {
+	// Get info
+	vec4 r0 = gl_FragCoord;
+	r0.x -= viewportX;
+	r0.y -= viewportY;
+	vec4 infoBefore = texture2DRect(infoPrevious, r0.xy);
+	vec4 infoAfter = texture2DRect(infoCurrent, r0.xy);
+	if (layer == 0) infoBefore = vec4(0.0);
+#ifndef NQVTK_GENERATE_SHADOWMAP
+	vec3 normal = texture2DRect(normals, r0.xy).rgb;
+	normal = (2.0 * normal) - vec3(1.0);
+	vec4 color = texture2DRect(colors, r0.xy);
+
+	// Apply lighting
+	vec3 litFragment = phongShading(color.rgb, normal);
+#else
+	// infoAfter.z stores surface opacity
+	vec4 color = vec4(vec3(0.0), infoAfter.z);
+#endif
+
+	// Apply CSG
+	float maskBefore = infoBefore.x;
+	float maskAfter = infoAfter.x;
+	if (CSG(maskBefore) != CSG(maskAfter)) {
+		color.a = 1.0;
+	}
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
+	// Apply contouring
+	vec4 left	= texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));
+	vec4 right	= texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));
+	vec4 top	= texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));
+	vec4 bottom	= texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));
+	float depth = unpackFloat(infoAfter.zw);
+	float diffL = abs(unpackFloat(left.zw) - depth);
+	float diffR = abs(unpackFloat(right.zw) - depth);
+	float diffT = abs(unpackFloat(top.zw) - depth);
+	float diffB = abs(unpackFloat(bottom.zw) - depth);
+	bool contourL = (left.y   != infoAfter.y && diffL < contourDepthEpsilon);
+	bool contourR = (right.y  != infoAfter.y && diffR < contourDepthEpsilon);
+	bool contourT = (top.y    != infoAfter.y && diffT < contourDepthEpsilon);
+	bool contourB = (bottom.y != infoAfter.y && diffB < contourDepthEpsilon);
+	if (contourL || contourT || (useFatContours && (contourR || contourB))) {
+		litFragment = vec3(0.0);
+		color.a = 1.0;
+	}
+#endif
+
+	// Clipping: objectId 2 is our clipping object
+	// TODO: Clipping object should probably be configurable
+	if (getBit(mask0, 2) && !getBit(mask1, 2)) {
+		color.a = 0.0; // Just render the fog for this slab
+	} else if ((getBit(mask0, 2) || getBit(mask1, 2))) {
+		discard; // Nothing to render for this slab
+	}
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
+	// Apply fogging
+	if (useFog && CSGFog(mask1)) {
+		vec3 fogColor = vec3(1.0, 0.0, 0.2);
+		float depthRange = (farPlane - nearPlane);
+		float front = unpackFloat(info1.zw) * depthRange;
+		float back = unpackFloat(infoAfter.zw) * depthRange;
+		float diff = back - front;
+		float fogAlpha = 1.0 - 
+			clamp(exp(-diff / depthCueRange), 0.0, 1.0);
+		litFragment = fogColor * fogAlpha + 
+			litFragment * color.a * (1.0 - fogAlpha);
+		color.a = fogAlpha + color.a * (1.0 - fogAlpha);
+		litFragment /= color.a;
+	}
+
+	// Pre-multiply colors by alpha
+	litFragment *= color.a;
+	gl_FragColor = vec4(litFragment, color.a);
+#else
+	if (color.a > 0.8) {
+		// For the shadowmap, store the first two moments
+		gl_FragColor = vec4(infoAfter.y, infoAfter.y * infoAfter.y, 0.0, 1.0);
+	} else {
+		// Fragment does not cast a shadow
+		discard;
+	}
+#endif
+}

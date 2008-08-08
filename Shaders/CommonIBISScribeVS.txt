@@ -1,0 +1,65 @@
+uniform int objectId;
+uniform float farPlane;
+uniform float nearPlane;
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
+#ifdef NQVTK_USE_SHADOWMAP
+uniform float shadowNearPlane;
+uniform float shadowFarPlane;
+uniform mat4 shadowMVM;
+uniform mat4 shadowPM;
+varying vec4 shadowCoord;
+varying float depthInShadow;
+#endif
+#endif
+
+#ifdef NQVTK_USE_PVALS
+attribute float pvals;
+varying float pvalue;
+#endif
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
+varying vec4 vertex;
+varying vec3 normal;
+#endif
+
+varying vec4 color;
+varying float depthInCamera;
+
+// Shader main function
+void main() {
+#ifndef NQVTK_GENERATE_SHADOWMAP
+	// Vertex position
+#ifdef NQVTK_USE_DISTANCEFIELD
+	// HACK: find a better way to pass object to distfield transforms
+	vertex = gl_TextureMatrixInverse[1 - objectId] * gl_TextureMatrix[objectId] * gl_Vertex;
+#else
+	vertex = gl_Vertex;
+#endif
+	// Normal
+	normal = normalize(gl_NormalMatrix * gl_Normal);
+#endif
+	// Unlit surface color
+	color = gl_Color;
+
+	// Compute depth
+	vec4 pos = gl_ModelViewMatrix * gl_Vertex;
+	float depthRange = (farPlane - nearPlane);
+	depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;
+
+	gl_Position = ftransform();
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
+#ifdef NQVTK_USE_SHADOWMAP
+	shadowCoord = gl_TextureMatrix[3] * gl_ModelViewMatrix * gl_Vertex;
+	vec4 shadowPos = shadowMVM * gl_TextureMatrix[objectId] * gl_Vertex;
+	float shadowDepthRange = (shadowFarPlane - shadowNearPlane);
+	depthInShadow = (-shadowPos.z / shadowPos.w - shadowNearPlane) / shadowDepthRange;
+#endif
+#endif
+
+#ifdef NQVTK_USE_PVALS
+	pvalue = pvals;
+#endif
+}
