@@ -84,18 +84,18 @@ void main() {
 
 	// Clipping: objectId 2 is our clipping object
 	// TODO: Clipping object should probably be configurable
-	if (getBit(mask0, 2) && !getBit(mask1, 2)) {
+	if (getBit(maskAfter, 2) && !getBit(maskBefore, 2)) {
 		color.a = 0.0; // Just render the fog for this slab
-	} else if ((getBit(mask0, 2) || getBit(mask1, 2))) {
+	} else if ((getBit(maskAfter, 2) || getBit(maskBefore, 2))) {
 		discard; // Nothing to render for this slab
 	}
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
 	// Apply fogging
-	if (useFog && CSGFog(mask1)) {
+	if (useFog && CSGFog(maskBefore)) {
 		vec3 fogColor = vec3(1.0, 0.0, 0.2);
 		float depthRange = (farPlane - nearPlane);
-		float front = unpackFloat(info1.zw) * depthRange;
+		float front = unpackFloat(infoBefore.zw) * depthRange;
 		float back = unpackFloat(infoAfter.zw) * depthRange;
 		float diff = back - front;
 		float fogAlpha = 1.0 - 
