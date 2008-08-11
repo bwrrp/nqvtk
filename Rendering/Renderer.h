@@ -134,8 +134,9 @@ namespace NQVTK
 				const double DEGREES_TO_RADIANS = 0.0174532925199433;
 				Vector3 viewDir = (camera->focus - camera->position);
 				Vector3 sideDir = viewDir.cross(camera->up).normalized();
+				Vector3 upDir = sideDir.cross(viewDir).normalized();
 				Vector3 offset = -sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
-					cos(lightOffsetDirection * DEGREES_TO_RADIANS) * camera->up;
+					cos(lightOffsetDirection * DEGREES_TO_RADIANS) * upDir;
 				offset *= viewDir.length() / 2.0;
 				lightPos = camera->position + offset;
 			}
