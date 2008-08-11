@@ -32,6 +32,11 @@ namespace NQVTK
 
 		virtual bool Initialize()
 		{
+			if (style)
+			{
+				style->SetOption("NQVTK_USE_SHADOWMAP");
+				style->SetOption("NQVTK_USE_VSM");
+			}
 			if (!Superclass::Initialize()) return false;
 			
 			// Set up the shadow renderer
