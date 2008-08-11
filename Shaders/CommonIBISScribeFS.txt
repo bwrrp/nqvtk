@@ -163,6 +163,14 @@ void main() {
 	}
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
+	// Two-sided lighting
+	if (!gl_FrontFacing) {
+		normal = -normal;
+		// Desaturate color
+		float intensity = length(col.rgb);
+		vec3 gray = vec3(sqrt(intensity * intensity / 3.0));
+		col = vec4(0.2 * col.rgb + 0.6 * gray, col.a);
+	}
 	// Encode depth
 	vec2 depthVec = packFloat2(depthInCamera);
 	// Encode normal
