@@ -63,7 +63,6 @@ public:
 
 		// Set renderer style
 		renderer->SetStyle(distfieldStyle);
-		//renderer->SetStyle(new NQVTK::Styles::ShadowMap());
 
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());

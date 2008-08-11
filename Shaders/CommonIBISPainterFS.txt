@@ -110,7 +110,7 @@ void main() {
 	litFragment *= color.a;
 	gl_FragColor = vec4(litFragment, color.a);
 #else
-	if (color.a > 0.8) {
+	if (color.a > 0.95) {
 		// For the shadowmap, store the first two moments
 		gl_FragColor = vec4(infoAfter.y, infoAfter.y * infoAfter.y, 0.0, 1.0);
 	} else {

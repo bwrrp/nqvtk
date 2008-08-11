@@ -4,6 +4,10 @@
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLTextureManager.h"
 
+#include <map>
+#include <string>
+#include <sstream>
+
 namespace NQVTK
 {
 	class Renderable;
@@ -23,6 +27,7 @@ namespace NQVTK
 		}
 
 		virtual GLFramebuffer *CreateFBO(int w, int h) = 0;
+
 		virtual GLProgram *CreateScribe() = 0;
 		virtual GLProgram *CreatePainter() = 0;
 
@@ -58,8 +63,41 @@ namespace NQVTK
 			glDisable(GL_BLEND);
 		}
 
+		// NOTE: caller should re-create scribe and painter after changing options
+		virtual void SetOption(const std::string &option, 
+			const std::string &value = "1")
+		{
+			defines[option] = value;
+		}
+
+		virtual bool HasOption(const std::string &option)
+		{
+			std::map<std::string, std::string>::iterator it = 
+				defines.find(option);
+			return (it != defines.end());
+		}
+
+		virtual void UnsetOption(const std::string &option)
+		{
+			defines.erase(option);
+		}
+
 	protected:
 		GLTextureManager *tm;
+
+		std::map<std::string, std::string> defines;
+
+		std::string AddShaderDefines(std::string shader)
+		{
+			std::ostringstream res;
+			for (std::map<std::string, std::string>::const_iterator it = defines.begin();
+				it != defines.end(); ++it)
+			{
+				res << "#define " << it->first << " " << it->second << "\n";
+			}
+			res << shader;
+			return res.str();
+		}
 
 	private:
 		// Not implemented

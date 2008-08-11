@@ -20,10 +20,9 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			ShadowMap() 
+			ShadowMap(NQVTK::RenderStyle *baseStyle) 
 			{
-				useGridTexture = false;
-				useGlyphTexture = false;
+				this->baseStyle = baseStyle;
 			}
 
 			virtual ~ShadowMap() { }
@@ -73,44 +72,24 @@ namespace NQVTK
 
 			virtual GLProgram *CreateScribe()
 			{
-				GLProgram *scribe = GLProgram::New();
-				// Scribe vertex shaders
-				bool res = scribe->AddVertexShader(
-					Shaders::ShadowMapScribeVS);
-				// Scribe fragment shaders
-				if (res) res = scribe->AddFragmentShader(
-					Shaders::ShadowMapScribeFS);
-				if (res) res = scribe->AddFragmentShader(
-					Shaders::LibUtility);
-				if (res) res = scribe->Link();
-				qDebug(scribe->GetInfoLogs().c_str());
-				if (!res)
-				{
-					delete scribe;
-					return 0;
-				}
+				baseStyle->SetOption("NQVTK_GENERATE_SHADOWMAP");
+				GLProgram *scribe = baseStyle->CreateScribe();
+				baseStyle->UnsetOption("NQVTK_GENERATE_SHADOWMAP");
 				return scribe;
 			}
 
 			virtual GLProgram *CreatePainter()
 			{
-				GLProgram *painter = GLProgram::New();
-				bool res = painter->AddVertexShader(
-					Shaders::GenericPainterVS);
-				if (res) res = painter->AddFragmentShader(
-					Shaders::ShadowMapPainterFS);
-				if (res) res = painter->AddFragmentShader(
-					Shaders::LibUtility);
-				if (res) res = painter->AddFragmentShader(
-					Shaders::LibCSG);
-				if (res) res = painter->Link();
-				qDebug(painter->GetInfoLogs().c_str());
-				if (!res) 
-				{
-					delete painter;
-					return 0;
-				}
+				baseStyle->SetOption("NQVTK_GENERATE_SHADOWMAP");
+				GLProgram *painter = baseStyle->CreatePainter();
+				baseStyle->UnsetOption("NQVTK_GENERATE_SHADOWMAP");
 				return painter;
+			}
+
+			virtual void PrepareForObject(GLProgram *scribe, 
+				int objectId, Renderable *renderable)
+			{
+				baseStyle->PrepareForObject(scribe, objectId, renderable);
 			}
 
 			virtual void RegisterScribeTextures(GLFramebuffer *previous) 
@@ -128,12 +107,15 @@ namespace NQVTK
 					GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
 				depthBuffer->UnbindCurrent();
 				tm->AddTexture("depthBuffer", depthBuffer, false);
+
+				// HACK: register the distance field texture
+				// TODO: make other styles handle the textures used for shadow mapping
+				tm->AddTexture("distanceField", 0, false);
 			}
 
-			virtual void UnregisterScribeTextures() 
+			virtual void UpdateScribeParameters(GLProgram *scribe) 
 			{
-				//tm->RemoveTexture("infoBuffer");
-				//tm->RemoveTexture("depthBuffer");
+				baseStyle->UpdateScribeParameters(scribe);
 			}
 
 			virtual void RegisterPainterTextures(GLFramebuffer *current, GLFramebuffer *previous) 
@@ -148,16 +130,9 @@ namespace NQVTK
 				tm->AddTexture("infoCurrent", infoCurrent, false);
 			}
 
-			virtual void UnregisterPainterTextures() 
+			virtual void UpdatePainterParameters(GLProgram *painter)
 			{
-				//tm->RemoveTexture("infoPrevious");
-				//tm->RemoveTexture("infoCurrent");
-			}
-
-			virtual void UpdatePainterParameters(GLProgram *scribe)
-			{
-				scribe->SetUniform1i("useGridTexture", useGridTexture);
-				scribe->SetUniform1i("useGlyphTexture", useGlyphTexture);
+				baseStyle->UpdatePainterParameters(painter);
 			}
 
 			virtual void DrawBackground()
@@ -176,10 +151,9 @@ namespace NQVTK
 				glDisable(GL_BLEND);
 			}
 
-			// Program parameters
-			// - Painter
-			bool useGridTexture;
-			bool useGlyphTexture;
+		protected:
+			// Base style
+			NQVTK::RenderStyle *baseStyle;
 
 		private:
 			// Not implemented

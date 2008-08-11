@@ -15,16 +15,18 @@ namespace NQVTK
 		ShadowMappingRenderer() : LayeredRenderer() 
 		{
 			shadowBuffer = 0;
-			shadowStyle = new NQVTK::Styles::ShadowMap();
+			shadowStyle = 0;
 			shadowRenderer = new NQVTK::LayeredRenderer();
 		}
 
 		virtual ~ShadowMappingRenderer() 
 		{
 			if (shadowBuffer) delete shadowBuffer;
-			delete shadowStyle;
+			if (shadowStyle) delete shadowStyle;
 			// Clear the shadow renderables first
 			shadowRenderer->SetRenderables(std::vector<Renderable*>());
+			// Also unshare the texture manager
+			shadowRenderer->ShareTextures(0);
 			delete shadowRenderer;
 		}
 
@@ -33,6 +35,9 @@ namespace NQVTK
 			if (!Superclass::Initialize()) return false;
 			
 			// Set up the shadow renderer
+			shadowRenderer->ShareTextures(this->tm);
+			if (shadowStyle) delete shadowStyle;
+			shadowStyle = new NQVTK::Styles::ShadowMap(style);
 			shadowRenderer->SetStyle(shadowStyle);
 			return shadowRenderer->Initialize();
 		}
@@ -62,13 +67,6 @@ namespace NQVTK
 			// Synchronize renderer state
 			shadowRenderer->SetRenderables(renderables);
 			shadowRenderer->maxLayers = maxLayers;
-			NQVTK::Styles::DistanceFields *dfStyle = 
-				dynamic_cast<NQVTK::Styles::DistanceFields*>(style);
-			if (dfStyle)
-			{
-				shadowStyle->useGlyphTexture = dfStyle->useGlyphTexture;
-				shadowStyle->useGridTexture = dfStyle->useGridTexture;
-			}
 
 			// TODO: add a parallel projection camera so zoom doesn't affect shadowmap bounds
 			UpdateLighting();
@@ -128,9 +126,9 @@ namespace NQVTK
 
 			/*
 			// DEBUG: show shadow buffer
-			glDisable(GL_DEPTH_TEST);
-			TestDrawTexture(shadowMap, 0.5, 1.0, 0.5, 1.0);
-			glEnable(GL_DEPTH_TEST);
+			if (fboTarget) fboTarget->Bind();
+			TestDrawTexture(shadowMap, 0.0, 1.0, 0.0, 1.0);
+			if (fboTarget) fboTarget->Unbind();
 			//*/
 		}
 

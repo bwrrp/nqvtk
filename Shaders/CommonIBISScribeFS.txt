@@ -34,10 +34,10 @@ varying float pvalue;
 #endif
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
-varying vec4 vertex;
 varying vec3 normal;
 #endif
 
+varying vec4 vertex;
 varying vec4 color;
 varying float depthInCamera;
 
@@ -118,6 +118,11 @@ void main() {
 		float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);
 		grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));
 		col.a = col.a + 0.5 * pow(grid, 5.0);
+#ifdef NQVTK_GENERATE_SHADOWMAP
+		if (pow(grid, 5.0) > 0.5) {
+			col.a = 1.0;
+		}
+#endif
 	}
 
 	// Glyph texture
@@ -125,6 +130,9 @@ void main() {
 		vec2 tc = abs(2.0 * gl_TexCoord[0].xy - vec2(1.0));
 		if ((tc.x < 0.1 && tc.y < 0.9) || (tc.y < 0.1 && tc.x < 0.6)) {
 			col.a = min(col.a + 0.3, 1.0);
+#ifdef NQVTK_GENERATE_SHADOWMAP
+			col.a = 1.0;
+#endif
 		} else if ((tc.x < 0.15 && tc.y < 0.95) || (tc.y < 0.15 && tc.x < 0.65)) {
 			col.a = min(col.a + 0.15, 1.0);
 		}

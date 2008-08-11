@@ -24,9 +24,12 @@ namespace NQVTK
 			{ 
 				// Set default parameters
 				useFatContours = false;
-				contourDepthEpsilon = 0.001f;
+				contourDepthEpsilon = 0.005f;
 				useFog = true;
 				depthCueRange = 10.0f;
+
+				SetOption("NQVTK_USE_SHADOWMAP");
+				SetOption("NQVTK_USE_VSM");
 			}
 			
 			virtual ~IBIS() { }
@@ -59,12 +62,12 @@ namespace NQVTK
 				GLProgram *scribe = GLProgram::New();
 				// Scribe vertex shaders
 				bool res = scribe->AddVertexShader(
-					Shaders::IBISScribeVS);
+					AddShaderDefines(Shaders::CommonIBISScribeVS));
 				// Scribe fragment shaders
 				if (res) res = scribe->AddFragmentShader(
-					Shaders::IBISScribeFS);
+					AddShaderDefines(Shaders::CommonIBISScribeFS));
 				if (res) res = scribe->AddFragmentShader(
-					Shaders::LibUtility);
+					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = scribe->Link();
 				qDebug(scribe->GetInfoLogs().c_str());
 				if (!res)
@@ -83,11 +86,11 @@ namespace NQVTK
 					Shaders::GenericPainterVS);
 				// Painter fragment shaders
 				if (res) res = painter->AddFragmentShader(
-					Shaders::IBISPainterFS);
+					AddShaderDefines(Shaders::CommonIBISPainterFS));
 				if (res) res = painter->AddFragmentShader(
-					Shaders::LibUtility);
+					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = painter->AddFragmentShader(
-					Shaders::LibCSG);
+					AddShaderDefines(Shaders::LibCSG));
 				if (res) res = painter->Link();
 				qDebug(painter->GetInfoLogs().c_str());
 				if (!res) 
@@ -115,12 +118,6 @@ namespace NQVTK
 				tm->AddTexture("infoBuffer", infoBuffer, false);
 			}
 
-			virtual void UnregisterScribeTextures() 
-			{
-				//tm->RemoveTexture("depthBuffer");
-				//tm->RemoveTexture("infoBuffer");
-			}
-
 			virtual void RegisterPainterTextures(GLFramebuffer *current, GLFramebuffer *previous) 
 			{
 				// Previous layer info buffer
@@ -141,14 +138,6 @@ namespace NQVTK
 				tm->AddTexture("normals", normals, false);
 			}
 
-			virtual void UnregisterPainterTextures() 
-			{
-				//tm->RemoveTexture("infoPrevious");
-				//tm->RemoveTexture("infoCurrent");
-				//tm->RemoveTexture("colors");
-				//tm->RemoveTexture("normals");
-			}
-
 			virtual void UpdatePainterParameters(GLProgram *painter)
 			{
 				// Set program parameters
@@ -161,9 +150,9 @@ namespace NQVTK
 			// Program parameters
 			// - Painter
 			bool useFatContours;
-			float contourDepthEpsilon; // = 0.001
+			float contourDepthEpsilon;
 			bool useFog;
-			float depthCueRange; // = 10.0
+			float depthCueRange;
 
 		private:
 			// Not implemented

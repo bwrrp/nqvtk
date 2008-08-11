@@ -353,7 +353,7 @@ namespace NQVTK
 		{ 
 			this->style = style;
 			// Re-initialize if we're initialized
-			if (query) 
+			if (query && style) 
 			{
 				bool ok = Initialize();
 				// TODO: subclasses might need this call
@@ -363,6 +363,11 @@ namespace NQVTK
 				return ok;
 			}
 			return true;
+		}
+
+		void ShareTextures(GLTextureManager *tm)
+		{
+			this->tm = tm;
 		}
 
 		int maxLayers;

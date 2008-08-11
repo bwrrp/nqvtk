@@ -152,12 +152,9 @@ SET( ${ProjectName}_Shaders_Text
 	GenericPainterVS.txt
 	DepthPeelingScribeFS.txt
 	DepthPeelingPainterFS.txt
-	IBISScribeVS.txt
-	IBISScribeFS.txt
-	IBISPainterFS.txt
-	DistanceFieldsScribeVS.txt
-	DistanceFieldsScribeFS.txt
-	DistanceFieldsPainterFS.txt
+	CommonIBISScribeVS.txt
+	CommonIBISScribeFS.txt
+	CommonIBISPainterFS.txt
 	ShadowMapScribeVS.txt
 	ShadowMapScribeFS.txt
 	ShadowMapPainterFS.txt
