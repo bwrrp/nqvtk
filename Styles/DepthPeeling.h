@@ -97,7 +97,7 @@ namespace NQVTK
 			{
 				GLTexture *colors = current->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
 				assert(colors);
-				tm->AddTexture("colors", colors, false);
+				tm->AddTexture("infoCurrent", colors, false);
 			}
 
 			virtual void UnregisterPainterTextures() 

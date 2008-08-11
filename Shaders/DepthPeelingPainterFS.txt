@@ -1,5 +1,5 @@
 #extension GL_ARB_texture_rectangle : enable
-uniform sampler2DRect colors;
+uniform sampler2DRect infoCurrent;
 uniform int layer;
 uniform float viewportX;
 uniform float viewportY;
@@ -9,7 +9,7 @@ void main() {
 	vec4 r0 = gl_FragCoord;
 	r0.x -= viewportX;
 	r0.y -= viewportY;
-	vec4 color = texture2DRect(colors, r0.xy);
+	vec4 color = texture2DRect(infoCurrent, r0.xy);
 	// Pre-multiply colors by alpha
 	vec3 litFragment = color.rgb;
 	litFragment *= color.a;
