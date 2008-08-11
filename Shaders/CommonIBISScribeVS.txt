@@ -19,16 +19,15 @@ varying float pvalue;
 #endif
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
-varying vec4 vertex;
 varying vec3 normal;
 #endif
 
+varying vec4 vertex;
 varying vec4 color;
 varying float depthInCamera;
 
 // Shader main function
 void main() {
-#ifndef NQVTK_GENERATE_SHADOWMAP
 	// Vertex position
 #ifdef NQVTK_USE_DISTANCEFIELD
 	// HACK: find a better way to pass object to distfield transforms
@@ -36,6 +35,8 @@ void main() {
 #else
 	vertex = gl_Vertex;
 #endif
+
+#ifndef NQVTK_GENERATE_SHADOWMAP
 	// Normal
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 #endif
