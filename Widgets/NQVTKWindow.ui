@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>750</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -18,7 +18,7 @@
      <x>0</x>
      <y>19</y>
      <width>800</width>
-     <height>712</height>
+     <height>662</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout" >
@@ -30,6 +30,12 @@
     </property>
     <item>
      <widget class="QSplitter" name="splitter" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="orientation" >
        <enum>Qt::Vertical</enum>
       </property>
@@ -37,7 +43,7 @@
        <property name="sizePolicy" >
         <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
          <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
+         <verstretch>3</verstretch>
         </sizepolicy>
        </property>
        <property name="focusPolicy" >
@@ -45,6 +51,12 @@
        </property>
       </widget>
       <widget class="QFrame" name="simpleViewFrame" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
        <property name="frameShape" >
         <enum>QFrame::Panel</enum>
        </property>
@@ -55,9 +67,9 @@
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame" >
+     <widget class="QScrollArea" name="scrollArea" >
       <property name="sizePolicy" >
-       <sizepolicy vsizetype="MinimumExpanding" hsizetype="Fixed" >
+       <sizepolicy vsizetype="Expanding" hsizetype="Minimum" >
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -68,331 +80,317 @@
       <property name="frameShadow" >
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" >
-       <property name="spacing" >
-        <number>6</number>
+      <property name="horizontalScrollBarPolicy" >
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="widgetResizable" >
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents" >
+       <property name="geometry" >
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>190</width>
+         <height>660</height>
+        </rect>
        </property>
-       <property name="margin" >
-        <number>9</number>
-       </property>
-       <item>
-        <widget class="QGroupBox" name="groupBox_3" >
-         <property name="title" >
-          <string>General</string>
-         </property>
-         <layout class="QVBoxLayout" >
-          <property name="spacing" >
-           <number>6</number>
+       <layout class="QVBoxLayout" name="verticalLayout_3" >
+        <item>
+         <widget class="QGroupBox" name="groupBox_3" >
+          <property name="title" >
+           <string>General</string>
           </property>
-          <property name="margin" >
-           <number>9</number>
+          <layout class="QVBoxLayout" name="_2" >
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <property name="margin" >
+            <number>9</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_5" >
+             <property name="text" >
+              <string>maxLayers</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="maxLayers" >
+             <property name="minimum" >
+              <number>1</number>
+             </property>
+             <property name="maximum" >
+              <number>50</number>
+             </property>
+             <property name="value" >
+              <number>8</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_4" >
+             <property name="text" >
+              <string>opacity</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="opacity" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>30</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_6" >
+             <property name="text" >
+              <string>eyeSpacing</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="eyeSpacing" >
+             <property name="maximum" >
+              <number>1000</number>
+             </property>
+             <property name="value" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_2" >
+          <property name="title" >
+           <string>IBIS</string>
           </property>
-          <item>
-           <widget class="QLabel" name="label_5" >
-            <property name="text" >
-             <string>maxLayers</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="maxLayers" >
-            <property name="minimum" >
-             <number>1</number>
-            </property>
-            <property name="maximum" >
-             <number>50</number>
-            </property>
-            <property name="value" >
-             <number>8</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_4" >
-            <property name="text" >
-             <string>opacity</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="opacity" >
-            <property name="maximum" >
-             <number>100</number>
-            </property>
-            <property name="value" >
-             <number>30</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_6" >
-            <property name="text" >
-             <string>eyeSpacing</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="eyeSpacing" >
-            <property name="maximum" >
-             <number>1000</number>
-            </property>
-            <property name="value" >
-             <number>100</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_2" >
-         <property name="title" >
-          <string>IBIS</string>
-         </property>
-         <property name="checkable" >
-          <bool>false</bool>
-         </property>
-         <layout class="QVBoxLayout" >
-          <property name="spacing" >
-           <number>6</number>
+          <property name="checkable" >
+           <bool>false</bool>
           </property>
-          <property name="margin" >
-           <number>9</number>
+          <layout class="QVBoxLayout" name="_3" >
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <property name="margin" >
+            <number>9</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="useGridTexture" >
+             <property name="text" >
+              <string>useGridTexture</string>
+             </property>
+             <property name="checked" >
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useGlyphTexture" >
+             <property name="text" >
+              <string>useGlyphTexture</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_2" >
+             <property name="text" >
+              <string>contourDepthEpsilon</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="contourDepthEpsilon" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="layoutDirection" >
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="maximum" >
+              <number>400</number>
+             </property>
+             <property name="value" >
+              <number>5</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useFatContours" >
+             <property name="text" >
+              <string>useFatContours</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_3" >
+             <property name="text" >
+              <string>depthCueRange</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="depthCueRange" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimum" >
+              <number>1</number>
+             </property>
+             <property name="maximum" >
+              <number>30000</number>
+             </property>
+             <property name="value" >
+              <number>10000</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useFog" >
+             <property name="text" >
+              <string>useFog</string>
+             </property>
+             <property name="checked" >
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox" >
+          <property name="title" >
+           <string>DistanceFields</string>
           </property>
-          <item>
-           <widget class="QCheckBox" name="useGridTexture" >
-            <property name="text" >
-             <string>useGridTexture</string>
-            </property>
-            <property name="checked" >
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="useGlyphTexture" >
-            <property name="text" >
-             <string>useGlyphTexture</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_2" >
-            <property name="text" >
-             <string>contourDepthEpsilon</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="contourDepthEpsilon" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="layoutDirection" >
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="maximum" >
-             <number>400</number>
-            </property>
-            <property name="value" >
-             <number>5</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="useFatContours" >
-            <property name="text" >
-             <string>useFatContours</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_3" >
-            <property name="text" >
-             <string>depthCueRange</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="depthCueRange" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimum" >
-             <number>1</number>
-            </property>
-            <property name="maximum" >
-             <number>30000</number>
-            </property>
-            <property name="value" >
-             <number>10000</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="useFog" >
-            <property name="text" >
-             <string>useFog</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title" >
-          <string>DistanceFields</string>
-         </property>
-         <layout class="QVBoxLayout" >
-          <property name="spacing" >
-           <number>6</number>
+          <layout class="QVBoxLayout" name="verticalLayout_2" >
+           <item>
+            <widget class="QLabel" name="label" >
+             <property name="text" >
+              <string>classificationThreshold</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="classificationThreshold" >
+             <property name="sizePolicy" >
+              <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximum" >
+              <number>1500</number>
+             </property>
+             <property name="value" >
+              <number>0</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useDistanceColorMap" >
+             <property name="text" >
+              <string>useDistanceColorMap</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_4" >
+          <property name="title" >
+           <string>Lighting</string>
           </property>
-          <property name="margin" >
-           <number>9</number>
+          <layout class="QVBoxLayout" name="verticalLayout" >
+           <item>
+            <widget class="QDial" name="lightOffsetDirection" >
+             <property name="maximumSize" >
+              <size>
+               <width>16777215</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="maximum" >
+              <number>360</number>
+             </property>
+             <property name="singleStep" >
+              <number>5</number>
+             </property>
+             <property name="pageStep" >
+              <number>15</number>
+             </property>
+             <property name="value" >
+              <number>270</number>
+             </property>
+             <property name="wrapping" >
+              <bool>true</bool>
+             </property>
+             <property name="notchTarget" >
+              <double>2.000000000000000</double>
+             </property>
+             <property name="notchesVisible" >
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="lightRelativeToCamera" >
+             <property name="text" >
+              <string>lightRelativeToCamera</string>
+             </property>
+             <property name="checked" >
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer" >
+          <property name="orientation" >
+           <enum>Qt::Vertical</enum>
           </property>
-          <item>
-           <widget class="QLabel" name="label" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>classificationThreshold</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="classificationThreshold" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximum" >
-             <number>1500</number>
-            </property>
-            <property name="value" >
-             <number>0</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="useDistanceColorMap" >
-            <property name="text" >
-             <string>useDistanceColorMap</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_4" >
-         <property name="title" >
-          <string>Lighting</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout" >
-          <item>
-           <widget class="QDial" name="lightOffsetDirection" >
-            <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>16777215</width>
-              <height>50</height>
-             </size>
-            </property>
-            <property name="maximum" >
-             <number>360</number>
-            </property>
-            <property name="singleStep" >
-             <number>5</number>
-            </property>
-            <property name="pageStep" >
-             <number>15</number>
-            </property>
-            <property name="value" >
-             <number>270</number>
-            </property>
-            <property name="wrapping" >
-             <bool>true</bool>
-            </property>
-            <property name="notchTarget" >
-             <double>2.000000000000000</double>
-            </property>
-            <property name="notchesVisible" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="lightRelativeToCamera" >
-            <property name="text" >
-             <string>lightRelativeToCamera</string>
-            </property>
-            <property name="checked" >
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer>
-         <property name="orientation" >
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0" >
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -411,7 +409,7 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>731</y>
+     <y>681</y>
      <width>800</width>
      <height>19</height>
     </rect>

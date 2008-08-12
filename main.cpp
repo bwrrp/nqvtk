@@ -6,7 +6,6 @@ int main(int argc, char *argv[])
 	// Set up Qt application
 	QApplication app(argc, argv);
 	NQVTKWindow *window = new NQVTKWindow;
-	window->resize(800, 600);
 	
 	// Create renderers and styles
 	window->CreateRenderers();
