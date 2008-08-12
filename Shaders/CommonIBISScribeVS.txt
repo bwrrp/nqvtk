@@ -18,6 +18,12 @@ attribute float pvals;
 varying float pvalue;
 #endif
 
+#ifdef NQVTK_USE_PCA
+// Define NQVTK_USE_PCA to the number of eigenvectors
+attribute vec3 eigvecs[NQVTK_USE_PCA];
+uniform float weights[NQVTK_USE_PCA];
+#endif
+
 #ifndef NQVTK_GENERATE_SHADOWMAP
 varying vec3 normal;
 #endif
@@ -29,11 +35,13 @@ varying float depthInCamera;
 // Shader main function
 void main() {
 	// Vertex position
-#ifdef NQVTK_USE_DISTANCEFIELD
-	// HACK: find a better way to pass object to distfield transforms
-	vertex = gl_TextureMatrixInverse[1 - objectId] * gl_TextureMatrix[objectId] * gl_Vertex;
-#else
 	vertex = gl_Vertex;
+
+#ifdef NQVTK_USE_PCA
+	// Deform the vertex position according to the weights and eigenvectors
+	for (int i = 0; i < NQVTK_USE_PCA; ++i) {
+		vertex += vec4(weights[i] * eigvecs[i], 0.0);
+	}
 #endif
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
@@ -44,20 +52,26 @@ void main() {
 	color = gl_Color;
 
 	// Compute depth
-	vec4 pos = gl_ModelViewMatrix * gl_Vertex;
+	vec4 pos = gl_ModelViewMatrix * vertex;
 	float depthRange = (farPlane - nearPlane);
 	depthInCamera = (-pos.z / pos.w - nearPlane) / depthRange;
 
-	gl_Position = ftransform();
+	gl_Position = gl_ProjectionMatrix * pos;
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
 #ifdef NQVTK_USE_SHADOWMAP
-	shadowCoord = gl_TextureMatrix[3] * gl_ModelViewMatrix * gl_Vertex;
-	vec4 shadowPos = shadowMVM * gl_TextureMatrix[objectId] * gl_Vertex;
+	shadowCoord = gl_TextureMatrix[3] * gl_ModelViewMatrix * vertex;
+	vec4 shadowPos = shadowMVM * gl_TextureMatrix[objectId] * vertex;
 	float shadowDepthRange = (shadowFarPlane - shadowNearPlane);
 	depthInShadow = (-shadowPos.z / shadowPos.w - shadowNearPlane) / shadowDepthRange;
 #endif
+#endif
+
+#ifdef NQVTK_USE_DISTANCEFIELD
+	// Transform vertex to the other object's coordinate system
+	// HACK: find a better way to pass object to distfield transforms
+	vertex = gl_TextureMatrixInverse[1 - objectId] * gl_TextureMatrix[objectId] * vertex;
 #endif
 
 #ifdef NQVTK_USE_PVALS

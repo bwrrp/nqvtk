@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QString>
+#include <QVBoxLayout>
 
 #include "ui_NQVTKWindow.h"
 
@@ -60,6 +61,9 @@ public:
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 		ibisStyle = new NQVTK::Styles::IBIS();
 		distfieldStyle = new NQVTK::Styles::DistanceFields();
+
+		// TODO: handle this somewhere else
+		distfieldStyle->SetOption("NQVTK_USE_PCA", "8");
 
 		// Set renderer style
 		renderer->SetStyle(distfieldStyle);
@@ -119,12 +123,19 @@ public:
 			args.append("D:/Data/Surface/test4-small-dist256.vti");
 			args.append("D:/Data/Surface/test3-small-dist256.vti");
 			//*/
-			//* Luca's ventricles
+			/* Luca's ventricles
 			args.append("D:/data/Luca/PolyDataG0/Patient00-textured.vtp");
 			args.append("D:/data/Luca/PolyDataG3/Patient00-textured.vtp");
 			args.append("-");
 			args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
 			args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
+			//*/
+			//* Ventricle PCA
+			args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
+			args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
+			args.append("-");
+			args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+			args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 			//*/
 		}
 		// Load the polydata
@@ -166,6 +177,7 @@ public:
 				connect(simpleView, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
 					ui.nqvtkwidget, SLOT(updateGL()));
 				simpleView->toggleCrosshair(true);
+				simpleView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 				layout->addWidget(simpleView);
 				// TODO: sync camera after all widgets are initialized
 				if (!simpleView->isSharing())
@@ -236,7 +248,7 @@ public:
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
 
-		//* Add a brushing test widget
+		/* Add a brushing test widget
 		{
 			NQVTKWidget *brushWidget = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
 			layout->addWidget(brushWidget);
@@ -246,6 +258,30 @@ public:
 			brushWidget->SetInteractor(brushInt);
 			ui.nqvtkwidget->makeCurrent();
 		}
+		//*/
+
+		//* Add PCA sliders
+		// TODO: make this more flexible
+		// TODO: also deform objects in simpleViews
+		// TODO: should be able to manipulate objects separately
+		// TODO: should be able to flip slider ranges
+		// TODO: histograms above the sliders?
+		QWidget *pcaWidget = new QWidget(ui.simpleViewFrame);
+		pcaWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
+		pcaWidget->setLayout(pcaLayout);
+		for (int i = 0; i < 8; ++i)
+		{
+			QSlider *sld = new QSlider(pcaWidget);
+			sld->setRange(-300, 300);
+			sld->setValue(0);
+			sld->setOrientation(Qt::Horizontal);
+			sld->setProperty("id", i);
+			connect(sld, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
+			pcaLayout->addWidget(sld);
+		}
+		distfieldStyle->weights.resize(8);
+		layout->addWidget(pcaWidget);
 		//*/
 
 		// Set main view interactor
@@ -479,6 +515,13 @@ private slots:
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightRelativeToCamera = val;
 		// TODO: do the same for all SimpleRenderers
+		ui.nqvtkwidget->updateGL();
+	}
+
+	void pcaSlider_valueChanged(int val)
+	{
+		int id = sender()->property("id").toInt();
+		distfieldStyle->weights[id] = static_cast<float>(val) / 100.0;
 		ui.nqvtkwidget->updateGL();
 	}
 };
