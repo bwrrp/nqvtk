@@ -95,7 +95,7 @@ namespace NQVTK
 			pointers.clear();
 		}
 
-		void SetupAttributes(const std::vector<GLAttribute> requiredAttribs)
+		void SetupAttributes(const std::vector<GLAttributeInfo> requiredAttribs)
 		{
 			// Clear all attributes
 			for (attribMap::iterator it = this->attribs.begin(); 
@@ -104,7 +104,7 @@ namespace NQVTK
 				it->second->index = -1;
 			}
 			// Set attributes used by the program
-			for (std::vector<GLAttribute>::const_iterator it = requiredAttribs.begin();
+			for (std::vector<GLAttributeInfo>::const_iterator it = requiredAttribs.begin();
 				it != requiredAttribs.end(); ++it)
 			{
 				if (it->index >= 0)

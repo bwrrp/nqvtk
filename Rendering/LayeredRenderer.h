@@ -85,7 +85,7 @@ namespace NQVTK
 			}
 			scribeAttribs = scribe->GetActiveAttributes();
 #ifndef NDEBUG
-			for (std::vector<GLAttribute>::const_iterator it = scribeAttribs.begin();
+			for (std::vector<GLAttributeInfo>::const_iterator it = scribeAttribs.begin();
 				it != scribeAttribs.end(); ++it)
 			{
 				qDebug("Scribe uses attribute '%s' (%d)", it->name.c_str(), it->index);
@@ -377,7 +377,7 @@ namespace NQVTK
 		GLTextureManager *tm;
 
 		RenderStyle *style;
-		std::vector<GLAttribute> scribeAttribs;
+		std::vector<GLAttributeInfo> scribeAttribs;
 
 		GLFramebuffer *fbo1;
 		GLFramebuffer *fbo2;
