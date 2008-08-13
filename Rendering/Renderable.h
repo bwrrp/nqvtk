@@ -2,7 +2,13 @@
 
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLResource.h"
+
 #include "Math/Vector3.h"
+
+#include "ParamSet.h"
+
+#include <string>
+#include <map>
 
 namespace NQVTK 
 {
@@ -25,7 +31,15 @@ namespace NQVTK
 			rotateX = rotateY = 0.0;
 		}
 
-		virtual ~Renderable() { }
+		virtual ~Renderable() 
+		{
+			// Delete all ParamSets
+			for (std::map<std::string, ParamSet*>::iterator it = paramSets.begin();
+				it != paramSets.end(); ++it)
+			{
+				delete it->second;
+			}
+		}
 
 		virtual void PushTransforms() const
 		{
@@ -82,6 +96,9 @@ namespace NQVTK
 		Vector3 position;
 		double rotateX;
 		double rotateY;
+
+		typedef std::map<std::string, ParamSet*> ParamSetType;
+		ParamSetType paramSets;
 
 	protected:
 		double bounds[6];

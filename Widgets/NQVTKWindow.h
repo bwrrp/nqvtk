@@ -27,6 +27,8 @@
 #include "Rendering/PolyData.h"
 #include "Rendering/ImageDataTexture3D.h"
 
+#include "Rendering/PCAParamSet.h"
+
 #include "Interactors/MainViewInteractor.h"
 #include "Interactors/BrushingInteractor.h"
 
@@ -270,17 +272,23 @@ public:
 		pcaWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
 		pcaWidget->setLayout(pcaLayout);
-		for (int i = 0; i < 8; ++i)
+		const unsigned int numEigenModes = 8;
+		for (unsigned int i = 0; i < numEigenModes; ++i)
 		{
 			QSlider *sld = new QSlider(pcaWidget);
 			sld->setRange(-300, 300);
 			sld->setValue(0);
 			sld->setOrientation(Qt::Horizontal);
-			sld->setProperty("id", i);
+			sld->setProperty("id", static_cast<int>(i));
 			connect(sld, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
 			pcaLayout->addWidget(sld);
 		}
-		distfieldStyle->weights.resize(8);
+		// Give each renderable a PCAParamSet
+		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
+		{
+			NQVTK::Renderable *renderable = renderer->GetRenderable(i);
+			renderable->paramSets["pca"] = new NQVTK::PCAParamSet(8);
+		}
 		layout->addWidget(pcaWidget);
 		//*/
 
@@ -521,7 +529,12 @@ private slots:
 	void pcaSlider_valueChanged(int val)
 	{
 		int id = sender()->property("id").toInt();
-		distfieldStyle->weights[id] = static_cast<float>(val) / 100.0;
+		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
+		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
+		{
+			// TODO: set PCA weights
+		}
+		//renderer->GetRenderable(i)->->weights[id] = static_cast<float>(val) / 100.0;
 		ui.nqvtkwidget->updateGL();
 	}
 };

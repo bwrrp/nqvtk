@@ -99,14 +99,6 @@ namespace NQVTK
 				scribe->SetUniform1f("classificationThreshold", classificationThreshold);
 				scribe->SetUniform1i("useGridTexture", useGridTexture);
 				scribe->SetUniform1i("useGlyphTexture", useGlyphTexture);
-
-				// HACK: set weights
-				for (unsigned int i = 0; i < weights.size(); ++i)
-				{
-					std::ostringstream name;
-					name << "weights[" << i << "]";
-					scribe->SetUniform1f(name.str(), weights[i]);
-				}
 			}
 
 			void SetDistanceField(int objectId, GLTexture *field)
@@ -123,8 +115,6 @@ namespace NQVTK
 			float classificationThreshold;
 			bool useGridTexture;
 			bool useGlyphTexture;
-
-			std::vector<float> weights;
 
 		protected:
 			// SamplerIds

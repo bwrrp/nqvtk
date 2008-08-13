@@ -119,6 +119,10 @@ SET( ${ProjectName}_Rendering_Classes
 	OverlayRenderer
 	CrossEyedStereoRenderer
 	ShadowMappingRenderer
+	ParamSet
+	LayeredRendererParamSet
+	DistanceFieldParamSet
+	PCAParamSet
 )
 
 SET( ${ProjectName}_Styles_Classes
