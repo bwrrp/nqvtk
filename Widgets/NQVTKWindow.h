@@ -288,17 +288,53 @@ public:
 		QWidget *pcaWidget = new QWidget(ui.simpleViewFrame);
 		pcaWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
+		pcaLayout->setSpacing(0);
 		pcaWidget->setLayout(pcaLayout);
+		pcaWidget->setStyleSheet(
+			"QSlider::groove:horizontal {"
+			"	border: 1px solid #999999;"
+			"	height: 1px;"
+			"	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);"
+			"	margin: 3px 0;"
+			"}"
+			"QSlider::handle:horizontal {"
+			"	border: 1px solid #5c5c5c;"
+			"	width: 8px;"
+			"	margin: -2px 0;"
+			"}");
 		const unsigned int numEigenModes = 8;
 		for (unsigned int i = 0; i < numEigenModes; ++i)
 		{
+			QSlider *sld1 = new QSlider(pcaWidget);
+			sld1->setRange(-300, 300);
+			sld1->setValue(0);
+			sld1->setOrientation(Qt::Horizontal);
+			sld1->setProperty("modeId", static_cast<int>(i));
+			sld1->setProperty("objectId", static_cast<int>(0));
+			sld1->setStyleSheet("QSlider::handle { background: rgb(255, 230, 102); }");
+			sld1->setMaximumHeight(5);
+			connect(sld1, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
+			QSlider *sld2 = new QSlider(pcaWidget);
+			sld2->setRange(-300, 300);
+			sld2->setValue(0);
+			sld2->setOrientation(Qt::Horizontal);
+			sld2->setProperty("modeId", static_cast<int>(i));
+			sld2->setProperty("objectId", static_cast<int>(1));
+			sld2->setStyleSheet("QSlider::handle { background: rgb(77, 153, 255); }");
+			sld2->setMaximumHeight(5);
+			connect(sld2, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
 			QSlider *sld = new QSlider(pcaWidget);
 			sld->setRange(-300, 300);
 			sld->setValue(0);
 			sld->setOrientation(Qt::Horizontal);
-			sld->setProperty("id", static_cast<int>(i));
-			connect(sld, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
+			sld->setStyleSheet("QSlider::handle { background: rgb(170, 170, 170); }");
+			sld->setMaximumHeight(5);
+			connect(sld, SIGNAL(valueChanged(int)), sld1, SLOT(setValue(int)));
+			connect(sld, SIGNAL(valueChanged(int)), sld2, SLOT(setValue(int)));
+			pcaLayout->addWidget(sld1);
 			pcaLayout->addWidget(sld);
+			pcaLayout->addWidget(sld2);
+			pcaLayout->addSpacing(6);
 		}
 		// Give each renderable a PCAParamSet
 		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
@@ -545,17 +581,15 @@ private slots:
 
 	void pcaSlider_valueChanged(int val)
 	{
-		int id = sender()->property("id").toInt();
+		int modeId = sender()->property("modeId").toInt();
+		int objectId = sender()->property("objectId").toInt();
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
-		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
+		NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
+			renderer->GetRenderable(objectId)->GetParamSet("pca"));
+		if (pcaParams)
 		{
-			NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
-				renderer->GetRenderable(i)->GetParamSet("pca"));
-			if (pcaParams)
-			{
-				pcaParams->weights[id] = static_cast<float>(val) / 100.0;
-			}
+			pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
+			ui.nqvtkwidget->updateGL();
 		}
-		ui.nqvtkwidget->updateGL();
 	}
 };
