@@ -120,7 +120,6 @@ SET( ${ProjectName}_Rendering_Classes
 	CrossEyedStereoRenderer
 	ShadowMappingRenderer
 	ParamSet
-	LayeredRendererParamSet
 	DistanceFieldParamSet
 	PCAParamSet
 )

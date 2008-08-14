@@ -14,6 +14,11 @@ namespace NQVTK
 			this->distanceField = distanceField;
 		}
 
+		virtual ~DistanceFieldParamSet()
+		{
+			if (distanceField) delete distanceField;
+		}
+
 		virtual void SetupProgram(GLProgram *program)
 		{
 			if (distanceField)

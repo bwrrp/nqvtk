@@ -97,11 +97,35 @@ namespace NQVTK
 		double rotateX;
 		double rotateY;
 
-		typedef std::map<std::string, ParamSet*> ParamSetType;
-		ParamSetType paramSets;
+		ParamSet *GetParamSet(const std::string &name)
+		{
+			ParamSetType::iterator it = paramSets.find(name);
+			if (it != paramSets.end())
+			{
+				return it->second;
+			}
+			return 0;
+		}
+
+		void SetParamSet(const std::string &name, ParamSet *params)
+		{
+			paramSets[name] = params;
+		}
+
+		void ApplyParamSets(GLProgram *program)
+		{
+			for (ParamSetType::iterator it = paramSets.begin();
+				it != paramSets.end(); ++it)
+			{
+				it->second->SetupProgram(program);
+			}
+		}
 
 	protected:
 		double bounds[6];
+
+		typedef std::map<std::string, ParamSet*> ParamSetType;
+		ParamSetType paramSets;
 
 	private:
 		// Not implemented

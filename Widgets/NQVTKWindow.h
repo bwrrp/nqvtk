@@ -27,6 +27,7 @@
 #include "Rendering/PolyData.h"
 #include "Rendering/ImageDataTexture3D.h"
 
+#include "Rendering/DistanceFieldParamSet.h"
 #include "Rendering/PCAParamSet.h"
 
 #include "Interactors/MainViewInteractor.h"
@@ -59,12 +60,16 @@ public:
 		//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
 		if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
 
+		ui.eyeSpacing->hide();
+		ui.eyeSpacingLabel->hide();
+
 		// Create the styles
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 		ibisStyle = new NQVTK::Styles::IBIS();
 		distfieldStyle = new NQVTK::Styles::DistanceFields();
 
 		// TODO: handle this somewhere else
+		ibisStyle->SetOption("NQVTK_USE_PCA", "8");
 		distfieldStyle->SetOption("NQVTK_USE_PCA", "8");
 
 		// Set renderer style
@@ -201,14 +206,26 @@ public:
 			}
 			else
 			{
-				// Load distance field
-				vtkSmartPointer<vtkXMLImageDataReader> reader = 
-					vtkSmartPointer<vtkXMLImageDataReader>::New();
-				reader->SetFileName(it->toUtf8());
-				reader->Update();
-				GLTexture *tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
-				assert(tex);
-				distfieldStyle->SetDistanceField(i, tex);
+				// Assign to the renderable
+				NQVTK::Renderable *renderable = renderer->GetRenderable(i);
+				if (!renderable)
+				{
+					qDebug("Error! Found distance field for unknown renderable %d.", i);
+				}
+				else
+				{
+					// Load distance field
+					vtkSmartPointer<vtkXMLImageDataReader> reader = 
+						vtkSmartPointer<vtkXMLImageDataReader>::New();
+					reader->SetFileName(it->toUtf8());
+					reader->Update();
+					NQVTK::ImageDataTexture3D *tex = 
+						NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+					assert(tex);
+					NQVTK::DistanceFieldParamSet *dfps = 
+						new NQVTK::DistanceFieldParamSet(tex);
+					renderable->SetParamSet("distancefield", dfps);
+				}
 			}
 			++i;
 		}
@@ -287,7 +304,7 @@ public:
 		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
 		{
 			NQVTK::Renderable *renderable = renderer->GetRenderable(i);
-			renderable->paramSets["pca"] = new NQVTK::PCAParamSet(8);
+			renderable->SetParamSet("pca", new NQVTK::PCAParamSet(numEigenModes));
 		}
 		layout->addWidget(pcaWidget);
 		//*/
@@ -513,7 +530,7 @@ private slots:
 	{
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightOffsetDirection = val;
-		// TODO: do the same for all SimpleRenderers
+		// TODO: also set this option for all SimpleRenderers?
 		ui.nqvtkwidget->updateGL();
 	}
 
@@ -522,7 +539,7 @@ private slots:
 		ui.lightOffsetDirection->setEnabled(val);
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		renderer->lightRelativeToCamera = val;
-		// TODO: do the same for all SimpleRenderers
+		// TODO: also set this option for all SimpleRenderers?
 		ui.nqvtkwidget->updateGL();
 	}
 
@@ -532,9 +549,13 @@ private slots:
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
 		{
-			// TODO: set PCA weights
+			NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
+				renderer->GetRenderable(i)->GetParamSet("pca"));
+			if (pcaParams)
+			{
+				pcaParams->weights[id] = static_cast<float>(val) / 100.0;
+			}
 		}
-		//renderer->GetRenderable(i)->->weights[id] = static_cast<float>(val) / 100.0;
 		ui.nqvtkwidget->updateGL();
 	}
 };

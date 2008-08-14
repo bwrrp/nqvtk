@@ -10,7 +10,7 @@
 
 #include "Shaders.h"
 
-#include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/DistanceFieldParamSet.h"
 
 #include <sstream>
 
@@ -38,44 +38,29 @@ namespace NQVTK
 				useGridTexture = false;
 				useGlyphTexture = false;
 			}
-			
-			virtual ~DistanceFields() 
-			{ 
-				for (std::map<int, GLTexture*>::iterator it = distanceFields.begin();
-					it != distanceFields.end(); ++it)
-				{
-					delete it->second;
-				}
-			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 
 				int objectId, NQVTK::Renderable *renderable)
 			{
+				scribe->SetUniform1i("hasDistanceField", 0);
 				Superclass::PrepareForObject(scribe, objectId, renderable);
+
 				
-				ImageDataTexture3D *distanceField = 
-					dynamic_cast<ImageDataTexture3D*>(GetDistanceField(objectId));
-				// HACK: the second condition is a hack for shadow map creation
-				if (distanceField && distanceFieldId != GLTextureManager::BAD_SAMPLER_ID)
+				DistanceFieldParamSet *dfps = dynamic_cast<DistanceFieldParamSet*>(
+					renderable->GetParamSet("distancefield"));
+				if (dfps)
 				{
-					// Pass distance field information
-					scribe->SetUniform1i("hasDistanceField", 1);
-					scribe->SetUniform1f("distanceFieldDataShift", 
-						distanceField->GetDataShift());
-					scribe->SetUniform1f("distanceFieldDataScale", 
-						distanceField->GetDataScale());
-					Vector3 origin = distanceField->GetOrigin();
-					scribe->SetUniform3f("distanceFieldOrigin", 
-						origin.x, origin.y, origin.z);
-					Vector3 size = distanceField->GetOriginalSize();
-					scribe->SetUniform3f("distanceFieldSize", 
-						size.x, size.y, size.z);
-					// Update distance field texture
-					tm->SwapTexture(distanceFieldId, distanceField);
-				}
-				else
-				{
-					scribe->SetUniform1i("hasDistanceField", 0);
+					ImageDataTexture3D *distanceField = dfps->distanceField;
+					// HACK: the second condition is a hack for shadow map creation
+					if (distanceField && distanceFieldId != GLTextureManager::BAD_SAMPLER_ID)
+					{
+						// Update distance field texture
+						tm->SwapTexture(distanceFieldId, distanceField);
+					}
+					else
+					{
+						scribe->SetUniform1i("hasDistanceField", 0);
+					}
 				}
 				tm->Bind();
 			}
@@ -101,14 +86,6 @@ namespace NQVTK
 				scribe->SetUniform1i("useGlyphTexture", useGlyphTexture);
 			}
 
-			void SetDistanceField(int objectId, GLTexture *field)
-			{
-				// Replace the distance field for this object
-				GLTexture *old = GetDistanceField(objectId);
-				if (old) delete old;
-				distanceFields[objectId] = field;
-			}
-
 			// Program parameters
 			// - Scribe
 			bool useDistanceColorMap;
@@ -119,17 +96,6 @@ namespace NQVTK
 		protected:
 			// SamplerIds
 			GLTextureManager::SamplerId distanceFieldId;
-
-			// Distance fields
-			std::map<int, GLTexture*> distanceFields;
-			// Get the distance field to sample for the specified object
-			GLTexture *GetDistanceField(int objectId)
-			{
-				// Look up the texture, return 0 if nothing's attached
-				std::map<int, GLTexture*>::iterator it = distanceFields.find(objectId);
-				if (it == distanceFields.end()) return 0;
-				return it->second;
-			}
 
 		private:
 			// Not implemented

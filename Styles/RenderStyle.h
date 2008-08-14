@@ -36,11 +36,7 @@ namespace NQVTK
 		{
 			scribe->SetUniform1i("objectId", objectId);
 			// Apply all ParamSets
-			for (std::map<std::string, ParamSet*>::iterator it = renderable->paramSets.begin();
-				it != renderable->paramSets.end(); ++it)
-			{
-				it->second->SetupProgram(scribe);
-			}
+			renderable->ApplyParamSets(scribe);
 		}
 
 		virtual void RegisterScribeTextures(GLFramebuffer *previous) { }

@@ -91,13 +91,13 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>190</width>
+         <width>170</width>
          <height>660</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
         <item>
-         <widget class="QGroupBox" name="groupBox_3" >
+         <widget class="QGroupBox" name="generalGroup" >
           <property name="title" >
            <string>General</string>
           </property>
@@ -109,7 +109,7 @@
             <number>9</number>
            </property>
            <item>
-            <widget class="QLabel" name="label_5" >
+            <widget class="QLabel" name="maxLayersLabel" >
              <property name="text" >
               <string>maxLayers</string>
              </property>
@@ -132,7 +132,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_4" >
+            <widget class="QLabel" name="opacityLabel" >
              <property name="text" >
               <string>opacity</string>
              </property>
@@ -152,7 +152,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_6" >
+            <widget class="QLabel" name="eyeSpacingLabel" >
              <property name="text" >
               <string>eyeSpacing</string>
              </property>
@@ -175,7 +175,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_2" >
+         <widget class="QGroupBox" name="ibisGroup" >
           <property name="title" >
            <string>IBIS</string>
           </property>
@@ -207,7 +207,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_2" >
+            <widget class="QLabel" name="contourDepthEpsilonLabel" >
              <property name="text" >
               <string>contourDepthEpsilon</string>
              </property>
@@ -243,7 +243,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_3" >
+            <widget class="QLabel" name="depthCueRangeLabel" >
              <property name="text" >
               <string>depthCueRange</string>
              </property>
@@ -285,13 +285,13 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox" >
+         <widget class="QGroupBox" name="distanceFieldsGroup" >
           <property name="title" >
            <string>DistanceFields</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2" >
            <item>
-            <widget class="QLabel" name="label" >
+            <widget class="QLabel" name="classificationThresholdLabel" >
              <property name="text" >
               <string>classificationThreshold</string>
              </property>
@@ -327,7 +327,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_4" >
+         <widget class="QGroupBox" name="lightingGroup" >
           <property name="title" >
            <string>Lighting</string>
           </property>
