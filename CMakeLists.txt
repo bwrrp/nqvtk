@@ -115,6 +115,7 @@ SET( ${ProjectName}_Rendering_Classes
 	SimpleRenderer
 	LayeredRenderer
 	PointExtractingRenderer
+	PointFilteringRenderer
 	BrushingRenderer
 	OverlayRenderer
 	CrossEyedStereoRenderer
@@ -161,6 +162,8 @@ SET( ${ProjectName}_Shaders_Text
 	ShadowMapScribeVS.txt
 	ShadowMapScribeFS.txt
 	ShadowMapPainterFS.txt
+	PointFilterVS.txt
+	PointFilterFS.txt
 )
 
 # --------------------------------------------------

@@ -7,14 +7,12 @@
 
 #include "Styles/RenderStyle.h"
 
-#include <QObject> // for qDebug
-
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
-#include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLOcclusionQuery.h"
 
+#include <QObject> // for qDebug
 #include <cassert>
 
 namespace NQVTK 
@@ -24,7 +22,7 @@ namespace NQVTK
 	public:
 		typedef Renderer Superclass;
 
-		LayeredRenderer() : tm(0), style(0), 
+		LayeredRenderer() : style(0), 
 			fbo1(0), fbo2(0), 
 			scribe(0), painter(0), query(0) 
 		{ 
@@ -34,7 +32,6 @@ namespace NQVTK
 
 		virtual ~LayeredRenderer() 
 		{ 
-			if (tm) delete tm;
 			if (style) delete style;
 
 			if (fbo1) delete fbo1;
@@ -48,17 +45,6 @@ namespace NQVTK
 		virtual bool Initialize()
 		{
 			if (!Superclass::Initialize()) return false;
-
-			if (!tm)
-			{
-				tm = GLTextureManager::New();
-				if (!tm)
-				{
-					qDebug("Failed to create texture manager! Check hardware requirements...");
-					return false;
-				}
-			}
-			tm->BeginNewPass();
 
 			if (!style) 
 			{
@@ -365,17 +351,10 @@ namespace NQVTK
 			return true;
 		}
 
-		void ShareTextures(GLTextureManager *tm)
-		{
-			this->tm = tm;
-		}
-
 		int maxLayers;
 		bool drawBackground;
 
 	protected:
-		GLTextureManager *tm;
-
 		RenderStyle *style;
 		std::vector<GLAttributeInfo> scribeAttribs;
 

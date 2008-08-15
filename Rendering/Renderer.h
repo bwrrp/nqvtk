@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "GLBlaat/GLTexture.h"
+#include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLUtility.h"
 
@@ -20,7 +21,7 @@ namespace NQVTK
 	class Renderer
 	{
 	public:
-		Renderer() : camera(0), fboTarget(0)
+		Renderer() : camera(0), tm(0), fboTarget(0)
 		{
 			viewportX = 0;
 			viewportY = 0;
@@ -33,6 +34,7 @@ namespace NQVTK
 		{
 			DeleteAllRenderables();
 			if (camera) delete camera;
+			if (tm) delete tm;
 		}
 
 		virtual bool Initialize() 
@@ -42,6 +44,17 @@ namespace NQVTK
 
 			// Make sure we have a camera
 			GetCamera();
+
+			if (!tm)
+			{
+				tm = GLTextureManager::New();
+				if (!tm)
+				{
+					qDebug("Failed to create texture manager! Check hardware requirements...");
+					return false;
+				}
+			}
+			tm->BeginNewPass();
 
 			return true;
 		}
@@ -231,6 +244,11 @@ namespace NQVTK
 			camera = cam;
 		}
 
+		void ShareTextures(GLTextureManager *tm)
+		{
+			this->tm = tm;
+		}
+
 		GLFramebuffer *SetTarget(GLFramebuffer *target)
 		{
 			GLFramebuffer *oldTarget = this->fboTarget;
@@ -261,6 +279,8 @@ namespace NQVTK
 		Camera *camera;
 		std::vector<Renderable*> renderables;
 		NQVTK::Vector3 lightPos;
+
+		GLTextureManager *tm;
 
 		GLFramebuffer *fboTarget;
 

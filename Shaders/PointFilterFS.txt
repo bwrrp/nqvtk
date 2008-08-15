@@ -1,0 +1,10 @@
+uniform sampler2D mask;
+
+varying vec4 position;
+
+void main() {
+	// TODO: lookup position in mask and possibly discard
+	vec2 tc = (position.xy / position.w + vec2(1.0)) / 2.0;
+	vec4 mask = vec4(1.0) - texture2D(mask, tc);
+	gl_FragColor = vec4(mask.rgb, 1.0);
+}
