@@ -262,6 +262,8 @@ namespace NQVTK
 			return oldTarget;
 		}
 
+		GLFramebuffer *GetTarget() { return this->fboTarget; }
+
 		int GetWidth() { return this->viewportWidth; }
 		int GetHeight() { return this->viewportHeight; }
 

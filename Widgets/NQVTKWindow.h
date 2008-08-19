@@ -17,6 +17,7 @@
 #include "Rendering/ShadowMappingRenderer.h"
 #include "Rendering/BrushingRenderer.h"
 #include "Rendering/OverlayRenderer.h"
+#include "Rendering/PointFilteringRenderer.h"
 
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
@@ -140,9 +141,9 @@ public:
 			//* Ventricle PCA
 			args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 			args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
-			args.append("-");
-			args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
-			args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+			//args.append("-");
+			//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+			//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 			//*/
 		}
 		// Load the polydata
@@ -591,5 +592,39 @@ private slots:
 			pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
 			ui.nqvtkwidget->updateGL();
 		}
+	}
+
+	void on_brushTest_clicked()
+	{
+		// Set up the filter
+		NQVTK::PointFilteringRenderer *filter = new NQVTK::PointFilteringRenderer();
+		NQVTK::Renderer *ren = ui.nqvtkwidget->GetRenderer();
+		filter->SetCamera(ren->GetCamera());
+		filter->Initialize();
+		filter->Resize(ren->GetWidth(), ren->GetHeight());
+		// Add the object
+		NQVTK::Renderable *renderable = ren->GetRenderable(0);
+		filter->AddRenderable(renderable);
+		// Set the mask
+		NQVTK::OverlayRenderer *oren = 
+			dynamic_cast<NQVTK::OverlayRenderer*>(
+				ui.nqvtkwidget->GetRenderer(false));
+		if (oren)
+		{
+			NQVTK::Renderer *bren = oren->GetOverlayRenderer();
+			if (bren)
+			{
+				GLFramebuffer *target = bren->GetTarget();
+				if (target)
+				{
+					filter->SetMask(target->GetTexture2D());
+				}
+			}
+		}
+		// Perform filtering render
+		filter->Draw();
+		// TODO: get results...
+		// Clean up
+		delete filter;
 	}
 };
