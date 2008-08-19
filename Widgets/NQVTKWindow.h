@@ -17,7 +17,9 @@
 #include "Rendering/ShadowMappingRenderer.h"
 #include "Rendering/BrushingRenderer.h"
 #include "Rendering/OverlayRenderer.h"
+
 #include "Rendering/PointFilteringRenderer.h"
+#include "Rendering/PointCloud.h"
 
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
@@ -623,7 +625,9 @@ private slots:
 		}
 		// Perform filtering render
 		filter->Draw();
-		// TODO: get results...
+		// TODO: Get results
+		//NQVTK::PointCloud *pc = new NQVTK::PointCloud(renderable, filter->pointIds);
+		//ren->AddRenderable(pc);
 		// Clean up
 		delete filter;
 	}

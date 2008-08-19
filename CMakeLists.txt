@@ -107,6 +107,7 @@ SET( ${ProjectName}_Rendering_Classes
 	AttributePointers
 	VBOMesh
 	PolyData
+	PointCloud
 	ImageDataTexture3D
 	Camera
 	OrbitCamera
