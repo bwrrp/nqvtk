@@ -41,12 +41,6 @@ namespace NQVTK
 
 		~PointCloud()
 		{
-			if (sharedVBO)
-			{
-				delete sharedVBO;
-				pointers.clear();
-			}
-			if (pointIndices) delete pointIndices;
 		}
 
 		virtual void Draw() const
@@ -58,7 +52,7 @@ namespace NQVTK
 			PushTransforms();
 
 			// Setup vbo and pointers
-			SetPointers();
+			BindAttributes();
 
 			glDisable(GL_LIGHTING);
 
@@ -71,7 +65,7 @@ namespace NQVTK
 			}
 
 			// Unset vbo render state
-			UnsetPointers();
+			UnbindAttributes();
 
 			// Restore world coordinates
 			PopTransforms();

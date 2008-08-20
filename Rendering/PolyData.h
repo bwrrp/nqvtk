@@ -33,159 +33,86 @@ namespace NQVTK
 			DRAWPARTS_ALL = 15
 		};
 
-		struct arrayLoadInfo
-		{
-			vtkAbstractArray *ar;
-			int size;
-			int type;
-		};
-
 		PolyData(vtkPolyData *data)
 		: vertIndices(0), lineIndices(0), polyIndices(0), stripIndices(0)
 		{
-			// TODO: define some useful VBOMesh api and refactor this
+			qDebug("Loading PolyData object...");
 
-			// TODO: check: polydata datatype should be float
-
+			// Store bounds
 			data->GetBounds(bounds);
 			qDebug("Bounds: %f - %f, %f - %f, %f - %f", 
 				bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
 
 			// Get points
 			numPoints = data->GetNumberOfPoints();
-			qDebug("# points: %d", numPoints);	//# points: 33221
+			qDebug("# points: %d", numPoints);
 			vtkPoints *points = data->GetPoints();
+			// TODO: can vtk points have #comps other than 3?
+			AttributeSet *pointsSet = new NQVTK::AttributeSet(
+				GLTypeFromVTKType(points->GetDataType()), 3);
+			pointsSet->SetData(numPoints, points->GetVoidPointer(0));
+			pointsSet->UseAsVertices();
+			AddAttributeSet("gl_Vertex", pointsSet);
+
 			// Do we have normals?
 			// TODO: add support for cell normals if point normals are not available
 			vtkDataArray *normals = data->GetPointData()->GetNormals();
-			// TODO: add support for passing scalar data / color mapping?
-			//vtkDataArray *colors = data->GetPointData()->GetS...
-			// Do we have texture coordinates?
-			vtkDataArray *tcoords = data->GetPointData()->GetTCoords();
-
-			// Figure out how much space we need in the VBO
-			int pointsSize = points->GetNumberOfPoints() * 3 * sizeof(GLfloat);
 			hasNormals = (normals != 0);
 			qDebug("Has normals: %s", (hasNormals ? "yes" : "no"));
-			int normalsSize = 0;
 			if (hasNormals)
 			{
-				normalsSize = normals->GetNumberOfTuples() * 
-					normals->GetNumberOfComponents() * sizeof(GLfloat);
+				AttributeSet *normalsSet = new NQVTK::AttributeSet(
+					GLTypeFromVTKType(normals->GetDataType()), 
+					normals->GetNumberOfComponents());
+				normalsSet->SetData(normals->GetNumberOfTuples(), 
+					normals->GetVoidPointer(0));
+				normalsSet->UseAsNormals();
+				AddAttributeSet("gl_Normal", normalsSet);
 			}
+
+			// TODO: does vtk have colors?
+			//vtkDataArray *colors = data->GetPointData()->GetS...
+
+			// Do we have texture coordinates?
+			vtkDataArray *tcoords = data->GetPointData()->GetTCoords();
 			hasTCoords = (tcoords != 0);
-			qDebug("Has texcoords: %s", (hasNormals ? "yes" : "no"));
+			qDebug("Has tcoords: %s", (hasNormals ? "yes" : "no"));
 			int tcoordsSize = 0;
 			int tcoordsType = GL_NONE;
 			if (hasTCoords)
 			{
-				int type = tcoords->GetDataType();
-				switch (type)
-				{
-				case VTK_FLOAT:
-					tcoordsSize = tcoords->GetNumberOfTuples() * 
-						tcoords->GetNumberOfComponents() * sizeof(GLfloat);
-					tcoordsType = GL_FLOAT;
-					break;
-
-				case VTK_DOUBLE:
-					tcoordsSize = tcoords->GetNumberOfTuples() * 
-						tcoords->GetNumberOfComponents() * sizeof(GLdouble);
-					tcoordsType = GL_DOUBLE;
-					break;
-
-				default:
-					qDebug("Error: texcoords use unsupported type: %s", 
-						tcoords->GetDataTypeAsString());
-				}
+				AttributeSet *tcoordsSet = new NQVTK::AttributeSet(
+					GLTypeFromVTKType(tcoords->GetDataType()), 
+					tcoords->GetNumberOfComponents());
+				tcoordsSet->SetData(tcoords->GetNumberOfTuples(), 
+					tcoords->GetVoidPointer(0));
+				tcoordsSet->UseAsTexCoords(0);
+				AddAttributeSet("gl_TexCoord", tcoordsSet);
 			}
-			int totalSize = pointsSize + normalsSize + tcoordsSize;
 
 			// Pointdata arrays can become custom attributes
 			int numArrays = data->GetPointData()->GetNumberOfArrays();
-			std::vector<arrayLoadInfo> arraysToLoad;
 			for (int arId = 0; arId < numArrays; ++arId)
 			{
 				vtkAbstractArray *ar = data->GetPointData()->GetArray(arId);
 				qDebug("Found array '%s': %d tuples of %d type %s components", 
 					ar->GetName(), ar->GetNumberOfTuples(), 
 					ar->GetNumberOfComponents(), ar->GetDataTypeAsString());
-				
+
 				// TODO: only load the data if this is a "wanted" array
-				
+
 				// Skip null names
 				if (!ar->GetName()) continue;
 
 				assert(ar->GetNumberOfTuples() == numPoints);
 
-				arrayLoadInfo info;
-				info.ar = ar;
-				
-				// Check the data type
-				int type = ar->GetDataType();
-				switch (type)
-				{
-				case VTK_FLOAT:
-					info.size = ar->GetNumberOfTuples() * 
-						ar->GetNumberOfComponents() * sizeof(GLfloat);
-					info.type = GL_FLOAT;
-					break;
-
-				case VTK_DOUBLE:
-					info.size = ar->GetNumberOfTuples() * 
-						ar->GetNumberOfComponents() * sizeof(GLdouble);
-					info.type = GL_DOUBLE;
-					break;
-
-				default:
-					qDebug("Error: array '%s' uses unsupported type: %s", 
-						ar->GetName(), ar->GetDataTypeAsString());
-					info.size = 0;
-					info.type = GL_NONE;
-				}
-
-				totalSize += info.size;
-				arraysToLoad.push_back(info);
+				AttributeSet *arSet = new AttributeSet(
+					GLTypeFromVTKType(ar->GetDataType()), 
+					ar->GetNumberOfComponents());
+				arSet->SetData(ar->GetNumberOfTuples(), 
+					ar->GetVoidPointer(0));
+				AddAttributeSet(ar->GetName(), arSet, true);
 			}
-
-			// Allocate VBO and copy data
-			vertexBuffer->BindAsVertexData();
-			vertexBuffer->SetData(totalSize, 0, GL_STATIC_DRAW);
-			vertexBuffer->SetSubData(0, pointsSize, points->GetVoidPointer(0));
-			VertexPointer(3, GL_FLOAT, 0, 0);
-			if (hasNormals)
-			{
-				vertexBuffer->SetSubData(pointsSize, 
-					normalsSize, normals->GetVoidPointer(0));
-				NormalPointer(GL_FLOAT, 0, pointsSize);
-			}
-
-			if (hasTCoords)
-			{
-				vertexBuffer->SetSubData(pointsSize + normalsSize, 
-					tcoordsSize, tcoords->GetVoidPointer(0));
-				TexCoordPointer(0, tcoords->GetNumberOfComponents(), 
-					tcoordsType, 0, pointsSize + normalsSize);
-			}
-
-			// Load pointdata arrays
-			int offset = pointsSize + normalsSize + tcoordsSize;
-			for (std::vector<arrayLoadInfo>::const_iterator it = arraysToLoad.begin();
-				it != arraysToLoad.end(); ++it)
-			{
-				// Load it into the VBO
-				vertexBuffer->SetSubData(offset, it->size, 
-					it->ar->GetVoidPointer(0));
-				// Add a VertexAttribPointer with placeholder location
-				VertexAttribPointer(it->ar->GetName(), -1, 
-					it->ar->GetNumberOfComponents(), it->type, 
-					(it->type != GL_FLOAT && it->type != GL_DOUBLE), 
-					0, offset);
-				// Update offset
-				offset += it->size;
-			}
-			vertexBuffer->Unbind();
-			GLUtility::CheckOpenGLError("Loading vertex buffer data");
 
 			// Primitive types in the polydata
 			numVerts = data->GetNumberOfVerts();
@@ -333,7 +260,7 @@ namespace NQVTK
 				// We (ab)use numStrips to indicate the number of indices in the strip
 				numStrips = strips->GetNumberOfConnectivityEntries();
 #else
-				// For now, we use degenerate triangled to combine all strips into one
+				// For now, we use degenerate triangles to combine all strips into one
 				// Each strip consists of number N followed by N point indices
 				// Adding degenerate tris adds two points per strip, so we have N + 2 points
 				// We (ab)use numStrips to indicate the number of points in the strip
@@ -410,7 +337,7 @@ namespace NQVTK
 			PushTransforms();
 
 			// Setup vbo and pointers
-			SetPointers();
+			BindAttributes();
 
 			// Use lighting if we have normal data
 			if (hasNormals)
@@ -500,7 +427,7 @@ namespace NQVTK
 			}
 
 			// Unset vbo render state
-			UnsetPointers();
+			UnbindAttributes();
 
 			// Restore world coordinates
 			PopTransforms();
@@ -525,6 +452,20 @@ namespace NQVTK
 
 		bool hasNormals;
 		bool hasTCoords;
+
+		GLenum GLTypeFromVTKType(int vtkType)
+		{
+			switch (vtkType)
+			{
+			case VTK_FLOAT:
+				return GL_FLOAT;
+			case VTK_DOUBLE:
+				return GL_DOUBLE;
+			default:
+				qDebug("Error! Unsupported VTK data type: %d", vtkType);
+				return GL_NONE;
+			}
+		}
 
 	private:
 		// Not implemented

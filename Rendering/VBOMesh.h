@@ -2,7 +2,7 @@
 
 #include "Renderable.h"
 
-#include "AttributePointers.h"
+#include "AttributeSet.h"
 
 #include "GLBlaat/GLBuffer.h"
 #include "GLBlaat/GLProgram.h"
@@ -21,98 +21,54 @@ namespace NQVTK
 	public:
 		typedef Renderable Superclass;
 
-		VBOMesh()
-		{
-			vertexBuffer = GLBuffer::New();
-			assert(vertexBuffer);
-		}
+		VBOMesh() { }
 
 		virtual ~VBOMesh() 
-		{ 
-			ClearPointers();
-			delete vertexBuffer;
-		}
-
-		// Pointers
-		void VertexPointer(int size, GLenum type, int stride, int offset)
 		{
-			pointers.push_back(new AttributePointers::VertexPointer(
-				size, type, stride, offset));			
-		}
-		void NormalPointer(GLenum type, int stride, int offset)
-		{
-			pointers.push_back(new AttributePointers::NormalPointer(
-				type, stride, offset));
-		}
-		void ColorPointer(int size, GLenum type, int stride, int offset)
-		{
-			pointers.push_back(new AttributePointers::ColorPointer(
-				size, type, stride, offset));
-		}
-		void TexCoordPointer(unsigned int index, int size, 
-			GLenum type, int stride, int offset)
-		{
-			pointers.push_back(new AttributePointers::TexCoordPointer(
-				index, size, type, stride, offset));
-		}
-		void VertexAttribPointer(std::string name, int index, 
-			int size, GLenum type, bool normalized, int stride, int offset)
-		{
-			AttributePointers::VertexAttribPointer *vap = 
-				new AttributePointers::VertexAttribPointer(
-					index, size, type, normalized, stride, offset);
-			pointers.push_back(vap);
-			attribs[name] = vap;
-		}
-
-		void SetPointers() const
-		{
-			vertexBuffer->BindAsVertexData();
-			for (std::vector<AttributePointers::AttributePointer*>::const_iterator it = 
-				pointers.begin(); it != pointers.end(); ++it)
+			// Delete the attribute sets
+			for (AttributeMap::iterator it = attributeSets.begin(); 
+				it != attributeSets.end(); ++it)
 			{
-				(*it)->Set();
+				delete it->second;
 			}
 		}
 
-		void UnsetPointers() const
+		void BindAttributes() const
 		{
-			for (std::vector<AttributePointers::AttributePointer*>::const_iterator it = 
-				pointers.begin(); it != pointers.end(); ++it)
+			for (AttributeMap::const_iterator it = attributeSets.begin(); 
+				it != attributeSets.end(); ++it)
 			{
-				(*it)->Unset();
+				it->second->Bind();
 			}
-			vertexBuffer->Unbind();
 		}
 
-		void ClearPointers()
+		void UnbindAttributes() const
 		{
-			for (std::vector<AttributePointers::AttributePointer*>::const_iterator it = 
-				pointers.begin(); it != pointers.end(); ++it)
+			for (AttributeMap::const_iterator it = attributeSets.begin(); 
+				it != attributeSets.end(); ++it)
 			{
-				delete (*it);
+				it->second->Unbind();
 			}
-			pointers.clear();
 		}
 
 		void SetupAttributes(const std::vector<GLAttributeInfo> requiredAttribs)
 		{
 			// Clear all attributes
-			for (attribMap::iterator it = this->attribs.begin(); 
-				it != this->attribs.end(); ++it)
+			for (AttributeMap::iterator it = this->customAttribs.begin(); 
+				it != this->customAttribs.end(); ++it)
 			{
-				it->second->index = -1;
+				it->second->DontUse();
 			}
 			// Set attributes used by the program
-			for (std::vector<GLAttributeInfo>::const_iterator it = requiredAttribs.begin();
-				it != requiredAttribs.end(); ++it)
+			for (std::vector<GLAttributeInfo>::const_iterator it = 
+				requiredAttribs.begin(); it != requiredAttribs.end(); ++it)
 			{
 				if (it->index >= 0)
 				{
-					attribMap::iterator ait = attribs.find(it->name);
-					if (ait != attribs.end())
+					AttributeMap::iterator ait = customAttribs.find(it->name);
+					if (ait != customAttribs.end())
 					{
-						ait->second->index = it->index;
+						ait->second->UseAsVertexAttrib(it->index);
 					}
 					else
 					{
@@ -171,13 +127,35 @@ namespace NQVTK
 			}
 		}
 
+		void AddAttributeSet(const std::string &name, AttributeSet *attribSet, bool isCustom = false)
+		{
+			AttributeSet *oldSet = attributeSets[name];
+			assert(!oldSet);
+			if (oldSet) delete oldSet;
+			attributeSets[name] = attribSet;
+
+			if (isCustom)
+			{
+				customAttribs[name] = attribSet;
+			}
+		}
+
+		AttributeSet *GetAttributeSet(const std::string &name)
+		{
+			AttributeMap::iterator it = attributeSets.find(name);
+			if (it != attributeSets.end())
+			{
+				return it->second;
+			}
+			return 0;
+		}
+
 		virtual void Draw() const = 0;
 
 	protected:
-		GLBuffer *vertexBuffer;
-		std::vector<AttributePointers::AttributePointer*> pointers;
-		typedef std::map<std::string, AttributePointers::VertexAttribPointer*> attribMap;
-		attribMap attribs;
+		typedef std::map<std::string, AttributeSet*> AttributeMap;
+		AttributeMap attributeSets;
+		AttributeMap customAttribs;
 
 	private:
 		// Not implemented

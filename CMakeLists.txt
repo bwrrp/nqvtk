@@ -105,6 +105,7 @@ SET( ${ProjectName}_Math_Classes
 SET( ${ProjectName}_Rendering_Classes
 	Renderable
 	AttributePointers
+	AttributeSet
 	VBOMesh
 	PolyData
 	PointCloud
