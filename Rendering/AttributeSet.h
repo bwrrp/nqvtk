@@ -93,6 +93,9 @@ namespace NQVTK
 			pointer = 0;
 		}
 
+		int GetNumberOfTuples() { return numTuples; }
+		int GetNumberOfComponents() { return numComponents; }
+
 	protected:
 		GLBuffer *buffer;
 		AttributePointers::AttributePointer *pointer;

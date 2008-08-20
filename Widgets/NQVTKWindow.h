@@ -53,6 +53,8 @@ public:
 	NQVTKWindow(QWidget *parent = 0) : QMainWindow(parent) 
 	{ 
 		ui.setupUi(this);
+		// TODO: remove testRen after testing
+		testRen = 0;
 	}
 
 	void CreateRenderers()
@@ -205,6 +207,8 @@ public:
 					simpleRen->AddRenderable(renderable);
 				}
 				simpleView->SetInteractor(new NQVTK::MainViewInteractor(simpleRen));
+				// TODO: remove testRen after testing
+				testRen = simpleRen;
 				ui.nqvtkwidget->makeCurrent();
 			}
 			else
@@ -363,6 +367,9 @@ private:
 	NQVTK::Styles::DepthPeeling *depthpeelStyle;
 	NQVTK::Styles::IBIS *ibisStyle;
 	NQVTK::Styles::DistanceFields *distfieldStyle;
+
+	// TODO: remove testRen after testing
+	NQVTK::Renderer *testRen;
 
 	void keyPressEvent(QKeyEvent *event)
 	{
@@ -618,9 +625,17 @@ private slots:
 		}
 		// Perform filtering render
 		filter->Draw();
-		// TODO: Get results
-		//NQVTK::PointCloud *pc = new NQVTK::PointCloud(renderable, filter->pointIds);
-		//ren->AddRenderable(pc);
+		// Get the results
+		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+		if (mesh)
+		{
+			NQVTK::PointCloud *pc = new NQVTK::PointCloud(mesh, filter->pointIds);
+			pc->color.x = 1.0;
+			// TODO: create a new view to further refine the selection
+			// possibly as a second overlay on the main view
+			testRen->SetRenderables(std::vector<NQVTK::Renderable*>());
+			testRen->AddRenderable(pc);
+		}
 		// Clean up
 		delete filter;
 	}

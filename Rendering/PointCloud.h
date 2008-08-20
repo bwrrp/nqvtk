@@ -13,34 +13,46 @@ namespace NQVTK
 	public:
 		typedef VBOMesh Superclass;
 
-		PointCloud(Renderable *mesh, std::vector<int> &selection)
+		PointCloud(VBOMesh *mesh, std::vector<unsigned int> &selection)
 		{
 			assert(mesh);
-			// NOTE: we can't simply copy the selected points, this would mean we 
-			// need to figure out where the points are in the original mesh...
 
-			// We share the mesh's VBO
+			// Copy the bounds of the original mesh
+			mesh->GetBounds(bounds);
+
+			// We share the mesh's points attribset
 			// TODO: this is messy, what if the mesh is deleted?
-			sharedVBO = 0;//mesh->vertexBuffer;
+			AttributeSet *pointsSet = mesh->GetAttributeSet("gl_Vertex");
+			assert(pointsSet);
+			AddAttributeSet("gl_Vertex", pointsSet);
 
-			// TODO: find the mesh's vertex pointer and copy it
-			//pointers = mesh->pointers;
+			numPoints = selection.size();
 
-			// Create the index buffer
-			pointIndices = GLBuffer::New();
-			assert(pointIndices);
-			pointIndices->BindAsIndexData();
-			void *data = 0;
-			if (selection.size() > 0) data = &selection[0];
-			pointIndices->SetData(selection.size() * sizeof(GLuint), 
-				data, GL_STATIC_DRAW);
-			pointIndices->Unbind();
+			if (numPoints > 0)
+			{
+				// Create the index buffer
+				pointIndices = GLBuffer::New();
+				assert(pointIndices);
+				pointIndices->BindAsIndexData();
+				void *data = 0;
+				if (selection.size() > 0) data = &selection[0];
+				pointIndices->SetData(selection.size() * sizeof(GLuint), 
+					data, GL_STATIC_DRAW);
+				pointIndices->Unbind();
+			}
+			else
+			{
+				pointIndices = 0;
+			}
 		}
 
 		// TODO: add a second constructor for creating point clouds from scratch
 
 		~PointCloud()
 		{
+			// Remove the points attributeset, because it's shared
+			attributeSets.erase("gl_Vertex");
+			if (pointIndices) delete pointIndices;
 		}
 
 		virtual void Draw() const
@@ -59,8 +71,8 @@ namespace NQVTK
 			if (numPoints > 0)
 			{
 				pointIndices->BindAsIndexData();
-				glDrawElements(GL_POINTS, numPoints, GL_UNSIGNED_INT, 
-					BUFFER_OFFSET(0));
+				glDrawElements(GL_POINTS, numPoints, 
+					GL_UNSIGNED_INT, BUFFER_OFFSET(0));
 				pointIndices->Unbind();
 			}
 
@@ -72,7 +84,6 @@ namespace NQVTK
 		}
 
 	protected:
-		GLBuffer *sharedVBO;
 		GLBuffer *pointIndices;
 		int numPoints;
 

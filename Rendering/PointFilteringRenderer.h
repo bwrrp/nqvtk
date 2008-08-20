@@ -120,12 +120,12 @@ namespace NQVTK
 					buffer[i * bpp + 1] > 0 || 
 					buffer[i * bpp + 2] > 0)
 				{
-					pointIds.push_back(i);
+					pointIds.push_back(static_cast<unsigned int>(i));
 				}
 			}
 
 			qDebug("Extracted %d points:", pointIds.size());
-			for (std::vector<int>::iterator it = pointIds.begin();
+			for (std::vector<unsigned int>::iterator it = pointIds.begin();
 				it != pointIds.end(); ++it)
 			{
 				qDebug("%d", *it);
@@ -140,7 +140,7 @@ namespace NQVTK
 			tm->AddTexture("mask", mask, false);
 		}
 
-		std::vector<int> pointIds;
+		std::vector<unsigned int> pointIds;
 
 	protected:
 		// TODO: point storage (VTK PolyData?)
