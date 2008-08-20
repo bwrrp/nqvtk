@@ -613,15 +613,8 @@ private slots:
 				ui.nqvtkwidget->GetRenderer(false));
 		if (oren)
 		{
-			NQVTK::Renderer *bren = oren->GetOverlayRenderer();
-			if (bren)
-			{
-				GLFramebuffer *target = bren->GetTarget();
-				if (target)
-				{
-					filter->SetMask(target->GetTexture2D());
-				}
-			}
+			GLTexture *mask = oren->GetOverlayImage();
+			filter->SetMask(mask);
 		}
 		// Perform filtering render
 		filter->Draw();

@@ -180,6 +180,9 @@ namespace NQVTK
 		NQVTK::Renderer *GetBaseRenderer() { return baseRenderer; }
 		NQVTK::Renderer *GetOverlayRenderer() { return overlayRenderer; }
 
+		GLTexture *GetBaseImage() { return baseFbo->GetTexture2D(); }
+		GLTexture *GetOverlayImage() { return overlayFbo->GetTexture2D(); }
+
 		bool updateBase;
 		bool updateOverlay;
 
