@@ -66,7 +66,11 @@ namespace NQVTK
 			// Setup vbo and pointers
 			BindAttributes();
 
+			glPushAttrib(GL_ALL_ATTRIB_BITS);
+
 			glDisable(GL_LIGHTING);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+			glEnable(GL_BLEND);
 
 			if (numPoints > 0)
 			{
@@ -75,6 +79,8 @@ namespace NQVTK
 					GL_UNSIGNED_INT, BUFFER_OFFSET(0));
 				pointIndices->Unbind();
 			}
+
+			glPopAttrib();
 
 			// Unset vbo render state
 			UnbindAttributes();

@@ -630,7 +630,7 @@ private slots:
 		if (mesh)
 		{
 			NQVTK::PointCloud *pc = new NQVTK::PointCloud(mesh, filter->pointIds);
-			pc->color.x = 1.0;
+			pc->color = NQVTK::Vector3(0.3, 0.3, 0.3);
 			// TODO: create a new view to further refine the selection
 			// possibly as a second overlay on the main view
 			testRen->SetRenderables(std::vector<NQVTK::Renderable*>());
