@@ -6,10 +6,10 @@ int main(int argc, char *argv[])
 	// Set up Qt application
 	QApplication app(argc, argv);
 	NQVTKWindow *window = new NQVTKWindow;
-	
+
 	// Create renderers and styles
-	window->CreateRenderers();
-	
+	window->SetupMainView();
+
 	// Show the window to get a GL context
 	window->show();
 

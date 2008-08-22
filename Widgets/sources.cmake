@@ -4,6 +4,7 @@
 SET( ${ProjectName}_${module}_Classes
     NQVTKWidget
     NQVTKWindow
+    RenderableControlWidget
 )
 
 # --------------------------------------------------

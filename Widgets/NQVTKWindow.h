@@ -11,6 +11,8 @@
 
 #include "ui_NQVTKWindow.h"
 
+#include "RenderableControlWidget.h"
+
 #include "Rendering/SimpleRenderer.h"
 #include "Rendering/LayeredRenderer.h"
 #include "Rendering/CrossEyedStereoRenderer.h"
@@ -55,9 +57,13 @@ public:
 		ui.setupUi(this);
 		// TODO: remove testRen after testing
 		testRen = 0;
+
+		QHBoxLayout *layout = new QHBoxLayout(ui.simpleViewFrame);
+		layout->setMargin(0);
+		ui.simpleViewFrame->setLayout(layout);
 	}
 
-	void CreateRenderers()
+	void SetupMainView()
 	{
 		// TODO: set up the renderers
 		NQVTK::LayeredRenderer *renderer = 0;
@@ -83,6 +89,7 @@ public:
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
 
+		// Add a brushing overlay
 		NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
 
 		//ui.nqvtkwidget->SetRenderer(renderer);
@@ -93,9 +100,6 @@ public:
 	{
 		// Renderables should be created in the right GL context
 		ui.nqvtkwidget->makeCurrent();
-
-		QHBoxLayout *layout = new QHBoxLayout(ui.simpleViewFrame);
-		layout->setMargin(0);
 
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		if (!renderer) return;
@@ -179,7 +183,7 @@ public:
 				renderer->AddRenderable(renderable);
 
 				// Create a simple view showing just this renderable
-				NQVTKWidget *simpleView = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
+				NQVTKWidget *simpleView = new NQVTKWidget(0, ui.nqvtkwidget);
 				NQVTK::SimpleRenderer *simpleRen = new NQVTK::SimpleRenderer();
 				simpleView->SetRenderer(simpleRen);
 				connect(ui.nqvtkwidget, SIGNAL(cursorPosChanged(double, double)), 
@@ -189,8 +193,7 @@ public:
 				connect(simpleView, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
 					ui.nqvtkwidget, SLOT(updateGL()));
 				simpleView->toggleCrosshair(true);
-				simpleView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-				layout->addWidget(simpleView);
+				AddTrayWidget(simpleView);
 				// TODO: sync camera after all widgets are initialized
 				if (!simpleView->isSharing())
 				{
@@ -237,9 +240,6 @@ public:
 			++i;
 		}
 
-		//layout->addStretch();
-		ui.simpleViewFrame->setLayout(layout);
-
 		// Add a clipping cylinder for testing
 		// TODO: make clipper object id adaptive to number of renderables
 		{
@@ -274,25 +274,13 @@ public:
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
 
-		/* Add a brushing test widget
-		{
-			NQVTKWidget *brushWidget = new NQVTKWidget(ui.simpleViewFrame, ui.nqvtkwidget);
-			layout->addWidget(brushWidget);
-			NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
-			brushWidget->SetRenderer(brushRen);
-			NQVTK::BrushingInteractor *brushInt = new NQVTK::BrushingInteractor(brushRen);
-			brushWidget->SetInteractor(brushInt);
-			ui.nqvtkwidget->makeCurrent();
-		}
-		//*/
-
 		//* Add PCA sliders
 		// TODO: make this more flexible
 		// TODO: also deform objects in simpleViews
 		// TODO: should be able to manipulate objects separately
 		// TODO: should be able to flip slider ranges
 		// TODO: histograms above the sliders?
-		QWidget *pcaWidget = new QWidget(ui.simpleViewFrame);
+		QWidget *pcaWidget = new QWidget();
 		pcaWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
 		pcaLayout->setSpacing(0);
@@ -349,8 +337,11 @@ public:
 			NQVTK::Renderable *renderable = renderer->GetRenderable(i);
 			renderable->SetParamSet("pca", new NQVTK::PCAParamSet(numEigenModes));
 		}
-		layout->addWidget(pcaWidget);
+		AddTrayWidget(pcaWidget);
 		//*/
+
+		RenderableControlWidget *rcw = new RenderableControlWidget(ui.nqvtkwidget);
+		AddTrayWidget(rcw);
 
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first
@@ -359,6 +350,15 @@ public:
 		ui.nqvtkwidget->SetInteractor(mainInt);
 
 		//ui.nqvtkwidget->StartContinuousUpdate();
+	}
+
+	void AddTrayWidget(QWidget *widget)
+	{
+		widget->setParent(ui.simpleViewFrame);
+		widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		QLayout *layout = ui.simpleViewFrame->layout();
+		assert(layout);
+		layout->addWidget(widget);
 	}
 
 private:
@@ -594,12 +594,16 @@ private slots:
 		int modeId = sender()->property("modeId").toInt();
 		int objectId = sender()->property("objectId").toInt();
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
-		NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
-			renderer->GetRenderable(objectId)->GetParamSet("pca"));
-		if (pcaParams)
+		NQVTK::Renderable *renderable = renderer->GetRenderable(objectId);
+		if (renderable)
 		{
-			pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
-			ui.nqvtkwidget->updateGL();
+			NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
+				renderable->GetParamSet("pca"));
+			if (pcaParams)
+			{
+				pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
+				ui.nqvtkwidget->updateGL();
+			}
 		}
 	}
 
