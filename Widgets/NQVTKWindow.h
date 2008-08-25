@@ -156,9 +156,9 @@ public:
 				//* Ventricle PCA
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
-				args.append("-");
-				args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
-				args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				//args.append("-");
+				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
 			}
 			else
@@ -263,72 +263,6 @@ public:
 			renderable->opacity = 0.3;
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
-
-		//* Add PCA sliders
-		// TODO: make this more flexible
-		// TODO: also deform objects in simpleViews
-		// TODO: should be able to manipulate objects separately
-		// TODO: should be able to flip slider ranges
-		// TODO: histograms above the sliders?
-		QWidget *pcaWidget = new QWidget();
-		pcaWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
-		pcaLayout->setSpacing(0);
-		pcaWidget->setLayout(pcaLayout);
-		pcaWidget->setStyleSheet(
-			"QSlider::groove:horizontal {"
-			"	border: 1px solid #999999;"
-			"	height: 1px;"
-			"	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);"
-			"	margin: 3px 0;"
-			"}"
-			"QSlider::handle:horizontal {"
-			"	border: 1px solid #5c5c5c;"
-			"	width: 8px;"
-			"	margin: -2px 0;"
-			"}");
-		const unsigned int numEigenModes = 8;
-		for (unsigned int i = 0; i < numEigenModes; ++i)
-		{
-			QSlider *sld1 = new QSlider(pcaWidget);
-			sld1->setRange(-300, 300);
-			sld1->setValue(0);
-			sld1->setOrientation(Qt::Horizontal);
-			sld1->setProperty("modeId", static_cast<int>(i));
-			sld1->setProperty("objectId", static_cast<int>(0));
-			sld1->setStyleSheet("QSlider::handle { background: rgb(255, 230, 102); }");
-			sld1->setMaximumHeight(5);
-			connect(sld1, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
-			QSlider *sld2 = new QSlider(pcaWidget);
-			sld2->setRange(-300, 300);
-			sld2->setValue(0);
-			sld2->setOrientation(Qt::Horizontal);
-			sld2->setProperty("modeId", static_cast<int>(i));
-			sld2->setProperty("objectId", static_cast<int>(1));
-			sld2->setStyleSheet("QSlider::handle { background: rgb(77, 153, 255); }");
-			sld2->setMaximumHeight(5);
-			connect(sld2, SIGNAL(valueChanged(int)), this, SLOT(pcaSlider_valueChanged(int)));
-			QSlider *sld = new QSlider(pcaWidget);
-			sld->setRange(-300, 300);
-			sld->setValue(0);
-			sld->setOrientation(Qt::Horizontal);
-			sld->setStyleSheet("QSlider::handle { background: rgb(170, 170, 170); }");
-			sld->setMaximumHeight(5);
-			connect(sld, SIGNAL(valueChanged(int)), sld1, SLOT(setValue(int)));
-			connect(sld, SIGNAL(valueChanged(int)), sld2, SLOT(setValue(int)));
-			pcaLayout->addWidget(sld1);
-			pcaLayout->addWidget(sld);
-			pcaLayout->addWidget(sld2);
-			pcaLayout->addSpacing(6);
-		}
-		// Give each renderable a PCAParamSet
-		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
-		{
-			NQVTK::Renderable *renderable = renderer->GetRenderable(i);
-			renderable->SetParamSet("pca", new NQVTK::PCAParamSet(numEigenModes));
-		}
-		AddTrayWidget(pcaWidget);
-		//*/
 
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first
@@ -575,24 +509,6 @@ private slots:
 		renderer->lightRelativeToCamera = val;
 		// TODO: also set this option for all SimpleRenderers?
 		ui.nqvtkwidget->updateGL();
-	}
-
-	void pcaSlider_valueChanged(int val)
-	{
-		int modeId = sender()->property("modeId").toInt();
-		int objectId = sender()->property("objectId").toInt();
-		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
-		NQVTK::Renderable *renderable = renderer->GetRenderable(objectId);
-		if (renderable)
-		{
-			NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
-				renderable->GetParamSet("pca"));
-			if (pcaParams)
-			{
-				pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
-				ui.nqvtkwidget->updateGL();
-			}
-		}
 	}
 
 	void on_brushTest_clicked()

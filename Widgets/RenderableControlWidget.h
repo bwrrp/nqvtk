@@ -5,12 +5,14 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QSlider>
 #include <QVBoxLayout>
 
 #include "NQVTKWidget.h"
 
 #include "Rendering/DistanceFieldParamSet.h"
 #include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/PCAParamSet.h"
 #include "Rendering/PolyData.h"
 #include "Rendering/SimpleRenderer.h"
 
@@ -64,7 +66,8 @@ public:
 
 		// Create renderable in the main view
 		mainView->makeCurrent();
-		renderable = new NQVTK::PolyData(reader->GetOutput());
+		NQVTK::PolyData *pd = new NQVTK::PolyData(reader->GetOutput());
+		renderable = pd;
 		renderable->color = color;
 		renderable->opacity = opacity;
 		mainView->GetRenderer()->AddRenderable(renderable);
@@ -85,6 +88,17 @@ public:
 			simpleView->GetRenderer()->AddRenderable(obj2);
 		}
 		mainView->makeCurrent();
+
+		// Add other param sets
+		// - PCA
+		// TODO: also deform objects in simpleViews?
+		int numEigenModes = NQVTK::PCAParamSet::GetNumEigenModes(pd);
+		if (numEigenModes > 0)
+		{
+			NQVTK::PCAParamSet *pcaps = new NQVTK::PCAParamSet(numEigenModes);
+			pd->SetParamSet("pca", pcaps);
+		}
+
 		// TODO: update interactor
 		//simpleView->SetInteractor(new NQVTK::MainViewInteractor(simpleRen));
 	}
@@ -148,12 +162,49 @@ public slots:
 
 	void ShowPCAControls()
 	{
+		// Do we have a renderable?
 		if (!renderable) return;
-		// TODO: if renderable doesn't have a PCAParamSet, return
-		// TODO: create and show PCA weight controls for our renderable
-		QWidget *bla = new QWidget();
-		bla->setWindowIconText("Moo?");
-		bla->show();
+		// Is is a shape model?
+		NQVTK::PCAParamSet *pcaps = dynamic_cast<NQVTK::PCAParamSet*>(
+			renderable->GetParamSet("pca"));
+		if (!pcaps) return;
+		
+		// Create PCA weight controls
+		// TODO: add histograms above the sliders?
+		QWidget *pcaWidget = new QWidget(
+			mainView->topLevelWidget(), Qt::Tool);
+		pcaWidget->setWindowTitle("Shape model weights");
+		pcaWidget->resize(250, 50);
+		pcaWidget->setStyleSheet(QString(
+			"QSlider::groove:horizontal {"
+			"	border: 1px solid #999999;"
+			"	height: 1px;"
+			"	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);"
+			"	margin: 3px 0;"
+			"}"
+			"QSlider::handle:horizontal {"
+			"	border: 1px solid #5c5c5c;"
+			"	width: 8px;"
+			"	margin: -3px 0;"
+			"   border-radius: 3px;"
+			"   background: rgb(%1, %2, %3);"
+			"}").arg(255 * color.x).arg(255 * color.y).arg(255 * color.z));
+		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
+		pcaWidget->setLayout(pcaLayout);
+		for (unsigned int i = 0; i < pcaps->weights.size(); ++i)
+		{
+			QSlider *slider = new QSlider(pcaWidget);
+			slider->setRange(-300, 300);
+			slider->setValue(0);
+			slider->setOrientation(Qt::Horizontal);
+			slider->setMaximumHeight(7);
+			slider->setProperty("modeId", static_cast<int>(i));
+			// TODO: color slider handles to link visually to the renderable
+			connect(slider, SIGNAL(valueChanged(int)), 
+				this, SLOT(pcaSlider_valueChanged(int)));
+			pcaLayout->addWidget(slider);
+		}
+		pcaWidget->show();
 	}
 
 protected:
@@ -192,9 +243,9 @@ protected:
 		QMenu *loadMenu = new QMenu("Load", menuBar);
 		menuBar->addMenu(loadMenu);
 		loadMenu->addAction("Mesh...", 
-			this, SLOT(on_loadMesh_triggered()));
+			this, SLOT(loadMesh_triggered()));
 		loadMenu->addAction("Distance field...", 
-			this, SLOT(on_loadDistanceField_triggered()));
+			this, SLOT(loadDistanceField_triggered()));
 
 		QMenu *paramMenu = new QMenu("Params", menuBar);
 		menuBar->addMenu(paramMenu);
@@ -209,7 +260,7 @@ protected:
 	}
 
 protected slots:
-	void on_loadMesh_triggered()
+	void loadMesh_triggered()
 	{
 		QString qfilename = QFileDialog::getOpenFileName(
 			this, "Load mesh", QString(), "VTK XML PolyData (*.vtp)");
@@ -221,7 +272,7 @@ protected slots:
 		}
 	}
 
-	void on_loadDistanceField_triggered()
+	void loadDistanceField_triggered()
 	{
 		if (!renderable) return;
 		QString qfilename = QFileDialog::getOpenFileName(
@@ -231,6 +282,21 @@ protected slots:
 		{
 			std::string filename = std::string(qfilename.toUtf8());
 			LoadDistanceField(filename);
+		}
+	}
+
+	void pcaSlider_valueChanged(int val)
+	{
+		int modeId = sender()->property("modeId").toInt();
+		if (renderable)
+		{
+			NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
+				renderable->GetParamSet("pca"));
+			if (pcaParams)
+			{
+				pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
+				mainView->updateGL();
+			}
 		}
 	}
 };

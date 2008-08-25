@@ -2,6 +2,8 @@
 
 #include "ParamSet.h"
 
+#include "Rendering/VBOMesh.h"
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -24,6 +26,22 @@ namespace NQVTK
 				name << "weights[" << i << "]";
 				program->SetUniform1f(name.str(), weights[i]);
 			}
+		}
+
+		static int GetNumEigenModes(NQVTK::VBOMesh *mesh)
+		{
+			// We assume a shape model mesh contains attribs called eigvecs[i]
+			int i = 0;
+			NQVTK::AttributeSet *aset;
+			do
+			{
+				std::ostringstream name;
+				name << "eigvecs[" << i << "]";
+				aset = mesh->GetAttributeSet(name.str());
+				++i;
+			}
+			while (aset);
+			return i - 1;
 		}
 
 		std::vector<float> weights;
