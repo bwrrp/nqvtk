@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QDateTime>
 #include <QHBoxLayout>
+#include <QHostInfo>
 #include <QKeyEvent>
 #include <QString>
 #include <QVBoxLayout>
@@ -55,22 +56,21 @@ public:
 	NQVTKWindow(QWidget *parent = 0) : QMainWindow(parent) 
 	{ 
 		ui.setupUi(this);
-		// TODO: remove testRen after testing
-		testRen = 0;
 
 		QHBoxLayout *layout = new QHBoxLayout(ui.simpleViewFrame);
 		layout->setMargin(0);
 		ui.simpleViewFrame->setLayout(layout);
 	}
 
-	void SetupMainView()
+	void SetupViews()
 	{
-		// TODO: set up the renderers
-		NQVTK::LayeredRenderer *renderer = 0;
-		//if (!renderer) renderer = new NQVTK::LayeredRenderer();
-		//if (!renderer) renderer = new NQVTK::CrossEyedStereoRenderer();
-		if (!renderer) renderer = new NQVTK::ShadowMappingRenderer();
+		// Set up the main view
+		NQVTK::LayeredRenderer *renderer;
+		//renderer = new NQVTK::LayeredRenderer();
+		//renderer = new NQVTK::CrossEyedStereoRenderer();
+		renderer = new NQVTK::ShadowMappingRenderer();
 
+		// Hide eye spacing widgets (only works for stereo renderers)
 		ui.eyeSpacing->hide();
 		ui.eyeSpacingLabel->hide();
 
@@ -89,10 +89,10 @@ public:
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
 
+		//ui.nqvtkwidget->SetRenderer(renderer);
+
 		// Add a brushing overlay
 		NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
-
-		//ui.nqvtkwidget->SetRenderer(renderer);
 		ui.nqvtkwidget->SetRenderer(new NQVTK::OverlayRenderer(renderer, brushRen));
 	}
 
@@ -104,140 +104,130 @@ public:
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
 		if (!renderer) return;
 
-		qDebug("Creating and adding renderables...");
+		qDebug("Parsing arguments...");
 		QStringList args = qApp->arguments();
+		int numObjects;
+		std::vector<std::string> meshPaths;
+		std::vector<std::string> distFieldPaths;
 		if (args.size() < 2) 
 		{
-			qDebug("No arguments supplied, using default data...");
-			// Set default testing data (on Vliet)
-			/* - msdata
-			args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-textured.vtp");
-			args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-textured.vtp");
-			args.append("-"); // distance field marker
-			// NOTE: fields are flipped because object 1 should use distfield 0
-			args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-dist256.vti");
-			args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-dist256.vti");
-			//*/
-			/*  Cartilage
-			args.append("D:/Data/Cartilage/Lorena/femoral2-textured.vtp");
-			args.append("D:/Data/Cartilage/Lorena/femoral1-textured.vtp");
-			args.append("-");
-			args.append("D:/Data/Cartilage/Lorena/femoral1-dist256.vti");
-			args.append("D:/Data/Cartilage/Lorena/femoral2-dist256.vti");
-			//*/
-			/* Ventricles
-			args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_textured.vtp");
-			args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_textured.vtp");
-			args.append("-"); // distance field marker
-			args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_padded.vti");
-			args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_padded.vti");
-			//*/
-			/* Test heightfield
-			args.append("D:/Data/Surface/test3-small-tri.vtp");
-			args.append("D:/Data/Surface/test4-small-tri.vtp");
-			args.append("-");
-			args.append("D:/Data/Surface/test4-small-dist256.vti");
-			args.append("D:/Data/Surface/test3-small-dist256.vti");
-			//*/
-			/* Luca's ventricles
-			args.append("D:/data/Luca/PolyDataG0/Patient00-textured.vtp");
-			args.append("D:/data/Luca/PolyDataG3/Patient00-textured.vtp");
-			args.append("-");
-			args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
-			args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
-			//*/
-			//* Ventricle PCA
-			args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
-			args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
-			//args.append("-");
-			//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
-			//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
-			//*/
-		}
-		// Load the polydata
-		NQVTK::Vector3 colors[] = {
-			NQVTK::Vector3(1.0, 0.9, 0.4), 
-			NQVTK::Vector3(0.3, 0.6, 1.0)
-		};
-		int i = 0;
-		bool distFields = false;
-		for (QStringList::const_iterator it = args.begin() + 1; it != args.end(); ++it)
-		{
-			qDebug("Loading %s #%d...", (distFields ? "distance field" : "surface"), i);
-			if (QString("-") == *it)
+			// Are we running on Vliet?
+			QString hostname = QHostInfo::localHostName();
+			if (hostname.toLower() == QString("vliet"))
 			{
-				distFields = true;
-				i = 0;
-				continue;
-			}
-			if (!distFields)
-			{
-				// Load surface
-				vtkSmartPointer<vtkXMLPolyDataReader> reader = 
-					vtkSmartPointer<vtkXMLPolyDataReader>::New();
-				reader->SetFileName(it->toUtf8());
-				reader->Update();
-				NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
-				renderable->color = colors[std::min(i, 1)];
-				renderable->opacity = 0.3;
-				renderer->AddRenderable(renderable);
-
-				// Create a simple view showing just this renderable
-				NQVTKWidget *simpleView = new NQVTKWidget(0, ui.nqvtkwidget);
-				NQVTK::SimpleRenderer *simpleRen = new NQVTK::SimpleRenderer();
-				simpleView->SetRenderer(simpleRen);
-				connect(ui.nqvtkwidget, SIGNAL(cursorPosChanged(double, double)), 
-					simpleView, SLOT(setCrosshairPos(double, double)));
-				connect(ui.nqvtkwidget, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
-					simpleView, SLOT(syncCamera(NQVTK::Camera*)));
-				connect(simpleView, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
-					ui.nqvtkwidget, SLOT(updateGL()));
-				simpleView->toggleCrosshair(true);
-				AddTrayWidget(simpleView);
-				// TODO: sync camera after all widgets are initialized
-				if (!simpleView->isSharing())
-				{
-					qDebug("WARNING! NQVTKWidgets can't share GL resources!");
-					// TODO: we need to manually sync transformations between these objects
-					simpleView->makeCurrent();
-					NQVTK::Renderable *obj2 = new NQVTK::PolyData(reader->GetOutput()); 
-					obj2->color = colors[std::min(i, 1)];
-					simpleRen->AddRenderable(obj2);
-				}
-				else
-				{
-					// GL resources are shared, just add the original renderable
-					simpleRen->AddRenderable(renderable);
-				}
-				simpleView->SetInteractor(new NQVTK::MainViewInteractor(simpleRen));
-				// TODO: remove testRen after testing
-				testRen = simpleRen;
-				ui.nqvtkwidget->makeCurrent();
+				qDebug("Running on Vliet, using default data");
+				// Set default testing data (on Vliet)
+				/* - msdata
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-textured.vtp");
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-textured.vtp");
+				args.append("-"); // distance field marker
+				// NOTE: fields are flipped because object 1 should use distfield 0
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_08_02-T2-dist256.vti");
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/T2W_normalized_GM/Gwn0200-TP_2004_07_08-T2-dist256.vti");
+				//*/
+				/*  Cartilage
+				args.append("D:/Data/Cartilage/Lorena/femoral2-textured.vtp");
+				args.append("D:/Data/Cartilage/Lorena/femoral1-textured.vtp");
+				args.append("-");
+				args.append("D:/Data/Cartilage/Lorena/femoral1-dist256.vti");
+				args.append("D:/Data/Cartilage/Lorena/femoral2-dist256.vti");
+				//*/
+				/* Ventricles
+				args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_textured.vtp");
+				args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_textured.vtp");
+				args.append("-"); // distance field marker
+				args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20041124_padded.vti");
+				args.append("D:/Data/msdata/Ventricles/stef_ventricle_199_20040510_padded.vti");
+				//*/
+				/* Test heightfield
+				args.append("D:/Data/Surface/test3-small-tri.vtp");
+				args.append("D:/Data/Surface/test4-small-tri.vtp");
+				args.append("-");
+				args.append("D:/Data/Surface/test4-small-dist256.vti");
+				args.append("D:/Data/Surface/test3-small-dist256.vti");
+				//*/
+				/* Luca's ventricles
+				args.append("D:/data/Luca/PolyDataG0/Patient00-textured.vtp");
+				args.append("D:/data/Luca/PolyDataG3/Patient00-textured.vtp");
+				args.append("-");
+				args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
+				args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
+				//*/
+				//* Ventricle PCA
+				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
+				args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
+				args.append("-");
+				args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+				args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				//*/
 			}
 			else
 			{
-				// Assign to the renderable
-				NQVTK::Renderable *renderable = renderer->GetRenderable(i);
-				if (!renderable)
+				qDebug("No arguments supplied");
+				numObjects = 2;
+			}
+		}
+
+		if (args.size() >= 2)
+		{
+			// Get paths from arguments
+			bool distFields = false;
+			for (QStringList::const_iterator it = args.begin() + 1; 
+				it != args.end(); ++it)
+			{
+				if (QString("-") == *it)
 				{
-					qDebug("Error! Found distance field for unknown renderable %d.", i);
+					distFields = true;
+					continue;
+				}
+				if (!distFields)
+				{
+					meshPaths.push_back(std::string(it->toUtf8()));
 				}
 				else
 				{
-					// Load distance field
-					vtkSmartPointer<vtkXMLImageDataReader> reader = 
-						vtkSmartPointer<vtkXMLImageDataReader>::New();
-					reader->SetFileName(it->toUtf8());
-					reader->Update();
-					NQVTK::ImageDataTexture3D *tex = 
-						NQVTK::ImageDataTexture3D::New(reader->GetOutput());
-					assert(tex);
-					NQVTK::DistanceFieldParamSet *dfps = 
-						new NQVTK::DistanceFieldParamSet(tex);
-					renderable->SetParamSet("distancefield", dfps);
+					distFieldPaths.push_back(std::string(it->toUtf8()));
 				}
 			}
-			++i;
+			if (distFieldPaths.size() > meshPaths.size())
+			{
+				qDebug("Error! Number of distance fields is larger than number of objects!");
+				return;
+			}
+			numObjects = meshPaths.size();
+		}
+
+		qDebug("Loading %d surfaces and %d distance fields...", 
+			meshPaths.size(), distFieldPaths.size());
+
+		// Setup secondary views
+		std::vector<NQVTK::Vector3> colors;
+		colors.push_back(NQVTK::Vector3(1.0, 0.9, 0.4));
+		colors.push_back(NQVTK::Vector3(0.3, 0.6, 1.0));
+		colors.push_back(NQVTK::Vector3(1.0, 1.0, 1.0));
+		int maxColor = colors.size() - 1;
+		for (int i = 0; i < numObjects; ++i)
+		{
+			RenderableControlWidget *rcw = 
+				new RenderableControlWidget(ui.nqvtkwidget);
+			rcw->SetColor(colors[std::min(i, maxColor)]);
+			rcw->SetOpacity(static_cast<double>(ui.opacity->value()) / 100.0);
+			renderableControlWidgets.push_back(rcw);
+			AddTrayWidget(rcw);
+		}
+
+		// Load the polydata
+		for (unsigned int i = 0; i < meshPaths.size(); ++i)
+		{
+			qDebug("Loading surface #%d...", i);
+			renderableControlWidgets[i]->LoadMesh(meshPaths[i]);
+		}
+
+		// Load the distance fields
+		for (unsigned int i = 0; i < distFieldPaths.size(); ++i)
+		{
+			qDebug("Loading distance field #%d...", i);
+			renderableControlWidgets[i]->LoadDistanceField(distFieldPaths[i]);
 		}
 
 		// Add a clipping cylinder for testing
@@ -340,11 +330,9 @@ public:
 		AddTrayWidget(pcaWidget);
 		//*/
 
-		RenderableControlWidget *rcw = new RenderableControlWidget(ui.nqvtkwidget);
-		AddTrayWidget(rcw);
-
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first
+		// TODO: add a way to update interactors
 		NQVTK::MainViewInteractor *mainInt = new NQVTK::MainViewInteractor(
 			ui.nqvtkwidget->GetRenderer(false));
 		ui.nqvtkwidget->SetInteractor(mainInt);
@@ -361,15 +349,14 @@ public:
 		layout->addWidget(widget);
 	}
 
-private:
+protected:
 	Ui::NQVTKWindow ui;
 
 	NQVTK::Styles::DepthPeeling *depthpeelStyle;
 	NQVTK::Styles::IBIS *ibisStyle;
 	NQVTK::Styles::DistanceFields *distfieldStyle;
 
-	// TODO: remove testRen after testing
-	NQVTK::Renderer *testRen;
+	std::vector<RenderableControlWidget*> renderableControlWidgets;
 
 	void keyPressEvent(QKeyEvent *event)
 	{
@@ -541,10 +528,11 @@ private slots:
 	void on_opacity_valueChanged(int val)
 	{
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
-		for (int i = 0; i < renderer->GetNumberOfRenderables(); ++i)
+		for (std::vector<RenderableControlWidget*>::iterator it = 
+			renderableControlWidgets.begin(); 
+			it != renderableControlWidgets.end(); ++it)
 		{
-			renderer->GetRenderable(i)->opacity = 
-				static_cast<double>(val) / 100.0;
+			(*it)->SetOpacity(static_cast<double>(val) / 100.0);
 		}
 		ui.nqvtkwidget->updateGL();
 	}
@@ -630,15 +618,29 @@ private slots:
 		// Perform filtering render
 		filter->Draw();
 		// Get the results
-		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
-		if (mesh)
+		if (filter->pointIds.size() > 0)
 		{
-			NQVTK::PointCloud *pc = new NQVTK::PointCloud(mesh, filter->pointIds);
-			pc->color = NQVTK::Vector3(0.3, 0.3, 0.3);
-			// TODO: create a new view to further refine the selection
-			// possibly as a second overlay on the main view
-			testRen->SetRenderables(std::vector<NQVTK::Renderable*>());
-			testRen->AddRenderable(pc);
+			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+			if (mesh)
+			{
+				NQVTK::PointCloud *pc = new NQVTK::PointCloud(mesh, filter->pointIds);
+				pc->color = NQVTK::Vector3(0.3, 0.3, 0.3);
+				// TODO: create a new view to further refine the selection
+				// possibly as a second overlay on the main view
+				NQVTKWidget *testWidget = new NQVTKWidget(0, ui.nqvtkwidget);
+				NQVTK::Renderer *testRen = new NQVTK::SimpleRenderer();
+				testWidget->SetRenderer(testRen);
+				AddTrayWidget(testWidget);
+				// Connect signals
+				connect(ui.nqvtkwidget, SIGNAL(cursorPosChanged(double, double)), 
+					testWidget, SLOT(setCrosshairPos(double, double)));
+				connect(ui.nqvtkwidget, SIGNAL(cameraUpdated(NQVTK::Camera*)), 
+					testWidget, SLOT(syncCamera(NQVTK::Camera*)));
+				// Set params
+				testWidget->toggleCrosshair(true);
+				// Add brushing result
+				testRen->AddRenderable(pc);
+			}
 		}
 		// Clean up
 		delete filter;

@@ -9,10 +9,10 @@
 
 #include "NQVTKWidget.h"
 
-#include "Rendering/SimpleRenderer.h"
-
-#include "Rendering/PolyData.h"
+#include "Rendering/DistanceFieldParamSet.h"
 #include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/PolyData.h"
+#include "Rendering/SimpleRenderer.h"
 
 #include "Math/Vector3.h"
 
@@ -64,8 +64,9 @@ public:
 
 		// Create renderable in the main view
 		mainView->makeCurrent();
-		NQVTK::Renderable *renderable = new NQVTK::PolyData(reader->GetOutput());
+		renderable = new NQVTK::PolyData(reader->GetOutput());
 		renderable->color = color;
+		renderable->opacity = opacity;
 		mainView->GetRenderer()->AddRenderable(renderable);
 
 		// Add renderable to the simple view
@@ -83,20 +84,76 @@ public:
 			obj2->color = color;
 			simpleView->GetRenderer()->AddRenderable(obj2);
 		}
+		mainView->makeCurrent();
+		// TODO: update interactor
+		//simpleView->SetInteractor(new NQVTK::MainViewInteractor(simpleRen));
 	}
 
 	void LoadDistanceField(const std::string &filename)
 	{
-		// TODO: if there is no renderable, return
-		// TODO: load df with VTK
-		// TODO: create DistanceFieldParamSet
-		// TODO: assign to renderable
+		if (!renderable) return;
+		// Is there an old distance field?
+		NQVTK::DistanceFieldParamSet *dfps = 
+			dynamic_cast<NQVTK::DistanceFieldParamSet*>(
+				renderable->GetParamSet("distancefield"));
+		if (dfps) delete dfps;
+		
+		// Load the distance field
+		vtkSmartPointer<vtkXMLImageDataReader> reader = 
+			vtkSmartPointer<vtkXMLImageDataReader>::New();
+		reader->SetFileName(filename.c_str());
+		reader->Update();
+		NQVTK::ImageDataTexture3D *tex = 
+			NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+		assert(tex);
+		// Assign to renderable
+		dfps = new NQVTK::DistanceFieldParamSet(tex);
+		renderable->SetParamSet("distancefield", dfps);
+	}
+
+	void SetColor(NQVTK::Vector3 color)
+	{
+		this->color = color;
+		if (renderable)
+		{
+			renderable->color = color;
+		}
+	}
+
+	void SetOpacity(double opacity)
+	{
+		this->opacity = opacity;
+		if (renderable)
+		{
+			renderable->opacity = opacity;
+		}
 	}
 
 public slots:
 	void ResetTransform()
 	{
-		// TODO: reset the transform for our renderable
+		// TODO: transforms should probably use matrices to be more flexible
+		renderable->position = NQVTK::Vector3();
+		renderable->rotateX = 0.0;
+		renderable->rotateY = 0.0;
+	}
+
+	void FocusObject()
+	{
+		if (!renderable) return;
+		NQVTK::Camera *cam = mainView->GetRenderer()->GetCamera();
+		cam->focus = renderable->GetCenter();
+		// TODO: why doesn't this work?
+	}
+
+	void ShowPCAControls()
+	{
+		if (!renderable) return;
+		// TODO: if renderable doesn't have a PCAParamSet, return
+		// TODO: create and show PCA weight controls for our renderable
+		QWidget *bla = new QWidget();
+		bla->setWindowIconText("Moo?");
+		bla->show();
 	}
 
 protected:
@@ -106,6 +163,7 @@ protected:
 	NQVTK::Renderable *renderable;
 
 	NQVTK::Vector3 color;
+	double opacity;
 
 	void CreateRenderer()
 	{
@@ -142,10 +200,12 @@ protected:
 		menuBar->addMenu(paramMenu);
 		//paramMenu->addAction("Color...");
 		paramMenu->addAction("PCA weights...", 
-			this, SLOT(on_paramPCA_triggered()));
+			this, SLOT(ShowPCAControls()));
 		paramMenu->addSeparator();
 		paramMenu->addAction("Reset transform", 
 			this, SLOT(ResetTransform()));
+		paramMenu->addAction("Focus object", 
+			this, SLOT(FocusObject()));
 	}
 
 protected slots:
@@ -163,13 +223,14 @@ protected slots:
 
 	void on_loadDistanceField_triggered()
 	{
-		// TODO: if we don't have a renderable, return
-		// TODO: show open file dialog
-		// TODO: if not cancelled, get file name, call LoadDistanceField
-	}
-
-	void on_paramPCA_triggered()
-	{
-		// TODO: show PCA params widget for our renderable
+		if (!renderable) return;
+		QString qfilename = QFileDialog::getOpenFileName(
+			this, "Load distance field", QString(), "VTK XML ImageData (*.vti)");
+		// This returns a null string when cancelled
+		if (!qfilename.isNull())
+		{
+			std::string filename = std::string(qfilename.toUtf8());
+			LoadDistanceField(filename);
+		}
 	}
 };

@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	NQVTKWindow *window = new NQVTKWindow;
 
 	// Create renderers and styles
-	window->SetupMainView();
+	window->SetupViews();
 
 	// Show the window to get a GL context
 	window->show();
