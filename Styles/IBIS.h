@@ -27,8 +27,10 @@ namespace NQVTK
 				contourDepthEpsilon = 0.005f;
 				useFog = true;
 				depthCueRange = 10.0f;
+
+				SetOption("NQVTK_USE_PVALS");
 			}
-			
+
 			virtual ~IBIS() { }
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)

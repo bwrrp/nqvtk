@@ -57,9 +57,12 @@ public:
 	{ 
 		ui.setupUi(this);
 
+		// NOTE: Adding a layout breaks stretchfactors (bug?)
+		// Therefore we restore the old size after adding the layout
+		QSize framesize = ui.simpleViewFrame->size();
 		QHBoxLayout *layout = new QHBoxLayout(ui.simpleViewFrame);
 		layout->setMargin(0);
-		ui.simpleViewFrame->setLayout(layout);
+		ui.simpleViewFrame->resize(framesize);
 	}
 
 	void SetupViews()
@@ -106,7 +109,7 @@ public:
 
 		qDebug("Parsing arguments...");
 		QStringList args = qApp->arguments();
-		int numObjects;
+		int numObjects = 2;
 		std::vector<std::string> meshPaths;
 		std::vector<std::string> distFieldPaths;
 		if (args.size() < 2) 
@@ -164,7 +167,6 @@ public:
 			else
 			{
 				qDebug("No arguments supplied");
-				numObjects = 2;
 			}
 		}
 
@@ -231,7 +233,6 @@ public:
 		}
 
 		// Add a clipping cylinder for testing
-		// TODO: make clipper object id adaptive to number of renderables
 		{
 			// Create a cylinder
 			vtkSmartPointer<vtkCylinderSource> source = 
@@ -255,8 +256,15 @@ public:
 			triangulate->Update();
 			// Create the renderable
 			NQVTK::Renderable *renderable = new NQVTK::PolyData(triangulate->GetOutput());
-			renderer->AddRenderable(renderable);
-			renderable->position = renderer->GetRenderable(0)->GetCenter();
+			// TODO: make clipper object id adaptive to number of renderables
+			// Alternatively: make every object capable of being a clipper
+			int id = renderer->AddRenderable(renderable);
+			assert(id = 2);
+			if (renderer->GetRenderable(0))
+			{
+				// TODO: adapt position to new renderables
+				renderable->position = renderer->GetRenderable(0)->GetCenter();
+			}
 			// Initially invisible
 			renderable->visible = false;
 			// For display in styles that don't support clipping

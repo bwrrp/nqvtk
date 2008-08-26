@@ -5,6 +5,8 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QPushButton>
+#include <QSignalMapper>
 #include <QSlider>
 #include <QVBoxLayout>
 
@@ -36,6 +38,7 @@ public:
 
 		renderable = 0;
 		color = NQVTK::Vector3(1.0, 1.0, 1.0);
+		opacity = 1.0;
 
 		// Create the layout
 		QVBoxLayout *layout = new QVBoxLayout(this);
@@ -48,13 +51,19 @@ public:
 
 		// Create the menu bar
 		CreateMenus();
+
+		// Add a renderable slot in the main view
+		slot = mainView->GetRenderer()->AddRenderable(0);
 	}
 
 	void LoadMesh(const std::string &filename)
 	{
 		if (renderable)
 		{
-			// TODO: remove renderable from views
+			// Delete old renderables
+			NQVTK::Renderable *simpleObj = 
+				simpleView->GetRenderer()->SetRenderable(0, 0);
+			if (simpleObj != 0 && simpleObj != renderable) delete simpleObj;
 			delete renderable;
 		}
 
@@ -70,13 +79,13 @@ public:
 		renderable = pd;
 		renderable->color = color;
 		renderable->opacity = opacity;
-		mainView->GetRenderer()->AddRenderable(renderable);
+		mainView->GetRenderer()->SetRenderable(slot, renderable);
 
 		// Add renderable to the simple view
 		if (simpleView->isSharing())
 		{
 			// GL resources are shared, just add the original renderable
-			simpleView->GetRenderer()->AddRenderable(renderable);
+			simpleView->GetRenderer()->SetRenderable(0, renderable);
 		}
 		else
 		{
@@ -85,7 +94,7 @@ public:
 			simpleView->makeCurrent();
 			NQVTK::Renderable *obj2 = new NQVTK::PolyData(reader->GetOutput()); 
 			obj2->color = color;
-			simpleView->GetRenderer()->AddRenderable(obj2);
+			simpleView->GetRenderer()->SetRenderable(0, obj2);
 		}
 		mainView->makeCurrent();
 
@@ -168,7 +177,7 @@ public slots:
 		NQVTK::PCAParamSet *pcaps = dynamic_cast<NQVTK::PCAParamSet*>(
 			renderable->GetParamSet("pca"));
 		if (!pcaps) return;
-		
+
 		// Create PCA weight controls
 		// TODO: add histograms above the sliders?
 		QWidget *pcaWidget = new QWidget(
@@ -179,7 +188,25 @@ public slots:
 			"QSlider::groove:horizontal {"
 			"	border: 1px solid #999999;"
 			"	height: 1px;"
-			"	background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);"
+			"	background: qlineargradient(spread:pad, "
+			"		x1:0, y1:0, x2:1, y2:0, "
+			"		stop:0 rgba(220, 220, 220, 255), "
+			"		stop:0.15 rgba(180, 180, 180, 255), "
+			"		stop:0.16 rgba(160, 160, 160, 255), "
+			"		stop:0.17 rgba(220, 220, 220, 255), "
+			"		stop:0.32 rgba(180, 180, 180, 255), "
+			"		stop:0.330479 rgba(160, 160, 160, 255), "
+			"		stop:0.34 rgba(220, 220, 220, 255), "
+			"		stop:0.49 rgba(180, 180, 180, 255), "
+			"		stop:0.5 rgba(160, 160, 160, 255), "
+			"		stop:0.51 rgba(220, 220, 220, 255), "
+			"		stop:0.65 rgba(180, 180, 180, 255), "
+			"		stop:0.659406 rgba(160, 160, 160, 255), "
+			"		stop:0.67 rgba(220, 220, 220, 255), "
+			"		stop:0.83 rgba(180, 180, 180, 255), "
+			"		stop:0.84 rgba(160, 160, 160, 255), "
+			"		stop:0.85 rgba(220, 220, 220, 255), "
+			"		stop:1 rgba(180, 180, 180, 255));"
 			"	margin: 3px 0;"
 			"}"
 			"QSlider::handle:horizontal {"
@@ -190,7 +217,13 @@ public slots:
 			"   background: rgb(%1, %2, %3);"
 			"}").arg(255 * color.x).arg(255 * color.y).arg(255 * color.z));
 		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
-		pcaWidget->setLayout(pcaLayout);
+		// Weights reset button
+		QPushButton *resetButton = new QPushButton(pcaWidget);
+		resetButton->setText("Reset weights");
+		QSignalMapper *resetMapper = new QSignalMapper(pcaWidget);
+		resetMapper->setMapping(resetButton, 0);
+		connect(resetButton, SIGNAL(clicked()), resetMapper, SLOT(map()));
+		// Weight sliders
 		for (unsigned int i = 0; i < pcaps->weights.size(); ++i)
 		{
 			QSlider *slider = new QSlider(pcaWidget);
@@ -198,12 +231,17 @@ public slots:
 			slider->setValue(0);
 			slider->setOrientation(Qt::Horizontal);
 			slider->setMaximumHeight(7);
+			slider->setTickPosition(QSlider::TicksBothSides);
+			slider->setTickInterval(50);
 			slider->setProperty("modeId", static_cast<int>(i));
-			// TODO: color slider handles to link visually to the renderable
 			connect(slider, SIGNAL(valueChanged(int)), 
 				this, SLOT(pcaSlider_valueChanged(int)));
+			// Connect the reset button
+			connect(resetMapper, SIGNAL(mapped(int)), 
+				slider, SLOT(setValue(int)));
 			pcaLayout->addWidget(slider);
 		}
+		pcaLayout->addWidget(resetButton);
 		pcaWidget->show();
 	}
 
@@ -211,6 +249,7 @@ protected:
 	NQVTKWidget *mainView;
 	NQVTKWidget *simpleView;
 
+	int slot;
 	NQVTK::Renderable *renderable;
 
 	NQVTK::Vector3 color;
@@ -233,6 +272,9 @@ protected:
 			mainView, SLOT(updateGL()));
 		// Set params
 		simpleView->toggleCrosshair(true);
+		simpleView->syncCamera(mainView->GetRenderer()->GetCamera());
+		// Add slot for the renderable
+		simpleRen->AddRenderable(0);
 	}
 
 	void CreateMenus()
@@ -295,6 +337,7 @@ protected slots:
 			if (pcaParams)
 			{
 				pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
+				// TODO: use queued signal to prevent multiple separate updates
 				mainView->updateGL();
 			}
 		}

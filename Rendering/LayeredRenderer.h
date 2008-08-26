@@ -321,12 +321,17 @@ namespace NQVTK
 				glActiveTexture(GL_TEXTURE0 + objectId);
 				glMatrixMode(GL_TEXTURE);
 				glLoadIdentity();
-				Vector3 center = (*it)->GetCenter();
-				glTranslated((*it)->position.x, (*it)->position.y, (*it)->position.z);
-				glTranslated(center.x, center.y, center.z);
-				glRotated((*it)->rotateX, 1.0, 0.0, 0.0);
-				glRotated((*it)->rotateY, 0.0, 1.0, 0.0);
-				glTranslated(-center.x, -center.y, -center.z);
+				Renderable *renderable = *it;
+				if (renderable)
+				{
+					Vector3 center = renderable->GetCenter();
+					glTranslated(renderable->position.x, 
+						renderable->position.y, renderable->position.z);
+					glTranslated(center.x, center.y, center.z);
+					glRotated(renderable->rotateX, 1.0, 0.0, 0.0);
+					glRotated(renderable->rotateY, 0.0, 1.0, 0.0);
+					glTranslated(-center.x, -center.y, -center.z);
+				}
 				++objectId;
 			}
 			glActiveTexture(GL_TEXTURE0);

@@ -66,14 +66,20 @@ void NQVTKWidget::initializeGL()
 	{
 		qDebug("Failed to initialize renderer...");
 	}
-
-	qDebug("Init done!");
+	else
+	{
+		qDebug("Init done!");
+	}
 }
 
 // ----------------------------------------------------------------------------
 void NQVTKWidget::resizeGL(int w, int h)
 {
-	renderer->Resize(w, h);
+	if (initialized)
+	{
+		renderer->Resize(w, h);
+		emit cameraUpdated(GetRenderer()->GetCamera());
+	}
 }
 
 // ----------------------------------------------------------------------------

@@ -132,7 +132,7 @@ namespace NQVTK
 			if (renderables.size() > 0)
 			{
 				Renderable *renderable = renderables[0];
-				camera->FocusOn(renderable);
+				if (renderable) camera->FocusOn(renderable);
 			}
 
 			// Set up the camera (matrices)
@@ -174,24 +174,37 @@ namespace NQVTK
 			for (std::vector<Renderable*>::const_iterator it = renderables.begin();
 				it != renderables.end(); ++it)
 			{
-				if ((*it)->visible)
+				Renderable *renderable = *it;
+				if (renderable)
 				{
-					PrepareForRenderable(objectId, *it);
-					(*it)->Draw();
+					if (renderable->visible)
+					{
+						PrepareForRenderable(objectId, renderable);
+						renderable->Draw();
+					}
 				}
 				++objectId;
 			}
 		}
 
-		void AddRenderable(Renderable *obj)
+		int AddRenderable(Renderable *obj)
 		{
-			if (obj) renderables.push_back(obj);
+			renderables.push_back(obj);
+			return renderables.size() - 1;
 		}
 
 		Renderable *GetRenderable(unsigned int i)
 		{
 			if (i >= renderables.size()) return 0;
 			return renderables[i];
+		}
+
+		Renderable *SetRenderable(unsigned int i, Renderable *obj)
+		{
+			assert(i < static_cast<unsigned int>(GetNumberOfRenderables()));
+			Renderable *old = GetRenderable(i);
+			renderables[i] = obj;
+			return old;
 		}
 
 		int GetNumberOfRenderables() 
