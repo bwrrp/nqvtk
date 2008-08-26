@@ -20,6 +20,9 @@ uniform float distanceFieldDataScale;
 uniform vec3 distanceFieldOrigin;
 uniform vec3 distanceFieldSize;
 uniform bool useDistanceColorMap;
+#endif
+
+#if defined NQVTK_USE_DISTANCEFIELDS || defined NQVTK_USE_PVALS
 uniform float classificationThreshold;
 #endif
 
