@@ -162,9 +162,6 @@ SET( ${ProjectName}_Shaders_Text
 	CommonIBISScribeVS.txt
 	CommonIBISScribeFS.txt
 	CommonIBISPainterFS.txt
-	ShadowMapScribeVS.txt
-	ShadowMapScribeFS.txt
-	ShadowMapPainterFS.txt
 	PointFilterVS.txt
 	PointFilterFS.txt
 )
