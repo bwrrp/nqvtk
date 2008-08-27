@@ -120,7 +120,7 @@ public:
 			dynamic_cast<NQVTK::DistanceFieldParamSet*>(
 				renderable->GetParamSet("distancefield"));
 		if (dfps) delete dfps;
-		
+
 		// Load the distance field
 		vtkSmartPointer<vtkXMLImageDataReader> reader = 
 			vtkSmartPointer<vtkXMLImageDataReader>::New();
@@ -297,8 +297,8 @@ protected:
 		paramMenu->addSeparator();
 		paramMenu->addAction("Reset transform", 
 			this, SLOT(ResetTransform()));
-		paramMenu->addAction("Focus object", 
-			this, SLOT(FocusObject()));
+		//paramMenu->addAction("Focus object", 
+		//	this, SLOT(FocusObject()));
 	}
 
 protected slots:

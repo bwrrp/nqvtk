@@ -91,7 +91,7 @@ void main() {
 		float dist = texture3D(distanceField, p).x;
 		dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);
 
-		if (dist < classificationThreshold) {
+		if (dist < classificationThreshold * 15.0) {
 			classification = 0.0;
 			col = vec4(1.0);
 		}
@@ -100,7 +100,7 @@ void main() {
 
 #ifdef NQVTK_USE_PVALS
 	// P-value thresholding
-	if (pvalue * 15.0 < classificationThreshold) {
+	if (pvalue < classificationThreshold) {
 		classification = 0.0;
 		col = vec4(1.0);
 	}

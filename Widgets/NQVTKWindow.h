@@ -76,6 +76,12 @@ public:
 		// Hide eye spacing widgets (only works for stereo renderers)
 		ui.eyeSpacing->hide();
 		ui.eyeSpacingLabel->hide();
+		// This isn't implemented right now (should be a new style)
+		ui.useDistanceColorMap->hide();
+		// Hide advanced widgets
+		ui.contourDepthEpsilon->hide();
+		ui.contourDepthEpsilonLabel->hide();
+		ui.brushTest->hide();
 
 		// Create the styles
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
@@ -431,7 +437,9 @@ private slots:
 	void on_classificationThreshold_valueChanged(int val) 
 	{
 		distfieldStyle->classificationThreshold = 
-			static_cast<double>(val) / 100.0;
+			static_cast<double>(val) / 1000.0;
+		ui.classificationThresholdDisplay->setText(QString("%1").arg(
+			distfieldStyle->classificationThreshold, 0, 'f', 3));
 		ui.nqvtkwidget->updateGL();
 	}
 

@@ -91,8 +91,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>170</width>
-         <height>660</height>
+         <width>177</width>
+         <height>674</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -111,7 +111,7 @@
            <item>
             <widget class="QLabel" name="maxLayersLabel" >
              <property name="text" >
-              <string>maxLayers</string>
+              <string>Max # of layers</string>
              </property>
             </widget>
            </item>
@@ -134,7 +134,7 @@
            <item>
             <widget class="QLabel" name="opacityLabel" >
              <property name="text" >
-              <string>opacity</string>
+              <string>Surface opacity</string>
              </property>
             </widget>
            </item>
@@ -154,7 +154,7 @@
            <item>
             <widget class="QLabel" name="eyeSpacingLabel" >
              <property name="text" >
-              <string>eyeSpacing</string>
+              <string>Eye spacing</string>
              </property>
             </widget>
            </item>
@@ -192,7 +192,7 @@
            <item>
             <widget class="QCheckBox" name="useGridTexture" >
              <property name="text" >
-              <string>useGridTexture</string>
+              <string>Grid texture</string>
              </property>
              <property name="checked" >
               <bool>false</bool>
@@ -202,14 +202,14 @@
            <item>
             <widget class="QCheckBox" name="useGlyphTexture" >
              <property name="text" >
-              <string>useGlyphTexture</string>
+              <string>Curvature glyphs</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="contourDepthEpsilonLabel" >
              <property name="text" >
-              <string>contourDepthEpsilon</string>
+              <string>Contour depth epsilon</string>
              </property>
             </widget>
            </item>
@@ -238,14 +238,24 @@
            <item>
             <widget class="QCheckBox" name="useFatContours" >
              <property name="text" >
-              <string>useFatContours</string>
+              <string>Fat contours</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useFog" >
+             <property name="text" >
+              <string>Fog between objects</string>
+             </property>
+             <property name="checked" >
+              <bool>true</bool>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="depthCueRangeLabel" >
              <property name="text" >
-              <string>depthCueRange</string>
+              <string>Fog visibility range</string>
              </property>
             </widget>
            </item>
@@ -271,29 +281,32 @@
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QCheckBox" name="useFog" >
-             <property name="text" >
-              <string>useFog</string>
-             </property>
-             <property name="checked" >
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="distanceFieldsGroup" >
+         <widget class="QGroupBox" name="scalarsGroup" >
           <property name="title" >
-           <string>DistanceFields</string>
+           <string>Scalars</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2" >
            <item>
             <widget class="QLabel" name="classificationThresholdLabel" >
              <property name="text" >
-              <string>classificationThreshold</string>
+              <string>Classification threshold:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="classificationThresholdDisplay" >
+             <property name="frameShape" >
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow" >
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <property name="text" >
+              <string>0</string>
              </property>
             </widget>
            </item>
@@ -306,7 +319,10 @@
               </sizepolicy>
              </property>
              <property name="maximum" >
-              <number>1500</number>
+              <number>1000</number>
+             </property>
+             <property name="pageStep" >
+              <number>10</number>
              </property>
              <property name="value" >
               <number>0</number>
@@ -319,7 +335,7 @@
            <item>
             <widget class="QCheckBox" name="useDistanceColorMap" >
              <property name="text" >
-              <string>useDistanceColorMap</string>
+              <string>Use color map</string>
              </property>
             </widget>
            </item>
@@ -366,7 +382,7 @@
            <item>
             <widget class="QCheckBox" name="lightRelativeToCamera" >
              <property name="text" >
-              <string>lightRelativeToCamera</string>
+              <string>Light relative to camera</string>
              </property>
              <property name="checked" >
               <bool>true</bool>
@@ -379,7 +395,7 @@
         <item>
          <widget class="QPushButton" name="brushTest" >
           <property name="text" >
-           <string>brushTest</string>
+           <string>Brushing test</string>
           </property>
          </widget>
         </item>
