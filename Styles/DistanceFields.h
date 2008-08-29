@@ -45,7 +45,6 @@ namespace NQVTK
 				scribe->SetUniform1i("hasDistanceField", 0);
 				Superclass::PrepareForObject(scribe, objectId, renderable);
 
-				
 				DistanceFieldParamSet *dfps = dynamic_cast<DistanceFieldParamSet*>(
 					renderable->GetParamSet("distancefield"));
 				if (dfps)

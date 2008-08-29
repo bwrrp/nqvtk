@@ -134,6 +134,7 @@ SET( ${ProjectName}_Styles_Classes
 	IBIS
 	DistanceFields
 	ShadowMap
+	Raycaster
 )
 
 SET( ${ProjectName}_Interactors_Classes
@@ -164,6 +165,9 @@ SET( ${ProjectName}_Shaders_Text
 	CommonIBISPainterFS.txt
 	PointFilterVS.txt
 	PointFilterFS.txt
+	RaycasterScribeVS.txt
+	RaycasterScribeFS.txt
+	RaycasterPainterFS.txt
 )
 
 # --------------------------------------------------

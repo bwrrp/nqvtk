@@ -1,0 +1,10 @@
+varying vec4 pos;
+
+uniform bool hasDistanceField;
+
+// Shader main function
+void main() {
+	// Compute position in view space
+	pos = gl_ModelViewMatrix * gl_Vertex;
+	gl_Position = gl_ProjectionMatrix * pos;
+}

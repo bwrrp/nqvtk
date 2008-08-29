@@ -27,6 +27,7 @@
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
 #include "Styles/DistanceFields.h"
+#include "Styles/Raycaster.h"
 
 #include "Rendering/OrbitCamera.h"
 
@@ -69,9 +70,9 @@ public:
 	{
 		// Set up the main view
 		NQVTK::LayeredRenderer *renderer;
-		//renderer = new NQVTK::LayeredRenderer();
+		renderer = new NQVTK::LayeredRenderer();
 		//renderer = new NQVTK::CrossEyedStereoRenderer();
-		renderer = new NQVTK::ShadowMappingRenderer();
+		//renderer = new NQVTK::ShadowMappingRenderer();
 
 		// Hide eye spacing widgets (only works for stereo renderers)
 		ui.eyeSpacing->hide();
@@ -93,12 +94,11 @@ public:
 		distfieldStyle->SetOption("NQVTK_USE_PCA", "8");
 
 		// Set renderer style
-		renderer->SetStyle(distfieldStyle);
+		//renderer->SetStyle(distfieldStyle);
+		renderer->SetStyle(new NQVTK::Styles::Raycaster());
 
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
-
-		//ui.nqvtkwidget->SetRenderer(renderer);
 
 		// Add a brushing overlay
 		NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
@@ -162,12 +162,17 @@ public:
 				args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
 				args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
 				//*/
-				//* Ventricle PCA
+				/* Ventricle PCA
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
 				//args.append("-");
 				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
 				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				//*/
+				//* Raycaster test
+				args.append("D:/Data/Misc/stent8_256_box.vtp");
+				args.append("-");
+				args.append("D:/Data/Misc/stent8_256.vti");
 				//*/
 			}
 			else
