@@ -36,7 +36,7 @@ namespace NQVTK
 			}
 
 			// TODO: calculate actual size of bounding box instead
-			double radius = 0.7 * std::max(size[0], std::max(size[1], size[2]));
+			double radius = 0.9 * std::max(size[0], std::max(size[1], size[2]));
 
 			// TODO: this assumes our focus is the center of obj
 			double focusToPos = (position - focus).length();
