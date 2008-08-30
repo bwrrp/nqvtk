@@ -148,7 +148,13 @@ namespace NQVTK
 				assert(infoCurrent);
 				tm->AddTexture("infoCurrent", infoCurrent, false);
 
-				tm->AddTexture("volume", 0);
+				// TODO: make sure bindings are initialized
+				// TODO: find some way to handle max. number of volumes (also in shader)
+				// TODO: getactiveuniforms seems to return "volume", size 4, not "volume[0]"
+				for (int i = 0; i < 4; ++i)
+				{
+					tm->AddTexture(GetVarName("volume", i), 0, false);
+				}
 
 				// Add volumes to tm from stored paramsets
 				for (unsigned int i = 0; i < volumes.size(); ++i)
@@ -200,7 +206,7 @@ namespace NQVTK
 			std::string GetVarName(const std::string &baseName, int index)
 			{
 				// TESTING: just return baseName
-				return baseName;
+				//return baseName;
 				// TODO: Later we'll want to use multiple volumes
 				std::ostringstream name;
 				name << baseName << "[" << index << "]";

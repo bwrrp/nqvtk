@@ -9,11 +9,11 @@ uniform int layer;
 uniform float viewportX;
 uniform float viewportY;
 
-uniform sampler3D volume;
-uniform float volumeDataShift;
-uniform float volumeDataScale;
-uniform vec3 volumeOrigin;
-uniform vec3 volumeSize;
+uniform sampler3D volume[4];
+uniform float volumeDataShift[4];
+uniform float volumeDataScale[4];
+uniform vec3 volumeOrigin[4];
+uniform vec3 volumeSize[4];
 
 // Prototypes from LibUtility
 bool getBit(float byte, int bit);
@@ -32,7 +32,7 @@ void main() {
 	if (length(infoAfter) == 0.0) discard;
 
 	// Just testing...
-	const int N = 100;
+	const int N = 25;
 	float accum = 0.0;
 	vec3 startPos = infoBefore.rgb;
 	vec3 endPos = infoAfter.rgb;
@@ -41,10 +41,14 @@ void main() {
 	vec3 pos = startPos;
 	vec3 step = ray / float(N);
 	for (int i = 0; i < N; ++i) {
-		vec3 p = (pos - volumeOrigin) / volumeSize;
-		float f = texture3D(volume, p).x;
-		accum = max(accum, f);
+		for (int v = 0; v < 4; ++v) {
+			if (getBit(infoBefore.a, v)) {
+				vec3 p = (pos - volumeOrigin[v]) / volumeSize[v];
+				float f = texture3D(volume[v], p).x;
+				accum = max(accum, f);
+			}
+		}
 		pos += step;
 	}
-	gl_FragColor = vec4(accum);
+	gl_FragColor = vec4(vec3(accum), 1.0);
 }
