@@ -7,6 +7,8 @@
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLUtility.h"
 
+#include "Rendering/DistanceFieldParamSet.h"
+
 #include "Shaders.h"
 
 #include <sstream>
@@ -36,10 +38,15 @@ namespace NQVTK
 				if (dfps)
 				{
 					ImageDataTexture3D *volume = dfps->distanceField;
-					// HACK: the second condition is a hack for shadow map creation
 					if (volume)
 					{
-						// TODO: use this function to collect volumes (paramsets)
+						// Make sure we have enough room
+						while (static_cast<int>(volumes.size()) < objectId + 1) 
+						{
+							volumes.push_back(0);
+						}
+						// Store the paramset
+						volumes[objectId] = dfps;
 					}
 					else
 					{
@@ -141,12 +148,63 @@ namespace NQVTK
 				assert(infoCurrent);
 				tm->AddTexture("infoCurrent", infoCurrent, false);
 
-				// TODO: add volumes to tm from stored paramsets
+				tm->AddTexture("volume", 0);
+
+				// Add volumes to tm from stored paramsets
+				for (unsigned int i = 0; i < volumes.size(); ++i)
+				{
+					NQVTK::DistanceFieldParamSet *dfps = volumes[i];
+					if (dfps)
+					{
+						tm->AddTexture(GetVarName("volume", i), 
+							dfps->distanceField, false);
+					}
+					else
+					{
+						// Ignore this object for now, the volume shouldn't be used
+					}
+				}
 			}
 
 			virtual void UpdatePainterParameters(GLProgram *painter)
 			{
-				// TODO: set volume info from stored paramsets
+				// Set volume info from stored paramsets
+				for (unsigned int i = 0; i < volumes.size(); ++i)
+				{
+					NQVTK::DistanceFieldParamSet *dfps = volumes[i];
+					if (dfps)
+					{
+						// Set volume info
+						NQVTK::ImageDataTexture3D *vol = dfps->distanceField;
+						painter->SetUniform1f(
+							GetVarName("volumeDataShift", i), 
+							vol->GetDataShift());
+						painter->SetUniform1f(
+							GetVarName("volumeDataScale", i), 
+							vol->GetDataScale());
+						NQVTK::Vector3 origin = vol->GetOrigin();
+						painter->SetUniform3f(
+							GetVarName("volumeOrigin", i), 
+							origin.x, origin.y, origin.z);
+						NQVTK::Vector3 size = vol->GetOriginalSize();
+						painter->SetUniform3f(
+							GetVarName("volumeSize", i), 
+							size.x, size.y, size.z);
+					}
+				}
+			}
+
+		protected:
+			std::vector<NQVTK::DistanceFieldParamSet*> volumes;
+
+			std::string GetVarName(const std::string &baseName, int index)
+			{
+				// TESTING: just return baseName
+				return baseName;
+				// TODO: Later we'll want to use multiple volumes
+				std::ostringstream name;
+				name << baseName << "[" << index << "]";
+				return name.str();
 			}
 
 		private:

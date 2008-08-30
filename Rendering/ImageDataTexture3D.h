@@ -31,8 +31,8 @@ namespace NQVTK
 			qDebug("Range before conversion: %g..%g", range[0], range[1]);
 			// Filter out border values
 			// TODO: use a better way than hardcoding a maximum here
-			range[0] = std::max(-25.0, range[0]);
-			range[1] = std::min(25.0, range[1]);
+			range[0] = std::max(-255.0, range[0]);
+			range[1] = std::min(255.0, range[1]);
 
 			double shift = range[0];
 			double scale = range[1] - range[0];
