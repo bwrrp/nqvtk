@@ -28,22 +28,25 @@ float unpackFloat(vec2 coded) {
 bool getBit(float byte, int bit) {
 	float N = 4.0;
 	float f = 2.0;
-	if (bit > int(N)) return false;
-	float max = pow(f, N) - 1.0;
+	bool res = false;
+	if (bit < int(N)) {
+		float max = pow(f, N) - 1.0;
 #ifdef GL_EXT_gpu_shader4
 // - gpu-shader4, use bitwise operators
-	int pattern = int(round(byte * max));
-	int mask = 1 << bit;
-	return (pattern & mask) != 0;
+		int pattern = int(round(byte * max));
+		int mask = 1 << bit;
+		res = ((pattern & mask) != 0);
 #else
 // - no gpu-shader4, use float arith for bit masks
-	float mask = round(byte * max) / f;
-	int i;
-	for (i = 0; i <= bit - 1; ++i) {
-		mask = floor(mask) / f;
-	}
-	return (fract(mask) > 0.25);
+		float mask = round(byte * max) / f;
+		int i;
+		for (i = 0; i <= bit - 1; ++i) {
+			mask = floor(mask) / f;
+		}
+		res = (fract(mask) > 0.25);
 #endif
+	}
+	return res;
 }
 
 // Encodes a bit set in a float, range [0..1]
