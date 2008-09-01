@@ -31,24 +31,38 @@ void main() {
 	// Discard background
 	if (length(infoAfter) == 0.0) discard;
 
-	// Just testing...
-	const int N = 25;
-	float accum = 0.0;
+	// Raycast this slab
 	vec3 startPos = infoBefore.rgb;
 	vec3 endPos = infoAfter.rgb;
 	vec3 ray = endPos - startPos;
-	// TODO: adjust for transforms?
-	vec3 pos = startPos;
+	// TODO: number of steps should be variable, step size constant
+	const int N = 100;
 	vec3 step = ray / float(N);
+	float stepLength = length(step);
+	// TODO: accumulate color and opacity as vec4
+	vec4 accum = vec4(vec3(0.0), 1.0);
+	vec3 pos = startPos;
 	for (int i = 0; i < N; ++i) {
+		float f = 0.0;
 		for (int v = 0; v < 4; ++v) {
 			if (getBit(infoBefore.a, v)) {
+				// TODO: adjust pos for transforms (in gl_TextureMatrix[v])
 				vec3 p = (pos - volumeOrigin[v]) / volumeSize[v];
-				float f = texture3D(volume[v], p).x;
-				accum = max(accum, f);
+				float val = texture3D(volume[v], p).x;
+				// For now use the maximum value over all volumes
+				f = max(f, val);
 			}
 		}
+		// Map to colors and opacity
+		// TODO: add transfer function support
+		// TODO: this should probably be adjusted according to the step length...
+		vec4 mapped = vec4(f);
+		// Accumulate
+		accum = vec4(accum.a * mapped.rgb * mapped.a + accum.rgb, (1.0 - mapped.a) * accum.a);
+		// Step along the ray
 		pos += step;
 	}
-	gl_FragColor = vec4(vec3(accum), 1.0);
+
+	// Colors are already pre-multiplied with alpha for slab compositing
+	gl_FragColor = vec4(accum.rgb, 1.0 - accum.a);
 }

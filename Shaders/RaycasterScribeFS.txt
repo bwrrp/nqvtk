@@ -9,12 +9,7 @@ uniform sampler2DRect infoBuffer;
 uniform int layer;
 uniform int objectId;
 
-uniform sampler3D distanceField;
-//uniform bool hasDistanceField;
-uniform float distanceFieldDataShift;
-uniform float distanceFieldDataScale;
-uniform vec3 distanceFieldOrigin;
-uniform vec3 distanceFieldSize;
+uniform bool hasDistanceField;
 
 varying vec4 pos;
 
@@ -25,6 +20,9 @@ bool getBit(float byte, int bit);
 // Shader main function
 void main() {
 	vec4 r0 = gl_FragCoord;
+
+	// For now, discard objects without a volume
+	if (!hasDistanceField) discard;
 
 	// Depth peeling
 	if (layer > 0) {
