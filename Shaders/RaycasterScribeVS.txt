@@ -1,10 +1,10 @@
-varying vec4 pos;
+uniform int objectId;
 
-uniform bool hasDistanceField;
+varying vec4 pos;
 
 // Shader main function
 void main() {
 	// Compute position in view space
-	pos = gl_Vertex;
+	pos = gl_TextureMatrix[objectId] * gl_Vertex;
 	gl_Position = ftransform();
 }

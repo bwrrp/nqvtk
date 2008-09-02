@@ -171,7 +171,9 @@ public:
 				//*/
 				//* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
+				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("-");
+				args.append("D:/Data/Misc/stent8_256.vti");
 				args.append("D:/Data/Misc/stent8_256.vti");
 				//*/
 			}

@@ -24,7 +24,12 @@ namespace NQVTK
 		public:
 			typedef NQVTK::RenderStyle Superclass;
 
-			Raycaster() { }
+			Raycaster()
+			{
+				// Step size in world-space units
+				// TODO: should probably depend on size and resolution of the volumes
+				stepSize = 1.0;
+			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 
 				int objectId, NQVTK::Renderable *renderable)
@@ -198,7 +203,11 @@ namespace NQVTK
 							size.x, size.y, size.z);
 					}
 				}
+				// Set other parameters
+				painter->SetUniform1f("stepSize", stepSize);
 			}
+
+			float stepSize;
 
 		protected:
 			std::vector<NQVTK::DistanceFieldParamSet*> volumes;
