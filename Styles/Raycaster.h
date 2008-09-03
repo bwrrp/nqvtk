@@ -29,6 +29,8 @@ namespace NQVTK
 				// Step size in world-space units
 				// TODO: should probably depend on size and resolution of the volumes
 				stepSize = 1.0;
+
+				SetOption("NQVTK_RAYCASTER_LIGHTING");
 			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 

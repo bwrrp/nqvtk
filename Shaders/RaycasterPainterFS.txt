@@ -19,6 +19,20 @@ uniform float stepSize;
 
 // Prototypes from LibUtility
 bool getBit(float byte, int bit);
+vec3 phongShading(vec3 matColor, vec3 normal);
+
+float getValue(int v, vec3 pos) {
+	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+	return texture3D(volume[v], p).x;
+}
+
+vec3 computeGradient(int v, vec3 pos, float delta, float val) {
+	float dx = getValue(v, pos + vec3(delta, 0.0, 0.0)) - val;
+	float dy = getValue(v, pos + vec3(0.0, delta, 0.0)) - val;
+	float dz = getValue(v, pos + vec3(0.0, 0.0, delta)) - val;
+	return vec3(dx, dy, dz);
+}
 
 // Main shader function
 void main() {
@@ -39,23 +53,32 @@ void main() {
 	vec3 ray = endPos - startPos;
 	// Determine step, number of steps
 	vec3 step = normalize(ray) * stepSize;
+	float stepLength = stepSize;
 	int numSteps = int(ceil(length(ray) / stepSize));
 	// Start tracing
 	vec4 accum = vec4(vec3(0.0), 1.0);
 	vec3 pos = startPos;
 	for (int i = 0; i < numSteps + 1; ++i) {
 		float f = 0.0;
+#ifdef NQVTK_RAYCASTER_LIGHTING
+		vec3 g = vec3(0.0);
+#endif
 		for (int v = 0; v < 4; ++v) {
 			if (getBit(infoBefore.a, v)) {
 				// Adjust pos for transforms
 				vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 				vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-				float val = texture3D(volume[v], p).x;
+				float val = getValue(v, pos);
 				// TODO: adjust val by volumeData{Shift,Scale}[v]
 				// TODO: make combiner more flexible
 				f = max(f, val); // max
 				//f = f + val; // sum
 				//f = f - pow(-1.0, float(v)) * val; // difference
+#ifdef NQVTK_RAYCASTER_LIGHTING
+				// Accumulate gradients
+				if (f == val) g = computeGradient(v, pos, stepSize, val);
+				//g += computeGradient(v, pos, stepSize, val);
+#endif
 			}
 		}
 		// TODO: convert to 0..1 range
@@ -63,9 +86,19 @@ void main() {
 		// Map to colors and opacity
 		// TODO: add transfer function support
 		float opacity = f;
-		opacity = 1.0 - pow(1.0 - opacity, stepSize);
+		opacity = 1.0 - pow(1.0 - opacity, stepLength);
 		vec3 color = vec3(f);
 		vec4 mapped = vec4(color, opacity);
+#ifdef NQVTK_RAYCASTER_LIGHTING
+		// Lighting
+		// TODO: lighting should probably depend on opacity
+		// TODO: use mapped opacity volume to compute normals?
+		// TODO: normals should take slab boundaries into account
+		if (length(g) > 0.0) {
+			vec3 n = gl_NormalMatrix * normalize(-g);
+			mapped = vec4(phongShading(mapped.rgb, n), mapped.a);
+		}
+#endif
 		// Accumulate
 		accum = vec4(accum.a * mapped.rgb * mapped.a + accum.rgb, (1.0 - mapped.a) * accum.a);
 		// If alpha is (almost) saturated, terminate the ray
@@ -73,6 +106,7 @@ void main() {
 		// The last step should stay within the slab
 		if (i == numSteps) {
 			step = endPos - pos;
+			stepLength = length(step);
 		}
 		// Step along the ray
 		pos += step;
