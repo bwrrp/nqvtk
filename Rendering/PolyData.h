@@ -6,6 +6,7 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
+#include <vtkDataArray.h>
 
 #define NQVTK_USE_NV_PRIMITIVE_RESTART
 
@@ -94,10 +95,10 @@ namespace NQVTK
 			int numArrays = data->GetPointData()->GetNumberOfArrays();
 			for (int arId = 0; arId < numArrays; ++arId)
 			{
-				vtkAbstractArray *ar = data->GetPointData()->GetArray(arId);
-				qDebug("Found array '%s': %d tuples of %d type %s components", 
+				vtkDataArray *ar = data->GetPointData()->GetArray(arId);
+				qDebug("Found array '%s': %d tuples of %d type %d components", 
 					ar->GetName(), ar->GetNumberOfTuples(), 
-					ar->GetNumberOfComponents(), ar->GetDataTypeAsString());
+					ar->GetNumberOfComponents(), ar->GetDataType());
 
 				// TODO: only load the data if this is a "wanted" array
 
