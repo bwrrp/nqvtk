@@ -68,7 +68,8 @@ void main() {
 		vec4 mapped = vec4(color, opacity);
 		// Accumulate
 		accum = vec4(accum.a * mapped.rgb * mapped.a + accum.rgb, (1.0 - mapped.a) * accum.a);
-
+		// If alpha is (almost) saturated, terminate the ray
+		if (accum.a < 0.001) i = numSteps + 1;
 		// The last step should stay within the slab
 		if (i == numSteps) {
 			step = endPos - pos;
