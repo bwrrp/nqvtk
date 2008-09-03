@@ -43,7 +43,7 @@ void main() {
 	// Start tracing
 	vec4 accum = vec4(vec3(0.0), 1.0);
 	vec3 pos = startPos;
-	for (int i = 0; i < numSteps; ++i) {
+	for (int i = 0; i < numSteps + 1; ++i) {
 		float f = 0.0;
 		for (int v = 0; v < 4; ++v) {
 			if (getBit(infoBefore.a, v)) {
@@ -68,6 +68,11 @@ void main() {
 		vec4 mapped = vec4(color, opacity);
 		// Accumulate
 		accum = vec4(accum.a * mapped.rgb * mapped.a + accum.rgb, (1.0 - mapped.a) * accum.a);
+
+		// The last step should stay within the slab
+		if (i == numSteps) {
+			step = endPos - pos;
+		}
 		// Step along the ray
 		pos += step;
 	}
