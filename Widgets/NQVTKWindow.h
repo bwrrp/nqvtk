@@ -88,6 +88,7 @@ public:
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 		ibisStyle = new NQVTK::Styles::IBIS();
 		distfieldStyle = new NQVTK::Styles::DistanceFields();
+		raycastStyle = new NQVTK::Styles::Raycaster();
 
 		// TODO: handle this somewhere else
 		ibisStyle->SetOption("NQVTK_USE_PCA", "8");
@@ -95,7 +96,7 @@ public:
 
 		// Set renderer style
 		//renderer->SetStyle(distfieldStyle);
-		renderer->SetStyle(new NQVTK::Styles::Raycaster());
+		renderer->SetStyle(raycastStyle);
 
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
@@ -169,12 +170,21 @@ public:
 				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
 				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
-				//* Raycaster test
+				/* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("-");
 				args.append("D:/Data/Misc/stent8_256.vti");
 				args.append("D:/Data/Misc/stent8_256.vti");
+				//*/
+				//* Raycaster test 2
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal1_box.vtp");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal_box.vtp");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2_box.vtp");
+				args.append("-");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal1.vti");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal.vti");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2.vti");
 				//*/
 			}
 			else
@@ -310,6 +320,7 @@ protected:
 	NQVTK::Styles::DepthPeeling *depthpeelStyle;
 	NQVTK::Styles::IBIS *ibisStyle;
 	NQVTK::Styles::DistanceFields *distfieldStyle;
+	NQVTK::Styles::Raycaster *raycastStyle;
 
 	std::vector<RenderableControlWidget*> renderableControlWidgets;
 
@@ -386,6 +397,18 @@ protected:
 				if (ren) ren->visible = !ren->visible;
 			}
 			break;
+		case Qt::Key_3:
+			{
+				NQVTK::Renderable *ren = renderer->GetRenderable(2);
+				if (ren) ren->visible = !ren->visible;
+			}
+			break;
+		case Qt::Key_4:
+			{
+				NQVTK::Renderable *ren = renderer->GetRenderable(3);
+				if (ren) ren->visible = !ren->visible;
+			}
+			break;
 		case Qt::Key_F1:
 			{
 				NQVTK::LayeredRenderer *lrenderer = 
@@ -408,6 +431,14 @@ protected:
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
 				// TODO: should disable the widget if this fails
 				if (lrenderer) lrenderer->SetStyle(distfieldStyle);
+			}
+			break;
+		case Qt::Key_F4:
+			{
+				NQVTK::LayeredRenderer *lrenderer = 
+					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
+				// TODO: should disable the widget if this fails
+				if (lrenderer) lrenderer->SetStyle(raycastStyle);
 			}
 			break;
 		default:
