@@ -63,6 +63,7 @@ void main() {
 #ifdef NQVTK_RAYCASTER_LIGHTING
 		vec3 g = vec3(0.0);
 #endif
+		//*
 		for (int v = 0; v < 4; ++v) {
 			if (getBit(infoBefore.a, v)) {
 				// Adjust pos for transforms
@@ -81,6 +82,14 @@ void main() {
 #endif
 			}
 		}
+		//*/
+		/* Volume IBIS Test
+		if (getBit(infoBefore.a, 0) && getBit(infoBefore.a, 1)) {
+			float fmin = min(getValue(0, pos), getValue(1, pos));
+			float fmax = max(getValue(0, pos), getValue(1, pos));
+			f = max(fmax / 10.0, fmin);
+		}
+		//*/
 		// TODO: convert to 0..1 range
 		f = clamp(f, 0.0, 1.0);
 		// Map to colors and opacity

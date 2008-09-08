@@ -170,14 +170,14 @@ public:
 				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
 				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
-				/* Raycaster test
+				//* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("-");
 				args.append("D:/Data/Misc/stent8_256.vti");
 				args.append("D:/Data/Misc/stent8_256.vti");
 				//*/
-				//* Raycaster test 2
+				/* Raycaster test 2
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal1_box.vtp");
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal_box.vtp");
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2_box.vtp");
