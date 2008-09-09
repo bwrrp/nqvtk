@@ -34,6 +34,14 @@ vec3 computeGradient(int v, vec3 pos, float delta, float val) {
 	return vec3(dx, dy, dz);
 }
 
+vec4 mapValue(float f, float stepLength) {
+	// TODO: add transfer function support
+	float opacity = f;
+	opacity = 1.0 - pow(1.0 - opacity, stepLength);
+	vec3 color = vec3(f);
+	return vec4(color, opacity);
+}
+
 // Main shader function
 void main() {
 	// Get info
@@ -84,20 +92,51 @@ void main() {
 		}
 		//*/
 		/* Volume IBIS Test
+		vec4 col = vec4(0.0);
 		if (getBit(infoBefore.a, 0) && getBit(infoBefore.a, 1)) {
-			float fmin = min(getValue(0, pos), getValue(1, pos));
-			float fmax = max(getValue(0, pos), getValue(1, pos));
-			f = max(fmax / 10.0, fmin);
+			float v0 = getValue(0, pos);
+			float v1 = getValue(1, pos);
+			vec4 col0 = vec4(vec3(1.0, 0.9, 0.4), mapValue(v0, stepLength).a);
+			vec4 col1 = vec4(vec3(0.3, 0.6, 1.0), mapValue(v1, stepLength).a);
+			vec3 gmin, gmax;
+			vec4 colmin, colmax;
+			if (v0 > v1) {
+				colmin = col1; colmax = col0;
+				gmin = computeGradient(1, pos, stepSize, v1);
+				gmax = computeGradient(0, pos, stepSize, v0);
+			} else {
+				colmin = col0; colmax = col1;
+				gmin = computeGradient(0, pos, stepSize, v0);
+				gmax = computeGradient(1, pos, stepSize, v1);
+			}
+			// Adjust outer
+			colmax.a = colmax.a / 30.0;
+			if (colmax.a > colmin.a) {
+				col = colmax;
+				g = gmax;
+			} else {
+				col = colmin;
+				g = gmin;
+			}
+		} else if (getBit(infoBefore.a, 0)) {
+			float v0 = getValue(0, pos);
+			col = vec4(vec3(1.0, 0.9, 0.4), mapValue(v0, stepLength).a);
+			// Adjust outer
+			col.a = col.a / 30.0;
+			g = computeGradient(0, pos, stepSize, v0);
+		} else if (getBit(infoBefore.a, 1)) {
+			float v1 = getValue(1, pos);
+			col = vec4(vec3(0.3, 0.6, 1.0), mapValue(v1, stepLength).a);
+			// Adjust outer
+			col.a = col.a / 30.0;
+			g = computeGradient(1, pos, stepSize, v1);
 		}
 		//*/
-		// TODO: convert to 0..1 range
+		// TODO: convert to 0..1 range from data range
 		f = clamp(f, 0.0, 1.0);
 		// Map to colors and opacity
-		// TODO: add transfer function support
-		float opacity = f;
-		opacity = 1.0 - pow(1.0 - opacity, stepLength);
-		vec3 color = vec3(f);
-		vec4 mapped = vec4(color, opacity);
+		vec4 mapped = mapValue(f, stepLength);
+		//mapped = col;
 #ifdef NQVTK_RAYCASTER_LIGHTING
 		// Lighting
 		// TODO: lighting should probably depend on opacity
