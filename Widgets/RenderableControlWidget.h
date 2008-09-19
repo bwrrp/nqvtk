@@ -207,7 +207,7 @@ public slots:
 		QSlider *tfEndSlider = new QSlider(tfWidget);
 		// TODO: Range of the slider should be linked to the data
 		tfEndSlider->setRange(0, 255);
-		tfEndSlider->setValue(100);
+		tfEndSlider->setValue(255);
 		tfEndSlider->setOrientation(Qt::Horizontal);
 		connect(tfEndSlider, SIGNAL(valueChanged(int)), 
 			this, SLOT(tfEndSlider_valueChanged(int)));

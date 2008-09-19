@@ -41,6 +41,25 @@ namespace NQVTK
 			}
 		}
 
+		virtual void SetupProgramArrays(GLProgram *program, int objectId)
+		{
+			// TODO: split class or disable for performance when not needed
+			program->SetUniform1f(
+				GetArrayName("volumeDataShift", objectId), 
+				distanceField->GetDataShift());
+			program->SetUniform1f(
+				GetArrayName("volumeDataScale", objectId), 
+				distanceField->GetDataScale());
+			NQVTK::Vector3 origin = distanceField->GetOrigin();
+			program->SetUniform3f(
+				GetArrayName("volumeOrigin", objectId), 
+				origin.x, origin.y, origin.z);
+			NQVTK::Vector3 size = distanceField->GetOriginalSize();
+			program->SetUniform3f(
+				GetArrayName("volumeSize", objectId), 
+				size.x, size.y, size.z);
+		}
+
 		ImageDataTexture3D *distanceField;
 
 	private:

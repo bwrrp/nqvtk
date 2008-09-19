@@ -163,6 +163,7 @@ namespace NQVTK
 				}
 
 				// Add volumes to tm from stored paramsets
+				// TODO: per-obejct textures should be handled through the paramsets as well
 				for (unsigned int i = 0; i < volumes.size(); ++i)
 				{
 					NQVTK::DistanceFieldParamSet *dfps = volumes[i];
@@ -180,30 +181,7 @@ namespace NQVTK
 
 			virtual void UpdatePainterParameters(GLProgram *painter)
 			{
-				// Set volume info from stored paramsets
-				for (unsigned int i = 0; i < volumes.size(); ++i)
-				{
-					NQVTK::DistanceFieldParamSet *dfps = volumes[i];
-					if (dfps)
-					{
-						// Set volume info
-						NQVTK::ImageDataTexture3D *vol = dfps->distanceField;
-						painter->SetUniform1f(
-							GetVarName("volumeDataShift", i), 
-							vol->GetDataShift());
-						painter->SetUniform1f(
-							GetVarName("volumeDataScale", i), 
-							vol->GetDataScale());
-						NQVTK::Vector3 origin = vol->GetOrigin();
-						painter->SetUniform3f(
-							GetVarName("volumeOrigin", i), 
-							origin.x, origin.y, origin.z);
-						NQVTK::Vector3 size = vol->GetOriginalSize();
-						painter->SetUniform3f(
-							GetVarName("volumeSize", i), 
-							size.x, size.y, size.z);
-					}
-				}
+				// Volume parameters are set by the distance field paramsets
 				// Set other parameters
 				painter->SetUniform1f("stepSize", stepSize);
 			}
