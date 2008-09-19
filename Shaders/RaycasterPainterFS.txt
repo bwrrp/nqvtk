@@ -85,13 +85,13 @@ void main() {
 				// TODO: make combiner more flexible
 				// TODO: implement real transfer function support, remove this hack
 				float tfSize = max(tfEnd[v] - tfStart[v], 0.00001);
-				val = clamp((val - tfStart[v]) / tfSize, 0.0, 1.0);
-				f = max(f, val); // max
+				float newval = clamp((val - tfStart[v]) / tfSize, 0.0, 1.0);
+				f = max(f, newval); // max
 				//f = f + val; // sum
 				//f = f - pow(-1.0, float(v)) * val; // difference
 #ifdef NQVTK_RAYCASTER_LIGHTING
 				// Accumulate gradients
-				if (f == val) g = computeGradient(v, pos, stepSize, val);
+				if (f == newval) g = computeGradient(v, pos, stepSize, val);
 				//g += computeGradient(v, pos, stepSize, val);
 #endif
 			}
@@ -149,7 +149,7 @@ void main() {
 		// TODO: use mapped opacity volume to compute normals?
 		// TODO: normals should take slab boundaries into account
 		if (length(g) > 0.0) {
-			vec3 n = gl_NormalMatrix * normalize(-g);
+			vec3 n = normalize(gl_NormalMatrix * -g);
 			mapped = vec4(phongShading(mapped.rgb, n), mapped.a);
 		}
 #endif
