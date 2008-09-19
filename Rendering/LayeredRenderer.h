@@ -175,6 +175,7 @@ namespace NQVTK
 			painter->SetUniform1f("nearPlane", camera->nearZ);
 			painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
 			painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
+			ApplyParamSetsArrays(painter);
 			style->UpdatePainterParameters(painter);
 
 			// Set up textures used by the painter
@@ -308,6 +309,21 @@ namespace NQVTK
 			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
 			if (mesh) mesh->SetupAttributes(scribeAttribs);
 			style->PrepareForObject(scribe, objectId, renderable);
+		}
+
+		virtual void ApplyParamSetsArrays(GLProgram *program)
+		{
+			int objectId = 0;
+			for (std::vector<Renderable*>::const_iterator it = renderables.begin();
+				it != renderables.end(); ++it)
+			{
+				Renderable *renderable = *it;
+				if (renderable)
+				{
+					renderable->ApplyParamSetsArrays(program, objectId);
+				}
+				++objectId;
+			}
 		}
 
 		virtual void DrawRenderables()

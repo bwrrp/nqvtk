@@ -121,6 +121,15 @@ namespace NQVTK
 			}
 		}
 
+		void ApplyParamSetsArrays(GLProgram *program, int objectId)
+		{
+			for (ParamSetType::iterator it = paramSets.begin();
+				it != paramSets.end(); ++it)
+			{
+				it->second->SetupProgramArrays(program, objectId);
+			}
+		}
+
 	protected:
 		double bounds[6];
 

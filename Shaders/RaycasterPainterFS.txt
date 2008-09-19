@@ -15,6 +15,9 @@ uniform float volumeDataScale[4];
 uniform vec3 volumeOrigin[4];
 uniform vec3 volumeSize[4];
 
+uniform float tfStart[4];
+uniform float tfEnd[4];
+
 uniform float stepSize;
 
 // Prototypes from LibUtility
@@ -80,6 +83,9 @@ void main() {
 				float val = getValue(v, pos);
 				// TODO: adjust val by volumeData{Shift,Scale}[v]
 				// TODO: make combiner more flexible
+				// TODO: implement real transfer function support, remove this hack
+				float tfSize = max(tfEnd[v] - tfStart[v], 0.00001);
+				val = clamp((val - tfStart[v]) / tfSize, 0.0, 1.0);
 				f = max(f, val); // max
 				//f = f + val; // sum
 				//f = f - pow(-1.0, float(v)) * val; // difference

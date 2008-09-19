@@ -198,7 +198,7 @@ public slots:
 		QVBoxLayout *tfLayout = new QVBoxLayout(tfWidget);
 		QSlider *tfStartSlider = new QSlider(tfWidget);
 		// TODO: Range of the slider should be linked to the data
-		tfStartSlider->setRange(0, 100);
+		tfStartSlider->setRange(0, 255);
 		tfStartSlider->setValue(0);
 		tfStartSlider->setOrientation(Qt::Horizontal);
 		connect(tfStartSlider, SIGNAL(valueChanged(int)), 
@@ -206,7 +206,7 @@ public slots:
 		tfLayout->addWidget(tfStartSlider);
 		QSlider *tfEndSlider = new QSlider(tfWidget);
 		// TODO: Range of the slider should be linked to the data
-		tfEndSlider->setRange(0, 100);
+		tfEndSlider->setRange(0, 255);
 		tfEndSlider->setValue(100);
 		tfEndSlider->setOrientation(Qt::Horizontal);
 		connect(tfEndSlider, SIGNAL(valueChanged(int)), 
@@ -385,7 +385,7 @@ protected slots:
 					renderable->GetParamSet("transferfunction"));
 			if (tfps)
 			{
-				tfps->tfStart = static_cast<float>(val) / 100.0;
+				tfps->tfStart = static_cast<float>(val) / 255.0;
 				// TODO: use queued signal to prevent multiple separate updates
 				mainView->updateGL();
 			}
@@ -401,7 +401,7 @@ protected slots:
 					renderable->GetParamSet("transferfunction"));
 			if (tfps)
 			{
-				tfps->tfEnd = static_cast<float>(val) / 100.0;
+				tfps->tfEnd = static_cast<float>(val) / 255.0;
 				// TODO: use queued signal to prevent multiple separate updates
 				mainView->updateGL();
 			}
