@@ -17,6 +17,7 @@
 #include "Rendering/PCAParamSet.h"
 #include "Rendering/PolyData.h"
 #include "Rendering/SimpleRenderer.h"
+#include "Rendering/TransferFunctionParamSet.h"
 
 #include "Math/Vector3.h"
 
@@ -132,6 +133,14 @@ public:
 		// Assign to renderable
 		dfps = new NQVTK::DistanceFieldParamSet(tex);
 		renderable->SetParamSet("distancefield", dfps);
+
+		// For now, also add a transfer function
+		// TODO: this should probably be handled some other way
+		NQVTK::TransferFunctionParamSet *tfps = 
+			new NQVTK::TransferFunctionParamSet();
+		//tfps->tfStart = tex->dataShift;
+		//tfps->tfEnd = tex->dataScale + tex->dataShift;
+		renderable->SetParamSet("transferfunction", tfps);
 	}
 
 	void SetColor(NQVTK::Vector3 color)
@@ -167,6 +176,43 @@ public slots:
 		NQVTK::Camera *cam = mainView->GetRenderer()->GetCamera();
 		cam->focus = renderable->GetCenter();
 		// TODO: why doesn't this work?
+	}
+
+	void ShowTFWidget()
+	{
+		// Do we have a renderable?
+		if (!renderable) return;
+		// Does it have the right paramset?
+		NQVTK::TransferFunctionParamSet *tfps = 
+			dynamic_cast<NQVTK::TransferFunctionParamSet*>(
+				renderable->GetParamSet("transferfunction"));
+		if (!tfps) return;
+
+		// Create transfer function widget
+		// TODO: create a widget to define the tf lookup texture
+		// Right now, this simply has two sliders for the start and end values
+		QWidget *tfWidget = new QWidget(
+			mainView->topLevelWidget(), Qt::Tool);
+		tfWidget->setWindowTitle("Transfer function");
+		tfWidget->resize(250, 50);
+		QVBoxLayout *tfLayout = new QVBoxLayout(tfWidget);
+		QSlider *tfStartSlider = new QSlider(tfWidget);
+		// TODO: Range of the slider should be linked to the data
+		tfStartSlider->setRange(0, 100);
+		tfStartSlider->setValue(0);
+		tfStartSlider->setOrientation(Qt::Horizontal);
+		connect(tfStartSlider, SIGNAL(valueChanged(int)), 
+			this, SLOT(tfStartSlider_valueChanged(int)));
+		tfLayout->addWidget(tfStartSlider);
+		QSlider *tfEndSlider = new QSlider(tfWidget);
+		// TODO: Range of the slider should be linked to the data
+		tfEndSlider->setRange(0, 100);
+		tfEndSlider->setValue(100);
+		tfEndSlider->setOrientation(Qt::Horizontal);
+		connect(tfEndSlider, SIGNAL(valueChanged(int)), 
+			this, SLOT(tfEndSlider_valueChanged(int)));
+		tfLayout->addWidget(tfEndSlider);
+		tfWidget->show();
 	}
 
 	void ShowPCAControls()
@@ -292,6 +338,9 @@ protected:
 		QMenu *paramMenu = new QMenu("Params", menuBar);
 		menuBar->addMenu(paramMenu);
 		//paramMenu->addAction("Color...");
+		// TODO: create widgets and add menu items dynamically based on paramsets
+		paramMenu->addAction("Transfer function...", 
+			this, SLOT(ShowTFWidget()));
 		paramMenu->addAction("PCA weights...", 
 			this, SLOT(ShowPCAControls()));
 		paramMenu->addSeparator();
@@ -327,16 +376,49 @@ protected slots:
 		}
 	}
 
+	void tfStartSlider_valueChanged(int val)
+	{
+		if (renderable)
+		{
+			NQVTK::TransferFunctionParamSet *tfps = 
+				dynamic_cast<NQVTK::TransferFunctionParamSet*>(
+					renderable->GetParamSet("transferfunction"));
+			if (tfps)
+			{
+				tfps->tfStart = static_cast<float>(val) / 100.0;
+				// TODO: use queued signal to prevent multiple separate updates
+				mainView->updateGL();
+			}
+		}
+	}
+
+	void tfEndSlider_valueChanged(int val)
+	{
+		if (renderable)
+		{
+			NQVTK::TransferFunctionParamSet *tfps = 
+				dynamic_cast<NQVTK::TransferFunctionParamSet*>(
+					renderable->GetParamSet("transferfunction"));
+			if (tfps)
+			{
+				tfps->tfEnd = static_cast<float>(val) / 100.0;
+				// TODO: use queued signal to prevent multiple separate updates
+				mainView->updateGL();
+			}
+		}
+	}
+
 	void pcaSlider_valueChanged(int val)
 	{
 		int modeId = sender()->property("modeId").toInt();
 		if (renderable)
 		{
-			NQVTK::PCAParamSet *pcaParams = dynamic_cast<NQVTK::PCAParamSet*>(
-				renderable->GetParamSet("pca"));
-			if (pcaParams)
+			NQVTK::PCAParamSet *pcaps = 
+				dynamic_cast<NQVTK::PCAParamSet*>(
+					renderable->GetParamSet("pca"));
+			if (pcaps)
 			{
-				pcaParams->weights[modeId] = static_cast<float>(val) / 100.0;
+				pcaps->weights[modeId] = static_cast<float>(val) / 100.0;
 				// TODO: use queued signal to prevent multiple separate updates
 				mainView->updateGL();
 			}

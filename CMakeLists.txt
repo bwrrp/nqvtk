@@ -126,6 +126,7 @@ SET( ${ProjectName}_Rendering_Classes
 	ParamSet
 	DistanceFieldParamSet
 	PCAParamSet
+	TransferFunctionParamSet
 )
 
 SET( ${ProjectName}_Styles_Classes

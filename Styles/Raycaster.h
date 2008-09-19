@@ -60,7 +60,6 @@ namespace NQVTK
 						scribe->SetUniform1i("hasDistanceField", 0);
 					}
 				}
-				tm->Bind();
 			}
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
