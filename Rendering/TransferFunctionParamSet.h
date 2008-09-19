@@ -18,13 +18,10 @@ namespace NQVTK
 		{
 		}
 
-		virtual void SetupProgram(GLProgram *program)
+		virtual void SetupProgramArrays(GLProgram *program, int objectId)
 		{
-			// TODO: find a way to make param sets useful in the raycaster
-			// Properties for all objects need to be available simultaneously 
-			// in the painter. Paramsets could write to arrays var[objectId]...
-			//program->SetUniform1f("tfStart", tfStart);
-			//program->SetUniform1f("tfEnd", tfEnd);
+			program->SetUniform1f(GetArrayName("tfStart", objectId), tfStart);
+			program->SetUniform1f(GetArrayName("tfEnd", objectId), tfEnd);
 			// TODO: set transfer function texture if available
 		}
 
