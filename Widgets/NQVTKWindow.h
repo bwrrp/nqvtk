@@ -170,7 +170,7 @@ public:
 				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
 				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
-				//* Raycaster test
+				/* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
 				args.append("-");
@@ -185,6 +185,11 @@ public:
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal1.vti");
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal.vti");
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2.vti");
+				//*/
+				//* Deformation fields test
+				args.append("D:/Data/Cartilage/cartilage3D/vti/deformationField_box.vtp");
+				args.append("-");
+				args.append("D:/Data/Cartilage/cartilage3D/vti/deformationField.vti");
 				//*/
 			}
 			else
