@@ -100,7 +100,7 @@ void main() {
 
 #ifdef NQVTK_USE_PVALS
 	// P-value thresholding
-	if (pvalue < classificationThreshold) {
+	if (pvalue >= classificationThreshold) {
 		classification = 0.0;
 		col = vec4(1.0);
 	}
