@@ -4,9 +4,10 @@
 
 #include <QAction>
 #include <QFileDialog>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
-#include <QSignalMapper>
 #include <QSlider>
 #include <QVBoxLayout>
 
@@ -26,6 +27,73 @@
 #include <vtkXMLImageDataReader.h>
 
 #include <string>
+
+class PCASlider : public QWidget
+{
+	Q_OBJECT;
+
+public:
+	PCASlider(QWidget *parent = 0) : QWidget(parent)
+	{
+		// Create subwidgets
+		QHBoxLayout *line = new QHBoxLayout(this);
+		line->setMargin(0);
+		line->setSpacing(2);
+		// - Slider
+		slider = new QSlider(this);
+		slider->setRange(-300, 300);
+		slider->setValue(0);
+		slider->setOrientation(Qt::Horizontal);
+		slider->setMaximumHeight(7);
+		slider->setTickPosition(QSlider::TicksBothSides);
+		slider->setTickInterval(50);
+		connect(slider, SIGNAL(valueChanged(int)), 
+			this, SLOT(slider_valueChanged(int)));
+		line->addWidget(slider);
+		// - Value readout
+		label = new QLabel("0.0", this);
+		label->setMaximumWidth(50);
+		label->setMinimumWidth(50);
+		line->addWidget(label);
+		// - Reset button
+		resetButton = new QPushButton("0", this);
+		resetButton->setMaximumWidth(20);
+		resetButton->setMinimumWidth(20);
+		resetButton->setMaximumHeight(16);
+		connect(resetButton, SIGNAL(clicked()), 
+			this, SLOT(reset()));
+		line->addWidget(resetButton);
+	}
+
+signals:
+	void valueChanged(float);
+
+public slots:
+	void reset()
+	{
+		slider->setValue(0);
+	}
+
+	void setValue(float val)
+	{
+		slider->setValue(100 * val);
+	}
+
+private slots:
+	void slider_valueChanged(int val)
+	{
+		float v = static_cast<float>(val) / 100.0;
+		label->setText(QString("%1").arg(v, 0, 'f', 3));
+		emit valueChanged(v);
+	}
+
+private:
+	QSlider *slider;
+	QLabel *label;
+	QPushButton *resetButton;
+};
+
+
 
 class RenderableControlWidget : public QWidget
 {
@@ -229,7 +297,7 @@ public slots:
 		QWidget *pcaWidget = new QWidget(
 			mainView->topLevelWidget(), Qt::Tool);
 		pcaWidget->setWindowTitle("Shape model weights");
-		pcaWidget->resize(250, 50);
+		pcaWidget->resize(300, 50);
 		pcaWidget->setStyleSheet(QString(
 			"QSlider::groove:horizontal {"
 			"	border: 1px solid #999999;"
@@ -265,26 +333,18 @@ public slots:
 		QVBoxLayout *pcaLayout = new QVBoxLayout(pcaWidget);
 		// Weights reset button
 		QPushButton *resetButton = new QPushButton(pcaWidget);
-		resetButton->setText("Reset weights");
-		QSignalMapper *resetMapper = new QSignalMapper(pcaWidget);
-		resetMapper->setMapping(resetButton, 0);
-		connect(resetButton, SIGNAL(clicked()), resetMapper, SLOT(map()));
+		resetButton->setText("Reset all weights");
 		// Weight sliders
 		for (unsigned int i = 0; i < pcaps->weights.size(); ++i)
 		{
-			QSlider *slider = new QSlider(pcaWidget);
-			slider->setRange(-300, 300);
-			slider->setValue(0);
-			slider->setOrientation(Qt::Horizontal);
-			slider->setMaximumHeight(7);
-			slider->setTickPosition(QSlider::TicksBothSides);
-			slider->setTickInterval(50);
+			// Create a slider
+			PCASlider *slider = new PCASlider(pcaWidget);
 			slider->setProperty("modeId", static_cast<int>(i));
-			connect(slider, SIGNAL(valueChanged(int)), 
-				this, SLOT(pcaSlider_valueChanged(int)));
-			// Connect the reset button
-			connect(resetMapper, SIGNAL(mapped(int)), 
-				slider, SLOT(setValue(int)));
+			connect(slider, SIGNAL(valueChanged(float)), 
+				this, SLOT(pcaSlider_valueChanged(float)));
+			// Connect the main reset button
+			connect(resetButton, SIGNAL(clicked()), 
+				slider, SLOT(reset()));
 			pcaLayout->addWidget(slider);
 		}
 		pcaLayout->addWidget(resetButton);
@@ -408,7 +468,7 @@ protected slots:
 		}
 	}
 
-	void pcaSlider_valueChanged(int val)
+	void pcaSlider_valueChanged(float val)
 	{
 		int modeId = sender()->property("modeId").toInt();
 		if (renderable)
@@ -418,7 +478,7 @@ protected slots:
 					renderable->GetParamSet("pca"));
 			if (pcaps)
 			{
-				pcaps->weights[modeId] = static_cast<float>(val) / 100.0;
+				pcaps->weights[modeId] = val;
 				// TODO: use queued signal to prevent multiple separate updates
 				mainView->updateGL();
 			}
