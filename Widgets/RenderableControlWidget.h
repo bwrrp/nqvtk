@@ -22,6 +22,7 @@
 
 #include "Math/Vector3.h"
 
+#include <vtkMetaImageReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLImageDataReader.h>
@@ -191,12 +192,29 @@ public:
 		if (dfps) delete dfps;
 
 		// Load the distance field
-		vtkSmartPointer<vtkXMLImageDataReader> reader = 
-			vtkSmartPointer<vtkXMLImageDataReader>::New();
-		reader->SetFileName(filename.c_str());
-		reader->Update();
-		NQVTK::ImageDataTexture3D *tex = 
-			NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+		NQVTK::ImageDataTexture3D *tex = 0;
+		std::string extension = filename.substr(filename.rfind(".") + 1);
+		if (extension == std::string("vti"))
+		{
+			vtkSmartPointer<vtkXMLImageDataReader> reader = 
+				vtkSmartPointer<vtkXMLImageDataReader>::New();
+			reader->SetFileName(filename.c_str());
+			reader->Update();
+			tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+		}
+		else if (extension == std::string("mhd") || extension == std::string("mha"))
+		{
+			vtkSmartPointer<vtkMetaImageReader> reader = 
+				vtkSmartPointer<vtkMetaImageReader>::New();
+			reader->SetFileName(filename.c_str());
+			reader->Update();
+			tex = NQVTK::ImageDataTexture3D::New(reader->GetOutput());
+		}
+		else
+		{
+			qDebug("Error loading volume! File extension '%s' not supported!", 
+				extension.c_str());
+		}
 		assert(tex);
 		// Assign to renderable
 		dfps = new NQVTK::DistanceFieldParamSet(tex);
