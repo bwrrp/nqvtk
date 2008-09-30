@@ -27,7 +27,13 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 float getValue(int v, vec3 pos) {
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-	return texture3D(volume[v], p).x;
+	float f;
+	if (v == 0) {
+        f = length((volumeDataShift[v] + volumeDataScale[v] * texture3D(volume[v], p).xyz) / 4.0);
+	} else {
+        f = texture3D(volume[v], p).x;
+	}
+    return f;
 }
 
 vec3 computeGradient(int v, vec3 pos, float delta, float val) {
