@@ -26,7 +26,7 @@ string fileNameFromPath(string path)
 
 string stripExtension(string file)
 {
-	return file.substr(0, file.find("."));
+	return file.substr(0, file.rfind("."));
 }
 
 string escapeSpecialChars(string input)
