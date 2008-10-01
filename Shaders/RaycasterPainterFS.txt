@@ -27,14 +27,24 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 vec3 getVector(int v, vec3 pos) {
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-	return texture3D(volume[v], p).xyz;
+	return volumeDataShift[v] + volumeDataScale[v] * texture3D(volume[v], p).xyz;
 }
 
 mat3 computeJacobian(int v, vec3 pos, float delta, vec3 val) {
-	vec3 dx = getVector(v, pos + vec3(delta, 0.0, 0.0)) - val;
-	vec3 dy = getVector(v, pos + vec3(0.0, delta, 0.0)) - val;
-	vec3 dz = getVector(v, pos + vec3(0.0, 0.0, delta)) - val;
-	return mat3(dx, dy, dz) / delta;
+	/* Forward differences
+	vec3 dx = (getVector(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	vec3 dy = (getVector(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+	//*/
+	//* Central differences
+	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getVector(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	vec3 dy = (getVector(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getVector(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getVector(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+	//*/
+	return mat3(dx, dy, dz);
 }
 
 float determinant(mat3 m) {
@@ -43,25 +53,36 @@ float determinant(mat3 m) {
 }
 
 float getValue(int v, vec3 pos) {
-	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
 	float f;
 	// TODO: find a better way to distinguish between volume types
 	if (v == 0) {
-		//f = length((volumeDataShift[v] + volumeDataScale[v] * texture3D(volume[v], p).xyz) / (volumeDataScale[v] + volumeDataShift[v]));
 		vec3 vec = getVector(v, pos);
+		//f = length(vec / (volumeDataScale[v] + volumeDataShift[v])); // Deformation
 		mat3 jac = computeJacobian(v, pos, stepSize, vec);
-		f = abs(determinant(jac) * 100000.0);
+		//f = jac[0][0] + jac[1][1] + jac[2][2]; // Divergence
+		f = abs(determinant(jac)) / 2.0; // Local volume change / 2.0
 	} else {
+		vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
 		f = texture3D(volume[v], p).x;
 	}
 	return f;
 }
 
 vec3 computeGradient(int v, vec3 pos, float delta, float val) {
-	float dx = getValue(v, pos + vec3(delta, 0.0, 0.0)) - val;
-	float dy = getValue(v, pos + vec3(0.0, delta, 0.0)) - val;
-	float dz = getValue(v, pos + vec3(0.0, 0.0, delta)) - val;
+	/* Forward differences
+	float dx = (getValue(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	float dy = (getValue(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	float dz = (getValue(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+	//*/
+	//* Central differences
+	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	float dy = (getValue(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getValue(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	float dz = (getValue(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getValue(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+	//*/
 	return vec3(dx, dy, dz);
 }
 

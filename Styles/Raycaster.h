@@ -30,7 +30,7 @@ namespace NQVTK
 				// TODO: should probably depend on size and resolution of the volumes
 				stepSize = 1.0;
 
-				SetOption("NQVTK_RAYCASTER_LIGHTING");
+				//SetOption("NQVTK_RAYCASTER_LIGHTING");
 			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 
@@ -48,9 +48,9 @@ namespace NQVTK
 					if (volume)
 					{
 						// Make sure we have enough room
-						while (static_cast<int>(volumes.size()) < objectId + 1) 
+						if (static_cast<int>(volumes.size()) < objectId + 1) 
 						{
-							volumes.push_back(0);
+							volumes.resize(objectId + 1, 0);
 						}
 						// Store the paramset
 						volumes[objectId] = dfps;
