@@ -188,11 +188,11 @@ public:
 				//*/
 				//* Deformation fields test
 				args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/deformationField_box.vtp");
-				//args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked_box.vtp");
+				args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked_box.vtp");
 				//args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/result_box.vtp");
 				args.append("-");
 				args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/deformationField.mhd");
-				//args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked.mha");
+				args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked.mha");
 				//args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/result.mhd");
 				//*/
 			}
