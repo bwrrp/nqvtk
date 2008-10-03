@@ -29,9 +29,11 @@ namespace NQVTK
 				// Step size in world-space units
 				// TODO: should probably depend on size and resolution of the volumes
 				stepSize = 1.0;
+				testParam = 0.0;
 
 				SetOption("NQVTK_RAYCASTER_LIGHTING");
 				SetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
+				SetOption("NQVTK_RAYCASTER_DEFORM");
 			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 
@@ -185,18 +187,17 @@ namespace NQVTK
 				// Volume parameters are set by the distance field paramsets
 				// Set other parameters
 				painter->SetUniform1f("stepSize", stepSize);
+				painter->SetUniform1f("testParam", testParam);
 			}
 
 			float stepSize;
+			float testParam;
 
 		protected:
 			std::vector<NQVTK::DistanceFieldParamSet*> volumes;
 
 			std::string GetVarName(const std::string &baseName, int index)
 			{
-				// TESTING: just return baseName
-				//return baseName;
-				// TODO: Later we'll want to use multiple volumes
 				std::ostringstream name;
 				name << baseName << "[" << index << "]";
 				return name.str();

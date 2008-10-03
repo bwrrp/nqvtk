@@ -487,6 +487,10 @@ private slots:
 			static_cast<double>(val) / 1000.0;
 		ui.classificationThresholdDisplay->setText(QString("%1").arg(
 			distfieldStyle->classificationThreshold, 0, 'f', 3));
+		
+		// TODO: remove testParam later
+		raycastStyle->testParam = static_cast<double>(val) / 1000.0;
+		
 		ui.nqvtkwidget->updateGL();
 	}
 
