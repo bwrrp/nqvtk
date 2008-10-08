@@ -132,6 +132,7 @@ void main() {
 			if (getBit(infoBefore.a, v)) {
 				// Adjust pos for transforms
 				float val;
+#ifdef NQVTK_RAYCASTER_VECTORFIELD
 				if (v == 0) {
 					vec3 vec = getVector(v, pos);
 					float deformation = length(vec / 
@@ -157,10 +158,13 @@ void main() {
 						//max(divergence, convergence));
 						max(growth, shrinkage);//);
 				} else {
+#endif
 					val = getValue(v, pos);
 					color = val * vec3(1.0);
 					// TODO: adjust val by volumeData{Shift,Scale}[v]
+#ifdef NQVTK_RAYCASTER_VECTORFIELD
 				}
+#endif
 				// TODO: implement real transfer function support, remove this hack
 				float tfSize = max(tfEnd[v] - tfStart[v], 0.00001);
 				float newval = clamp((val - tfStart[v]) / tfSize, 0.0, 1.0);
