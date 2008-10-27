@@ -3,20 +3,22 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
+#define NQVTK_RAYCASTER_VOLUMECOUNT 4
+
 uniform sampler2DRect infoPrevious;
 uniform sampler2DRect infoCurrent;
 uniform int layer;
 uniform float viewportX;
 uniform float viewportY;
 
-uniform sampler3D volume[4];
-uniform float volumeDataShift[4];
-uniform float volumeDataScale[4];
-uniform vec3 volumeOrigin[4];
-uniform vec3 volumeSize[4];
+uniform sampler3D volume[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float volumeDataShift[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float volumeDataScale[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
 
-uniform float tfStart[4];
-uniform float tfEnd[4];
+uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 
 uniform float stepSize;
 
@@ -26,13 +28,14 @@ uniform float testParam;
 bool getBit(float byte, int bit);
 vec3 phongShading(vec3 matColor, vec3 normal);
 
-
+// Get vector from volume
 vec3 getVector(int v, vec3 pos) {
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
 	return volumeDataShift[v] + volumeDataScale[v] * texture3D(volume[v], p).xyz;
 }
 
+// Compute Jacobian of vector volume
 mat3 computeJacobian(int v, vec3 pos, float delta, vec3 val) {
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
@@ -50,6 +53,7 @@ mat3 computeJacobian(int v, vec3 pos, float delta, vec3 val) {
 	return mat3(dx, dy, dz) + mat3(1.0);
 }
 
+// Compute determinant of matrix
 float determinant(mat3 m) {
 	return m[0][0] * m[1][1] * m[2][2] 
 		+ m[0][1] * m[1][2] * m[2][0] 
@@ -59,16 +63,59 @@ float determinant(mat3 m) {
 		- m[0][0] * m[1][2] * m[2][1];
 }
 
-float getValue(int v, vec3 pos) {
-#ifdef NQVTK_RAYCASTER_DEFORM
-	// TODO: adjust for the transformation of the vector field
-	pos += (testParam - 0.5) * 4.0 * getVector(0, pos);
+// Get color, value from volume
+vec4 sampleVolume(int v, vec3 pos) {
+	float val;
+	vec3 color;
+#ifdef NQVTK_RAYCASTER_VECTORFIELD
+	if (v == 0) {
+		// Vector volume
+		vec3 vec = getVector(v, pos);
+		float deformation = length(vec / 
+			(volumeDataScale[v] + volumeDataShift[v]));
+		mat3 jac = computeJacobian(v, pos, stepSize, vec);
+		float divergence = jac[0][0] + jac[1][1] + jac[2][2];
+		float detJ = 1.0 / abs(determinant(jac));
+		float growth = detJ - 1.0;
+		float shrinkage = max(0.0, -growth);
+		growth = max(0.0, growth);
+		float convergence = max(0.0, -divergence);
+		divergence = max(0.0, divergence);
+		float tot = //deformation + 
+			//divergence + convergence + 
+			max(growth + shrinkage, 0.001);
+		color = //deformation * vec3(0.7) +
+			//divergence * vec3(1.0, 0.5, 0.0) + 
+			//convergence * vec3(0.0, 0.5, 1.0) + 
+			growth * vec3(0.0, 1.0, 0.0) + 
+			shrinkage * vec3(1.0, 0.0, 0.0);
+		color /= tot;
+		val = //max(deformation, 
+			//max(divergence, convergence));
+			max(growth, shrinkage);
+	} else {
 #endif
-	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-	return texture3D(volume[v], p).x;
+#ifdef NQVTK_RAYCASTER_DEFORM
+		// TODO: adjust for the transformation of the vector field
+		pos += (testParam - 0.5) * 4.0 * getVector(0, pos);
+#endif
+		vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+		vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+		val = texture3D(volume[v], p).x;
+		// TODO: adjust val by volumeData{Shift,Scale}[v]
+		color = vec3(1.0) * val;
+#ifdef NQVTK_RAYCASTER_VECTORFIELD
+	}
+#endif
+	return vec4(color, val);
 }
 
+// Get value from volume
+float getValue(int v, vec3 pos) {
+	return sampleVolume(v, pos).a;
+}
+
+// Compute gradient of the volume
 vec3 computeGradient(int v, vec3 pos, float delta, float val) {
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
@@ -85,15 +132,9 @@ vec3 computeGradient(int v, vec3 pos, float delta, float val) {
 	return vec3(dx, dy, dz);
 }
 
-vec4 mapValue(float f, float stepLength, vec3 baseColor) {
-	// TODO: add transfer function support
-	float opacity = f;
-	opacity = 1.0 - pow(1.0 - opacity, stepLength);
-	vec3 color = baseColor;
-#ifndef NQVTK_RAYCASTER_LIGHTING
-	color *= f;
-#endif
-	return vec4(color, opacity);
+// Adjust opacity for step length
+float adjustOpacity(float val, float stepLength) {
+	return 1.0 - pow(1.0 - val, stepLength);
 }
 
 // Main shader function
@@ -120,68 +161,52 @@ void main() {
 	// Start tracing
 	vec4 accum = vec4(vec3(0.0), 1.0);
 	vec3 pos = startPos;
+	// For each step along the ray...
 	for (int i = 0; i < numSteps + 1; ++i) {
-		float f = 0.0;
-		vec3 baseColor = vec3(1.0);
-#ifdef NQVTK_RAYCASTER_LIGHTING
-		vec3 g = vec3(0.0);
-#endif
-		//*
-		for (int v = 0; v < 4; ++v) {
-			vec3 color;
+		vec4 sample[NQVTK_RAYCASTER_VOLUMECOUNT];
+		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+			// If the volume is active, sample it
 			if (getBit(infoBefore.a, v)) {
-				// Adjust pos for transforms
-				float val;
-#ifdef NQVTK_RAYCASTER_VECTORFIELD
-				if (v == 0) {
-					vec3 vec = getVector(v, pos);
-					float deformation = length(vec / 
-						(volumeDataScale[v] + volumeDataShift[v]));
-					mat3 jac = computeJacobian(v, pos, stepSize, vec);
-					float divergence = jac[0][0] + jac[1][1] + jac[2][2];
-					float detJ = 1.0 / abs(determinant(jac));
-					float growth = detJ - 1.0;
-					float shrinkage = max(0.0, -growth);
-					growth = max(0.0, growth);
-					float convergence = max(0.0, -divergence);
-					divergence = max(0.0, divergence);
-					float tot = //deformation + 
-						//divergence + convergence + 
-						growth + shrinkage;
-					color = //deformation * vec3(0.7) +
-						//divergence * vec3(1.0, 0.5, 0.0) + 
-						//convergence * vec3(0.0, 0.5, 1.0) + 
-						growth * vec3(0.0, 1.0, 0.0) + 
-						shrinkage * vec3(1.0, 0.0, 0.0);
-					color /= tot;
-					val = //max(deformation, 
-						//max(divergence, convergence));
-						max(growth, shrinkage);//);
-				} else {
-#endif
-					val = getValue(v, pos);
-					color = val * vec3(1.0);
-					// TODO: adjust val by volumeData{Shift,Scale}[v]
-#ifdef NQVTK_RAYCASTER_VECTORFIELD
-				}
-#endif
-				// TODO: implement real transfer function support, remove this hack
-				float tfSize = max(tfEnd[v] - tfStart[v], 0.00001);
-				float newval = clamp((val - tfStart[v]) / tfSize, 0.0, 1.0);
-				// TODO: make combiner more flexible
-				f = max(f, newval); // max
-				//f = f + val; // sum
-				//f = f - pow(-1.0, float(v)) * val; // difference
-				if (f == newval) baseColor = color;
-#ifdef NQVTK_RAYCASTER_LIGHTING
-				// Accumulate gradients
-				if (f == newval) g = computeGradient(v, pos, stepSize, val);
-				//g += computeGradient(v, pos, stepSize, val);
-#endif
+				sample[v] = sampleVolume(v, pos);
+			} else {
+				sample[v] = vec4(0.0);
 			}
 		}
-		//*/
+
+		// Combine samples into final value / color
+		vec4 combined = vec4(vec3(0.0), 1.0);
+		float smoothOpacity = 1.0;
+		// TODO: make combiner more flexible
+		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+			// Apply the volume's transfer function
+			// TODO: implement real transfer function support, remove this hack
+			float tfSize = max(tfEnd[v] - tfStart[v], 0.00001);
+			float op = clamp((sample[v].a - tfStart[v]) / tfSize, 0.0, 1.0);
+			// Compute correct opacity for blending
+			op = adjustOpacity(op, stepLength);
+
+			// TODO: apply smooth version of transfer function to sample.a for gradients
+			smoothOpacity = (1.0 - sample[v].a) * smoothOpacity;
+
+			// Accumulate samples
+			combined = vec4(
+				combined.a * sample[v].rgb * op + combined.rgb, 
+				(1.0 - op) * combined.a);
+		}
+
+		vec3 color = combined.rgb;
+		float opacity = 1.0 - combined.a;
+		smoothOpacity = 1.0 - smoothOpacity;
+
+#ifdef NQVTK_RAYCASTER_LIGHTING
+		// Compute gradient of accumulated smooth opacity volume
+		// TODO: refactor code above to implement this function
+		// Or can we just light samples first, then combine?
+		gradient = computeCombinedGradient(pos, stepSize, smoothOpacity);
+#endif
+
 		/* Volume IBIS Test
+		// TODO: move to separate shader?
 		vec4 col = vec4(0.0);
 		if (getBit(infoBefore.a, 0) && getBit(infoBefore.a, 1)) {
 			float v0 = getValue(0, pos);
@@ -222,23 +247,20 @@ void main() {
 			g = computeGradient(1, pos, stepSize, v1);
 		}
 		//*/
-		// TODO: convert to 0..1 range from data range
-		f = clamp(f, 0.0, 1.0);
-		// Map to colors and opacity
-		vec4 mapped = mapValue(f, stepLength, baseColor);
-		//mapped = col;
+
 #ifdef NQVTK_RAYCASTER_LIGHTING
-		// Lighting
-		// TODO: lighting should probably depend on opacity
-		// TODO: use mapped opacity volume to compute normals?
+		// Lighting (only if we have a normal)
 		// TODO: normals should take slab boundaries into account
-		if (length(g) > 0.0) {
-			vec3 n = normalize(gl_NormalMatrix * -g);
-			mapped = vec4(phongShading(mapped.rgb, n), mapped.a);
+		//       ...but only in some cases (clipping planes!)
+		if (length(gradient) > 0.0) {
+			vec3 normal = normalize(gl_NormalMatrix * -gradient);
+			color = phongShading(color, normal);
 		}
 #endif
-		// Accumulate
-		accum = vec4(accum.a * mapped.rgb * mapped.a + accum.rgb, (1.0 - mapped.a) * accum.a);
+
+		// Accumulate colors and opacities
+		accum = vec4(accum.a * color * opacity + accum.rgb, (1.0 - opacity) * accum.a);
+
 		// If alpha is (almost) saturated, terminate the ray
 		if (accum.a < 0.001) i = numSteps + 1;
 		// The last step should stay within the slab
