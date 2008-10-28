@@ -71,29 +71,27 @@ vec4 sampleVolume(int v, vec3 pos) {
 	if (v == 0) {
 		// Vector volume
 		vec3 vec = getVector(v, pos);
-		float deformation = length(vec / 
-			(volumeDataScale[v] + volumeDataShift[v]));
+		//float deformation = length(vec / 
+		//	(volumeDataScale[v] + volumeDataShift[v]));
 		mat3 jac = computeJacobian(v, pos, stepSize, vec);
-		float divergence = jac[0][0] + jac[1][1] + jac[2][2];
+		//float divergence = jac[0][0] + jac[1][1] + jac[2][2];
+		//float convergence = max(0.0, -divergence);
+		//divergence = max(0.0, divergence);
 		float detJ = 1.0 / abs(determinant(jac));
 		float growth = detJ - 1.0;
 		float shrinkage = max(0.0, -growth);
 		growth = max(0.0, growth);
-		float convergence = max(0.0, -divergence);
-		divergence = max(0.0, divergence);
-		float tot = //deformation + 
-			//divergence + convergence + 
-			growth + shrinkage + 0.0001;
-		color = //deformation * vec3(0.7) +
+		//float tot = divergence + convergence + 0.0001;
+		float tot = growth + shrinkage + 0.0001;
+		//color = deformation * vec3(0.7);
+		color = 
 			//divergence * vec3(1.0, 0.5, 0.0) + 
-			//convergence * vec3(0.0, 0.5, 1.0) + 
-			0.0001 * vec3(1.0) + 
-			growth * vec3(0.0, 1.0, 0.0) + 
-			shrinkage * vec3(1.0, 0.0, 0.0);
+			//convergence * vec3(0.0, 0.5, 1.0);
+			growth * vec3(0.3, 0.6, 1.0) + 
+			shrinkage * vec3(1.0, 0.9, 0.4);
 		color /= tot;
-		val = //max(deformation, 
-			//max(divergence, convergence));
-			max(growth, shrinkage);
+		//val = max(divergence, convergence);
+		val = max(growth, shrinkage);
 	} else {
 #endif
 #ifdef NQVTK_RAYCASTER_DEFORM

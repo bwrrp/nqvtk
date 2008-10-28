@@ -28,10 +28,10 @@ namespace NQVTK
 			{
 				// Step size in world-space units
 				// TODO: should probably depend on size and resolution of the volumes
-				stepSize = 0.5;
+				stepSize = 0.3;
 				testParam = 0.0;
 
-				//SetOption("NQVTK_RAYCASTER_LIGHTING");
+				SetOption("NQVTK_RAYCASTER_LIGHTING");
 				SetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
 				SetOption("NQVTK_RAYCASTER_VECTORFIELD");
 				SetOption("NQVTK_RAYCASTER_DEFORM");

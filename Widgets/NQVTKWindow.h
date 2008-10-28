@@ -186,18 +186,19 @@ public:
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal.vti");
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2.vti");
 				//*/
-				//* Deformation fields test
+				/* Deformation fields - knee cartilage
 				args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/deformationField_box.vtp");
 				args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked_box.vtp");
 				//args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/result_box.vtp");
-				//args.append("D:/Temp/meep_box.vtp");
-				//args.append("D:/Data/Misc/kniekoos_256_256_256_uchar_box.vtp");
 				args.append("-");
 				args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/deformationField.mhd");
 				args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked.mha");
 				//args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/result.mhd");
-				//args.append("D:/Temp/meep.mha");
-				//args.append("D:/Data/Misc/kniekoos_256_256_256_uchar.mha");
+				//*/
+				//* Deformation fields - test
+				args.append("D:/Temp/meep_box.vtp");
+				args.append("-");
+				args.append("D:/Temp/meep.mha");
 				//*/
 			}
 			else
