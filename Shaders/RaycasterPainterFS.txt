@@ -87,7 +87,7 @@ sample sampleVolume(int v, vec3 pos) {
 		float detJ = 1.0 / abs(determinant(jac));
 		float growth = detJ - 1.0;
 		float shrinkage = max(0.0, -growth);
-		//growth = max(0.0, growth);
+		growth = max(0.0, growth);
 		//float tot = divergence + convergence + 0.0001;
 		float tot = growth + shrinkage + 0.0001;
 		s.color = 
@@ -193,7 +193,7 @@ void main() {
 #ifdef NQVTK_RAYCASTER_STRIPING
 					// Experimental perpendicularness
 					float f = abs(dot(normalize(s.vector), normalize(-gradient)));
-					s.color = f * vec3(1.0, 0.5, 0.0) + (1.0 - f) * vec3(0.0, 0.5, 1.0);
+					vec3 stripecolor = f * vec3(1.0, 0.5, 0.0) + (1.0 - f) * vec3(0.0, 0.5, 1.0);
 					// Experimental striping
 					vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 					vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
@@ -214,11 +214,12 @@ void main() {
 					vec3 v2 = cross(vec, n);
 					float f2 = dot(p, v2);
 					float stripe = mod(f2 * 20.0, 1.0);
+					// TODO: smoothstep this
 					if (stripe > 0.5) 
 						stripe = 1.0;
 					else
 						stripe = 0.0;
-					s.color = stripe * s.color + (1.0 - stripe) * vec3(1.0);
+					s.color = stripe * s.color + (1.0 - stripe) * stripecolor;
 #endif
 
 					s.color = phongShading(s.color, normal);
