@@ -31,7 +31,11 @@ namespace NQVTK
 				stepSize = 0.25;
 				testParam = 0.0;
 
+				// TODO: find out why setting this to 1 does not work
+				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "2");
+
 				SetOption("NQVTK_RAYCASTER_LIGHTING");
+				SetOption("NQVTK_RAYCASTER_DITHERPOS");
 				SetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
 				SetOption("NQVTK_RAYCASTER_VECTORFIELD");
 				SetOption("NQVTK_RAYCASTER_STRIPING");

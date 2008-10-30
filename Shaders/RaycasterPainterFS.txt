@@ -3,8 +3,6 @@
 #extension GL_EXT_gpu_shader4 : enable
 #endif
 
-#define NQVTK_RAYCASTER_VOLUMECOUNT 4
-
 uniform sampler2DRect infoPrevious;
 uniform sampler2DRect infoCurrent;
 uniform int layer;
@@ -162,6 +160,11 @@ void main() {
 	vec3 startPos = infoBefore.rgb;
 	vec3 endPos = infoAfter.rgb;
 	vec3 ray = endPos - startPos;
+#ifdef NQVTK_RAYCASTER_DITHERPOS
+	// Offset rays to reduce stepping artifacts
+	float offset = abs(mod(r0.y, 4.0) - mod(r0.x, 4.0)) * 0.25 * stepSize;
+	startPos += offset * normalize(ray);
+#endif
 	// Determine step, number of steps
 	vec3 step = normalize(ray) * stepSize;
 	float stepLength = stepSize;
