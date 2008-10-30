@@ -28,7 +28,7 @@ namespace NQVTK
 			{
 				// Step size in world-space units
 				// TODO: should probably depend on size and resolution of the volumes
-				stepSize = 0.1;
+				stepSize = 0.25;
 				testParam = 0.0;
 
 				SetOption("NQVTK_RAYCASTER_LIGHTING");

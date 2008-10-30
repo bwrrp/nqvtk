@@ -83,6 +83,10 @@ public:
 		ui.contourDepthEpsilon->hide();
 		ui.contourDepthEpsilonLabel->hide();
 		ui.brushTest->hide();
+		// Set initial widget group visibility
+		ui.ibisGroup->hide();
+		ui.scalarsGroup->hide();
+		ui.raycasterGroup->show();
 
 		// Create the styles
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
@@ -428,7 +432,13 @@ protected:
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
 				// TODO: should disable the widget if this fails
-				if (lrenderer) lrenderer->SetStyle(depthpeelStyle);
+				if (lrenderer) 
+				{
+					lrenderer->SetStyle(depthpeelStyle);
+					ui.ibisGroup->hide();
+					ui.scalarsGroup->hide();
+					ui.raycasterGroup->hide();
+				}
 			}
 			break;
 		case Qt::Key_F2:
@@ -436,7 +446,13 @@ protected:
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
 				// TODO: should disable the widget if this fails
-				if (lrenderer) lrenderer->SetStyle(ibisStyle);
+				if (lrenderer) 
+				{
+					lrenderer->SetStyle(ibisStyle);
+					ui.ibisGroup->show();
+					ui.scalarsGroup->show();
+					ui.raycasterGroup->hide();
+				}
 			}
 			break;
 		case Qt::Key_F3:
@@ -444,7 +460,13 @@ protected:
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
 				// TODO: should disable the widget if this fails
-				if (lrenderer) lrenderer->SetStyle(distfieldStyle);
+				if (lrenderer) 
+				{
+					lrenderer->SetStyle(distfieldStyle);
+					ui.ibisGroup->show();
+					ui.scalarsGroup->show();
+					ui.raycasterGroup->hide();
+				}
 			}
 			break;
 		case Qt::Key_F4:
@@ -452,7 +474,13 @@ protected:
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
 				// TODO: should disable the widget if this fails
-				if (lrenderer) lrenderer->SetStyle(raycastStyle);
+				if (lrenderer) 
+				{
+					lrenderer->SetStyle(raycastStyle);
+					ui.ibisGroup->hide();
+					ui.scalarsGroup->hide();
+					ui.raycasterGroup->show();
+				}
 			}
 			break;
 		default:
@@ -492,9 +520,6 @@ private slots:
 			static_cast<double>(val) / 1000.0;
 		ui.classificationThresholdDisplay->setText(QString("%1").arg(
 			distfieldStyle->classificationThreshold, 0, 'f', 3));
-		
-		// TODO: remove testParam later
-		raycastStyle->testParam = static_cast<double>(val) / 1000.0;
 		
 		ui.nqvtkwidget->updateGL();
 	}
@@ -564,6 +589,22 @@ private slots:
 			renderer->eyeSpacing = 
 				static_cast<double>(val) / 1000.0;
 		}
+	}
+
+	void on_stepSize_valueChanged(int val)
+	{
+		raycastStyle->stepSize = static_cast<double>(val) / 100.0;
+		ui.stepSize->setToolTip(QString("%1").arg(raycastStyle->stepSize));
+
+		ui.nqvtkwidget->updateGL();
+	}
+
+	void on_testParam_valueChanged(int val)
+	{
+		// TODO: remove testParam later
+		raycastStyle->testParam = static_cast<double>(val) / 100.0;
+
+		ui.nqvtkwidget->updateGL();
 	}
 
 	void on_lightOffsetDirection_valueChanged(int val)

@@ -92,7 +92,7 @@
          <x>0</x>
          <y>0</y>
          <width>177</width>
-         <height>674</height>
+         <height>794</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -336,6 +336,58 @@
             <widget class="QCheckBox" name="useDistanceColorMap" >
              <property name="text" >
               <string>Use color map</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="raycasterGroup" >
+          <property name="title" >
+           <string>Raycasting</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4" >
+           <item>
+            <widget class="QLabel" name="stepSizeLabel" >
+             <property name="text" >
+              <string>Step size:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="stepSize" >
+             <property name="minimum" >
+              <number>5</number>
+             </property>
+             <property name="maximum" >
+              <number>250</number>
+             </property>
+             <property name="value" >
+              <number>25</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="testParamLabel" >
+             <property name="text" >
+              <string>Test param:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="testParam" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>50</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
