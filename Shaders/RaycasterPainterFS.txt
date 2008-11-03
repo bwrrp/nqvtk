@@ -19,6 +19,7 @@ uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 
 uniform float stepSize;
+uniform float kernelSize;
 
 uniform float testParam;
 
@@ -78,7 +79,7 @@ sample sampleVolume(int v, vec3 pos) {
 		s.vector = getVector(v, pos);
 		//float deformation = length(s.vector / 
 		//	(volumeDataScale[v] + volumeDataShift[v]));
-		mat3 jac = computeJacobian(v, pos, stepSize, s.vector);
+		mat3 jac = computeJacobian(v, pos, kernelSize, s.vector);
 		//float divergence = jac[0][0] + jac[1][1] + jac[2][2];
 		//float convergence = max(0.0, -divergence);
 		//divergence = max(0.0, divergence);
@@ -186,7 +187,7 @@ void main() {
 
 #ifdef NQVTK_RAYCASTER_LIGHTING
 				// TODO: maybe we should compute gradients from the combined volumes?
-				vec3 gradient = computeGradient(v, pos, stepSize, s.value);
+				vec3 gradient = computeGradient(v, pos, kernelSize, s.value);
 				// Light this sample with this volume's gradient
 				// TODO: normals should take slab boundaries into account
 				//       ...but only in some cases (clipping planes!)
@@ -251,12 +252,12 @@ void main() {
 			vec4 colmin, colmax;
 			if (v0 > v1) {
 				colmin = col1; colmax = col0;
-				gmin = computeGradient(1, pos, stepSize, v1);
-				gmax = computeGradient(0, pos, stepSize, v0);
+				gmin = computeGradient(1, pos, kernelSize, v1);
+				gmax = computeGradient(0, pos, kernelSize, v0);
 			} else {
 				colmin = col0; colmax = col1;
-				gmin = computeGradient(0, pos, stepSize, v0);
-				gmax = computeGradient(1, pos, stepSize, v1);
+				gmin = computeGradient(0, pos, kernelSize, v0);
+				gmax = computeGradient(1, pos, kernelSize, v1);
 			}
 			// Adjust outer
 			colmax.a = colmax.a / 30.0;

@@ -29,6 +29,7 @@ namespace NQVTK
 				// Step size in world-space units
 				// TODO: should probably depend on size and resolution of the volumes
 				stepSize = 0.25;
+				kernelSize = 0.25;
 				testParam = 0.0;
 
 				// TODO: find out why setting this to 1 does not work
@@ -193,10 +194,12 @@ namespace NQVTK
 				// Volume parameters are set by the distance field paramsets
 				// Set other parameters
 				painter->SetUniform1f("stepSize", stepSize);
+				painter->SetUniform1f("kernelSize", kernelSize);
 				painter->SetUniform1f("testParam", testParam);
 			}
 
 			float stepSize;
+			float kernelSize;
 			float testParam;
 
 		protected:

@@ -202,7 +202,7 @@ public:
 				//* Deformation fields - test
 				args.append("D:/Temp/meep_box.vtp");
 				args.append("-");
-				args.append("D:/Temp/meep.mha");
+				args.append("D:/Temp/meep2.mha");
 				//*/
 			}
 			else
@@ -595,6 +595,14 @@ private slots:
 	{
 		raycastStyle->stepSize = static_cast<double>(val) / 100.0;
 		ui.stepSize->setToolTip(QString("%1").arg(raycastStyle->stepSize));
+
+		ui.nqvtkwidget->updateGL();
+	}
+
+	void on_kernelSize_valueChanged(int val)
+	{
+		raycastStyle->kernelSize = static_cast<double>(val) / 100.0;
+		ui.kernelSize->setToolTip(QString("%1").arg(raycastStyle->kernelSize));
 
 		ui.nqvtkwidget->updateGL();
 	}
