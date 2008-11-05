@@ -14,6 +14,7 @@ uniform float volumeDataShift[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float volumeDataScale[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
 uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
@@ -36,6 +37,27 @@ vec3 getVector(int v, vec3 pos) {
 
 // Compute Jacobian of vector volume
 mat3 computeJacobian(int v, vec3 pos, float delta, vec3 val) {
+#ifdef NQVTK_RAYCASTER_GAUSSIANJACOBIAN
+	// TODO: kernelSize should be in world-space coords, not voxels
+	float mini = floor(-2.0 * delta);
+	float maxi = ceil(2.0 * delta);
+	vec3 scale = vec3(delta) / volumeSpacing[v];
+	vec3 f1 = 1.0 / (scale * sqrt(2.0));
+	vec3 f2 = 1.0 / (scale * sqrt(6.28318530717959));
+	vec3 f3 = -1.0 / (2.0 * scale * scale);
+	// TODO: this should be a 3D Gaussian derivative, not three 1D Gaussians
+	// Find out the formula for that...
+	vec3 dx = vec3(0.0);
+	vec3 dy = vec3(0.0);
+	vec3 dz = vec3(0.0);
+	for (float i = mini; i < maxi + 1.0; ++i) {
+		float j = -i;
+		vec3 g = -f1 * (2.0 * j * f1) * f2 * exp(j * j * f3);
+		dx += g.x * getVector(v, pos + vec3(i * volumeSpacing[v].x, 0.0, 0.0));
+		dy += g.y * getVector(v, pos + vec3(0.0, i * volumeSpacing[v].y, 0.0));
+		dz += g.z * getVector(v, pos + vec3(0.0, 0.0, i * volumeSpacing[v].z));
+	}
+#else
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
 		getVector(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
@@ -47,6 +69,7 @@ mat3 computeJacobian(int v, vec3 pos, float delta, vec3 val) {
 	vec3 dx = (getVector(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
 	vec3 dy = (getVector(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
 	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+#endif
 #endif
 	// Add identity (because we should have used pos + vec instead of vec)
 	return mat3(dx, dy, dz) + mat3(1.0);
@@ -124,6 +147,9 @@ float getValue(int v, vec3 pos) {
 
 // Compute gradient of the volume
 vec3 computeGradient(int v, vec3 pos, float delta, float val) {
+#ifdef NQVTK_RAYCASTER_GAUSSIANGRADIENT
+	// TODO
+#else
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
 		getValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
@@ -137,6 +163,7 @@ vec3 computeGradient(int v, vec3 pos, float delta, float val) {
 	float dz = (getValue(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
 #endif
 	return vec3(dx, dy, dz);
+#endif
 }
 
 // Adjust opacity for step length
@@ -195,35 +222,37 @@ void main() {
 					vec3 normal = normalize(gl_NormalMatrix * -gradient);
 
 #ifdef NQVTK_RAYCASTER_STRIPING
-					// Experimental perpendicularness
-					float f = abs(dot(normalize(s.vector), normalize(-gradient)));
-					vec3 stripecolor = f * vec3(1.0, 0.5, 0.0) + (1.0 - f) * vec3(0.0, 0.5, 1.0);
-					// Experimental striping
-					vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-					vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-					vec3 vec = normalize(s.vector);
-					vec3 n = normalize(-gradient);
-					// Instead of the noisy tangent plane, we project to the nearest axis-plane
-					if (abs(n.x) > abs(n.y))
-						if (abs(n.x) > abs(n.z))
-							n = vec3(1.0, 0.0, 0.0);
+					if (v == 0) {
+						// Experimental perpendicularness
+						float f = abs(dot(normalize(s.vector), normalize(-gradient)));
+						vec3 stripecolor = f * vec3(1.0, 0.5, 0.0) + (1.0 - f) * vec3(0.0, 0.5, 1.0);
+						// Experimental striping
+						vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+						vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+						vec3 vec = normalize(s.vector);
+						vec3 n = normalize(-gradient);
+						// Instead of the noisy tangent plane, we project to the nearest axis-plane
+						if (abs(n.x) > abs(n.y))
+							if (abs(n.x) > abs(n.z))
+								n = vec3(1.0, 0.0, 0.0);
+							else
+								n = vec3(0.0, 0.0, 1.0);
 						else
-							n = vec3(0.0, 0.0, 1.0);
-					else
-						if (abs(n.y) > abs(n.z))
-							n = vec3(0.0, 1.0, 0.0);
+							if (abs(n.y) > abs(n.z))
+								n = vec3(0.0, 1.0, 0.0);
+							else
+								n = vec3(0.0, 0.0, 1.0);
+						vec = vec - dot(vec, n) * n;
+						vec3 v2 = cross(vec, n);
+						float f2 = dot(p, v2);
+						float stripe = mod(f2 * 20.0, 1.0);
+						// TODO: smoothstep this
+						if (stripe > 0.5) 
+							stripe = 1.0;
 						else
-							n = vec3(0.0, 0.0, 1.0);
-					vec = vec - dot(vec, n) * n;
-					vec3 v2 = cross(vec, n);
-					float f2 = dot(p, v2);
-					float stripe = mod(f2 * 20.0, 1.0);
-					// TODO: smoothstep this
-					if (stripe > 0.5) 
-						stripe = 1.0;
-					else
-						stripe = 0.0;
-					s.color = stripe * s.color + (1.0 - stripe) * stripecolor;
+							stripe = 0.0;
+						s.color = stripe * s.color + (1.0 - stripe) * stripecolor;
+					}
 #endif
 
 					s.color = phongShading(s.color, normal);

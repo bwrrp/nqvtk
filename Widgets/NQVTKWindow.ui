@@ -90,7 +90,7 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-54</y>
+         <y>0</y>
          <width>177</width>
          <height>836</height>
         </rect>
@@ -361,7 +361,7 @@
               <number>5</number>
              </property>
              <property name="maximum" >
-              <number>250</number>
+              <number>400</number>
              </property>
              <property name="value" >
               <number>25</number>
@@ -384,7 +384,7 @@
               <number>5</number>
              </property>
              <property name="maximum" >
-              <number>250</number>
+              <number>400</number>
              </property>
              <property name="value" >
               <number>25</number>

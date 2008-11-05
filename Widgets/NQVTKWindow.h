@@ -240,7 +240,7 @@ public:
 			numObjects = meshPaths.size();
 		}
 
-		qDebug("Loading %d surfaces and %d distance fields...", 
+		qDebug("Loading %d surfaces and %d volumes...", 
 			meshPaths.size(), distFieldPaths.size());
 
 		// Setup secondary views

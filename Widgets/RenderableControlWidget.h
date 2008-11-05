@@ -192,6 +192,7 @@ public:
 		if (dfps) delete dfps;
 
 		// Load the distance field
+		qDebug("Loading volume %s", filename.c_str());
 		NQVTK::ImageDataTexture3D *tex = 0;
 		std::string extension = filename.substr(filename.rfind(".") + 1);
 		if (extension == std::string("vti"))

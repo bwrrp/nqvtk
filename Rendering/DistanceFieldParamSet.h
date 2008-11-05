@@ -58,6 +58,11 @@ namespace NQVTK
 			program->SetUniform3f(
 				GetArrayName("volumeSize", objectId), 
 				size.x, size.y, size.z);
+			program->SetUniform3f(
+				GetArrayName("volumeSpacing", objectId), 
+				size.x / static_cast<double>(distanceField->GetWidth() - 1), 
+				size.y / static_cast<double>(distanceField->GetHeight() - 1), 
+				size.z / static_cast<double>(distanceField->GetDepth() - 1));
 		}
 
 		ImageDataTexture3D *distanceField;
