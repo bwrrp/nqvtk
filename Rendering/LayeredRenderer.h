@@ -134,6 +134,12 @@ namespace NQVTK
 			// For scribes that don't have a vertex shader
 			glEnable(GL_COLOR_MATERIAL);
 
+			// Depth clamping avoids clipping problems
+			if (GLEW_NV_depth_clamp)
+			{
+				glEnable(GL_DEPTH_CLAMP_NV);
+			}
+
 			// Start Scribe program
 			scribe->Start();
 			scribe->SetUniform1i("layer", layer);
@@ -157,6 +163,11 @@ namespace NQVTK
 			// Clean up references in the texture manager
 			tm->Unbind();
 			style->UnregisterScribeTextures();
+
+			if (GLEW_NV_depth_clamp)
+			{
+				glDisable(GL_DEPTH_CLAMP_NV);
+			}
 		}
 
 		virtual void DrawPainterPass(int layer)
