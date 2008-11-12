@@ -28,7 +28,7 @@ namespace NQVTK
 			{
 				// Step size in world-space units
 				// TODO: should probably depend on size and resolution of the volumes
-				stepSize = 0.25;
+				stepSize = 1.0;//0.25;
 				kernelSize = 0.25;
 				testParam = 0.0;
 
@@ -43,6 +43,7 @@ namespace NQVTK
 				SetOption("NQVTK_RAYCASTER_VECTORFIELD");
 				SetOption("NQVTK_RAYCASTER_STRIPING");
 				SetOption("NQVTK_RAYCASTER_DEFORM");
+				//SetOption("NQVTK_RAYCASTER_SMEAR");
 			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 
