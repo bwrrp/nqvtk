@@ -30,10 +30,9 @@ namespace NQVTK
 				// TODO: should probably depend on size and resolution of the volumes
 				stepSize = 1.0;//0.25;
 				kernelSize = 0.25;
-				testParam = 0.0;
 
 				// TODO: find out why setting this to 1 does not work
-				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "2");
+				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
 
 				SetOption("NQVTK_RAYCASTER_LIGHTING");
 				SetOption("NQVTK_RAYCASTER_DITHERPOS");
@@ -192,12 +191,10 @@ namespace NQVTK
 				// Set other parameters
 				painter->SetUniform1f("stepSize", stepSize);
 				painter->SetUniform1f("kernelSize", kernelSize);
-				painter->SetUniform1f("testParam", testParam);
 			}
 
 			float stepSize;
 			float kernelSize;
-			float testParam;
 
 		protected:
 			std::vector<NQVTK::DistanceFieldParamSet*> volumes;

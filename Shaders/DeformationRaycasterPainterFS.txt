@@ -42,8 +42,8 @@ mat3 computeJacobian(int v, vec3 pos, float delta, vec3 val) {
 	float mini = floor(-2.0 * delta);
 	float maxi = ceil(2.0 * delta);
 	vec3 scale = vec3(delta) / volumeSpacing[v];
-	vec3 f1 = 1.0 / (scale * sqrt(2.0));
-	vec3 f2 = 1.0 / (scale * sqrt(6.28318530717959));
+	vec3 f1 = 1.0 / (scale * 1.4142135623731);
+	vec3 f2 = 1.0 / (scale * 2.506628274631); //sqrt(6.28318530717959)
 	vec3 f3 = -1.0 / (2.0 * scale * scale);
 	// TODO: this should be a 3D Gaussian derivative, not three 1D Gaussians
 	// Find out the formula for that...
@@ -88,15 +88,12 @@ float determinant(mat3 m) {
 struct sample {
 	float value;
 	vec3 color;
-#ifdef NQVTK_RAYCASTER_VECTORFIELD
 	vec3 vector;
-#endif
 };
 
 // Get color, value from volume
 sample sampleVolume(int v, vec3 pos) {
 	sample s;
-#ifdef NQVTK_RAYCASTER_VECTORFIELD
 	if (v == 0) {
 		// Vector volume
 		s.vector = getVector(v, pos);
@@ -123,7 +120,6 @@ sample sampleVolume(int v, vec3 pos) {
 		//s.value = max(divergence, convergence);
 		s.value = max(growth, shrinkage);
 	} else {
-#endif
 #ifdef NQVTK_RAYCASTER_SMEAR
 		s.value = 0.0;
 		int n = 0;
@@ -147,10 +143,8 @@ sample sampleVolume(int v, vec3 pos) {
 		// TODO: adjust val by volumeData{Shift,Scale}[v]
 #endif
 		s.color = vec3(1.0) * s.value;
-#ifdef NQVTK_RAYCASTER_VECTORFIELD
 		s.vector = vec3(0.0);
 	}
-#endif
 	return s;
 }
 
@@ -161,9 +155,6 @@ float getValue(int v, vec3 pos) {
 
 // Compute gradient of the volume
 vec3 computeGradient(int v, vec3 pos, float delta, float val) {
-#ifdef NQVTK_RAYCASTER_GAUSSIANGRADIENT
-	// TODO
-#else
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
 		getValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
@@ -177,7 +168,6 @@ vec3 computeGradient(int v, vec3 pos, float delta, float val) {
 	float dz = (getValue(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
 #endif
 	return vec3(dx, dy, dz);
-#endif
 }
 
 // Adjust opacity for step length
@@ -288,49 +278,6 @@ void main() {
 					(1.0 - opacity) * accum.a);
 			}
 		}
-
-		/* Volume IBIS Test
-		// TODO: move to separate shader?
-		vec4 col = vec4(0.0);
-		if (getBit(infoBefore.a, 0) && getBit(infoBefore.a, 1)) {
-			float v0 = getValue(0, pos);
-			float v1 = getValue(1, pos);
-			vec4 col0 = vec4(vec3(1.0, 0.9, 0.4), mapValue(v0, stepLength).a);
-			vec4 col1 = vec4(vec3(0.3, 0.6, 1.0), mapValue(v1, stepLength).a);
-			vec3 gmin, gmax;
-			vec4 colmin, colmax;
-			if (v0 > v1) {
-				colmin = col1; colmax = col0;
-				gmin = computeGradient(1, pos, kernelSize, v1);
-				gmax = computeGradient(0, pos, kernelSize, v0);
-			} else {
-				colmin = col0; colmax = col1;
-				gmin = computeGradient(0, pos, kernelSize, v0);
-				gmax = computeGradient(1, pos, kernelSize, v1);
-			}
-			// Adjust outer
-			colmax.a = colmax.a / 30.0;
-			if (colmax.a > colmin.a) {
-				col = colmax;
-				g = gmax;
-			} else {
-				col = colmin;
-				g = gmin;
-			}
-		} else if (getBit(infoBefore.a, 0)) {
-			float v0 = getValue(0, pos);
-			col = vec4(vec3(1.0, 0.9, 0.4), mapValue(v0, stepLength).a);
-			// Adjust outer
-			col.a = col.a / 30.0;
-			g = computeGradient(0, pos, stepSize, v0);
-		} else if (getBit(infoBefore.a, 1)) {
-			float v1 = getValue(1, pos);
-			col = vec4(vec3(0.3, 0.6, 1.0), mapValue(v1, stepLength).a);
-			// Adjust outer
-			col.a = col.a / 30.0;
-			g = computeGradient(1, pos, stepSize, v1);
-		}
-		//*/
 
 		// If alpha is (almost) saturated, terminate the ray
 		if (accum.a < 0.001) i = numSteps + 1;

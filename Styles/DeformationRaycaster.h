@@ -13,10 +13,13 @@ namespace NQVTK
 
 			DeformationRaycaster()
 			{
+				testParam = 0.5;
+
+				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
+
 				SetOption("NQVTK_RAYCASTER_GAUSSIANJACOBIAN");
-				//SetOption("NQVTK_RAYCASTER_VECTORFIELD");
-				//SetOption("NQVTK_RAYCASTER_STRIPING");
-				//SetOption("NQVTK_RAYCASTER_DEFORM");
+				SetOption("NQVTK_RAYCASTER_STRIPING");
+				SetOption("NQVTK_RAYCASTER_DEFORM");
 				//SetOption("NQVTK_RAYCASTER_SMEAR");
 			}
 
@@ -44,7 +47,16 @@ namespace NQVTK
 			virtual void UpdatePainterParameters(GLProgram *painter)
 			{
 				Superclass::UpdatePainterParameters(painter);
+
+				painter->SetUniform1f("testParam", testParam);
 			}
+
+			float testParam;
+
+		private:
+			// Not implemented
+			DeformationRaycaster(const DeformationRaycaster&);
+			void operator=(const DeformationRaycaster&);
 		};
 	}
 }

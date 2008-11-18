@@ -93,7 +93,8 @@ public:
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 		ibisStyle = new NQVTK::Styles::IBIS();
 		distfieldStyle = new NQVTK::Styles::DistanceFields();
-		raycastStyle = new NQVTK::Styles::DeformationRaycaster();
+		raycastStyle = new NQVTK::Styles::Raycaster();
+		deformationStyle = new NQVTK::Styles::DeformationRaycaster();
 
 		// TODO: handle this somewhere else
 		ibisStyle->SetOption("NQVTK_USE_PCA", "8");
@@ -101,7 +102,8 @@ public:
 
 		// Set renderer style
 		//renderer->SetStyle(distfieldStyle);
-		renderer->SetStyle(raycastStyle);
+		//renderer->SetStyle(raycastStyle);
+		renderer->SetStyle(deformationStyle);
 
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
@@ -340,6 +342,7 @@ protected:
 	NQVTK::Styles::IBIS *ibisStyle;
 	NQVTK::Styles::DistanceFields *distfieldStyle;
 	NQVTK::Styles::Raycaster *raycastStyle;
+	NQVTK::Styles::DeformationRaycaster *deformationStyle;
 
 	std::vector<RenderableControlWidget*> renderableControlWidgets;
 
@@ -484,6 +487,20 @@ protected:
 				}
 			}
 			break;
+		case Qt::Key_F5:
+			{
+				NQVTK::LayeredRenderer *lrenderer = 
+					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
+				// TODO: should disable the widget if this fails
+				if (lrenderer) 
+				{
+					lrenderer->SetStyle(deformationStyle);
+					ui.ibisGroup->hide();
+					ui.scalarsGroup->hide();
+					ui.raycasterGroup->show();
+				}
+			}
+			break;
 		default:
 			event->ignore();
 			return;
@@ -595,6 +612,7 @@ private slots:
 	void on_stepSize_valueChanged(int val)
 	{
 		raycastStyle->stepSize = static_cast<double>(val) / 100.0;
+		deformationStyle->stepSize = static_cast<double>(val) / 100.0;
 		ui.stepSize->setToolTip(QString("%1").arg(raycastStyle->stepSize));
 
 		ui.nqvtkwidget->updateGL();
@@ -603,6 +621,7 @@ private slots:
 	void on_kernelSize_valueChanged(int val)
 	{
 		raycastStyle->kernelSize = static_cast<double>(val) / 100.0;
+		deformationStyle->kernelSize = static_cast<double>(val) / 100.0;
 		ui.kernelSize->setToolTip(QString("%1").arg(raycastStyle->kernelSize));
 
 		ui.nqvtkwidget->updateGL();
@@ -611,7 +630,7 @@ private slots:
 	void on_testParam_valueChanged(int val)
 	{
 		// TODO: remove testParam later
-		raycastStyle->testParam = static_cast<double>(val) / 100.0;
+		deformationStyle->testParam = static_cast<double>(val) / 100.0;
 
 		ui.nqvtkwidget->updateGL();
 	}
