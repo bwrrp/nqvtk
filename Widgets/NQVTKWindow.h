@@ -28,6 +28,7 @@
 #include "Styles/IBIS.h"
 #include "Styles/DistanceFields.h"
 #include "Styles/Raycaster.h"
+#include "Styles/DeformationRaycaster.h"
 
 #include "Rendering/OrbitCamera.h"
 
@@ -92,7 +93,7 @@ public:
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
 		ibisStyle = new NQVTK::Styles::IBIS();
 		distfieldStyle = new NQVTK::Styles::DistanceFields();
-		raycastStyle = new NQVTK::Styles::Raycaster();
+		raycastStyle = new NQVTK::Styles::DeformationRaycaster();
 
 		// TODO: handle this somewhere else
 		ibisStyle->SetOption("NQVTK_USE_PCA", "8");

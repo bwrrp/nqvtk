@@ -136,6 +136,7 @@ SET( ${ProjectName}_Styles_Classes
 	DistanceFields
 	ShadowMap
 	Raycaster
+	DeformationRaycaster
 )
 
 SET( ${ProjectName}_Interactors_Classes
@@ -169,6 +170,7 @@ SET( ${ProjectName}_Shaders_Text
 	RaycasterScribeVS.txt
 	RaycasterScribeFS.txt
 	RaycasterPainterFS.txt
+	DeformationRaycasterPainterFS.txt
 )
 
 # --------------------------------------------------

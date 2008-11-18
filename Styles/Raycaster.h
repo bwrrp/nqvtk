@@ -38,12 +38,6 @@ namespace NQVTK
 				SetOption("NQVTK_RAYCASTER_LIGHTING");
 				SetOption("NQVTK_RAYCASTER_DITHERPOS");
 				SetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
-				SetOption("NQVTK_RAYCASTER_GAUSSIANJACOBIAN");
-				//SetOption("NQVTK_RAYCASTER_GAUSSIANGRADIENT");
-				SetOption("NQVTK_RAYCASTER_VECTORFIELD");
-				SetOption("NQVTK_RAYCASTER_STRIPING");
-				SetOption("NQVTK_RAYCASTER_DEFORM");
-				//SetOption("NQVTK_RAYCASTER_SMEAR");
 			}
 
 			virtual void PrepareForObject(GLProgram *scribe, 
