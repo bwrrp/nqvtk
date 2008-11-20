@@ -100,7 +100,7 @@ float determinant(mat3 m) {
 }
 
 // Compute gradient of a scalar volume
-vec3 linearScalarGradient(int v, vec3 pos, float delta, float val) {
+vec3 linearRawScalarGradient(int v, vec3 pos, float delta, float val) {
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	float dx = (getRawValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
 		getRawValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
@@ -125,6 +125,43 @@ float subrange(float val, float start, float end) {
 	// Apply the volume's focus function
 	float size = max(end - start, 0.00001);
 	return clamp((val - start) / size, 0.0, 1.0);
+}
+
+vec4 stripeTexture(vec3 vector, vec3 position, vec3 normal) {
+	// Perpendicularness
+	vec3 direction = normalize(vector);
+	float f = abs(dot(direction, normal));
+	vec3 stripecolor = f * vec3(1.0, 0.5, 0.0) + (1.0 - f) * vec3(0.0, 0.5, 1.0);
+	// Magnitude
+	float mag = clamp(
+		length(vector / (volumeDataShift[0] + volumeDataScale[0])) * 1.25, 
+		0.0, 1.0);
+	stripecolor *= mag;
+	// Striping
+	vec4 tpos = gl_TextureMatrixInverse[0] * vec4(position, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[0]) / volumeSize[0];
+	vec3 n = normal;
+	// Instead of the noisy tangent plane, we project to the nearest axis-plane
+	if (abs(n.x) > abs(n.y))
+		if (abs(n.x) > abs(n.z))
+			n = vec3(1.0, 0.0, 0.0);
+		else
+			n = vec3(0.0, 0.0, 1.0);
+	else
+		if (abs(n.y) > abs(n.z))
+			n = vec3(0.0, 1.0, 0.0);
+		else
+			n = vec3(0.0, 0.0, 1.0);
+	direction = direction - dot(direction, n) * n;
+	vec3 v2 = cross(direction, n);
+	float f2 = dot(p, v2);
+	float stripe = mod(f2 * 20.0, 1.0);
+	// TODO: smoothstep this
+	if (stripe > 0.5) 
+		stripe = 1.0;
+	else
+		stripe = 0.0;
+	return vec4(stripecolor, stripe);
 }
 
 // Main shader function
@@ -176,7 +213,7 @@ void main() {
 		// Volume 0 is our vector volume
 		if (active[0]) {
 			// Focus visualization
-			mat3 jacobian = gaussianJacobian(0, pos, kernelSize, vector);
+			mat3 jacobian = linearJacobian(0, pos, kernelSize, vector);
 			float detJacobian = 1.0 / abs(determinant(jacobian));
 			// TODO: make sure growth and shrinkage are symmetrical
 			float growth = detJacobian - 1.0;
@@ -203,28 +240,35 @@ void main() {
 		for (int v = 1; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
 			if (active[v]) {
 				// TODO: Static context
-				float value = getRawValue(v, position);
+				float value1 = getRawValue(v, position);
 				float value2 = getRawValue(v, position + vector);
 
-				vec3 gradient = linearScalarGradient(v, position, kernelSize, value);
-				vec3 gradient2 = linearScalarGradient(v, position + vector, kernelSize, value);
-
-				value = testParam * value * length(gradient) + 
-					(1.0 - testParam) * value2 * length(gradient2);
-
+				vec3 gradient1 = linearRawScalarGradient(v, position, kernelSize, value1);
+				vec3 gradient2 = linearRawScalarGradient(v, position + vector, kernelSize, value2);
+				
+				float gm1 = clamp(length(gradient1), 0.0, 1.0);
+				float gm2 = clamp(length(gradient2), 0.0, 1.0);
+				
 				// TODO: Dynamic context
 #ifdef NQVTK_RAYCASTER_SMEAR
-				value = 0.0;
+				float value = 0.0;
 				int n = 0;
-				for (float i = -0.5; i <= 0.5; i += 0.2) {
+				for (float i = 0.0; i <= 2.0 * testParam * length(vector); i += stepSize) {
 					n++;
-					vec3 smearpos = position + i * 4.0 * testParam * vector;
-					value += getRawValue(v, smearpos);
+					vec3 smearpos = position + i * normalize(vector);
+					value += subrange(getRawValue(v, smearpos), tfStart[v], tfEnd[v]);
 				}
 				value /= float(n);
+#else
+				float value = mix(
+					subrange(value2 * gm2, tfStart[v], tfEnd[v]), 
+					subrange(value1 * gm1, tfStart[v], tfEnd[v]), 
+					testParam);
 #endif
+				//value = mix(value, subrange(value1, tfStart[v], tfEnd[v]), gm1);
+
 				// TODO: implement proper transfer function support
-				float opacity = subrange(value, tfStart[v], tfEnd[v]);
+				float opacity = value;
 				contextImportance = opacity;
 			}
 		} // for each scalar volume...
@@ -236,7 +280,7 @@ void main() {
 			// TODO: texturing...
 
 			// TODO: compute and apply lighting
-			vec3 color = vec3(1.0, 0.0, 0.0);
+			vec3 color = vec3(1.0, 0.0, 0.0) * focusImportance;
 			float opacity = focusImportance;
 
 			// Compute correct opacity for blending
@@ -249,11 +293,26 @@ void main() {
 		} else {
 			// Use context mode
 
-			// TODO: texturing?
+			// TODO: repeat for all scalar volumes...
 
-			// TODO: compute and apply lighting
+			// TODO: this is not the right gradient...
+			vec3 gradient = linearRawScalarGradient(1, 
+				position, kernelSize, getRawValue(1, position));
 			vec3 color = vec3(0.0, 1.0, 0.0);
 			float opacity = contextImportance;
+
+			if (length(gradient) > 0.0) {
+				vec3 normal = normalize(-gradient);
+#ifdef NQVTK_RAYCASTER_STRIPING
+				// Apply texture
+				vec4 stripes = stripeTexture(vector, position, normal);
+				color = stripes.a * stripes.rgb + (1.0 - stripes.a) * color;
+#endif
+#ifdef NQVTK_RAYCASTER_LIGHTING
+				// Apply lighting
+				color = phongShading(color, gl_NormalMatrix * normal);
+#endif
+			}
 
 			// Compute correct opacity for blending
 			opacity = adjustOpacity(opacity, stepLength);
@@ -281,61 +340,3 @@ void main() {
 	// Colors are already pre-multiplied with alpha for slab compositing
 	gl_FragColor = vec4(accum.rgb, 1.0 - accum.a);
 }
-
-#ifdef OLD_CODE_BELOW_THIS_LINE_SO_DONT_DEFINE_THIS
-
-#ifdef NQVTK_RAYCASTER_LIGHTING
-				// TODO: maybe we should compute gradients from the combined volumes?
-				vec3 gradient = computeGradient(v, pos, kernelSize, s.value);
-				// Light this sample with this volume's gradient
-				// TODO: normals should take slab boundaries into account
-				//       ...but only in some cases (clipping planes!)
-				if (length(gradient) > 0.0) {
-					vec3 normal = normalize(gl_NormalMatrix * -gradient);
-
-#ifdef NQVTK_RAYCASTER_STRIPING
-					if (v == 0) {
-						// Perpendicularness
-						float f = abs(dot(normalize(s.vector), normalize(-gradient)));
-						vec3 stripecolor = f * vec3(1.0, 0.5, 0.0) + (1.0 - f) * vec3(0.0, 0.5, 1.0);
-						// Magnitude
-						float mag = clamp(
-							length(s.vector) / 
-							length(volumeDataShift[v] + volumeDataScale[v] * vec3(1.0) * 0.75), 
-							0.0, 1.0);
-						stripecolor *= mag;
-						// Striping
-						vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-						vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-						vec3 vec = normalize(s.vector);
-						vec3 n = normalize(-gradient);
-						// Instead of the noisy tangent plane, we project to the nearest axis-plane
-						if (abs(n.x) > abs(n.y))
-							if (abs(n.x) > abs(n.z))
-								n = vec3(1.0, 0.0, 0.0);
-							else
-								n = vec3(0.0, 0.0, 1.0);
-						else
-							if (abs(n.y) > abs(n.z))
-								n = vec3(0.0, 1.0, 0.0);
-							else
-								n = vec3(0.0, 0.0, 1.0);
-						vec = vec - dot(vec, n) * n;
-						vec3 v2 = cross(vec, n);
-						float f2 = dot(p, v2);
-						float stripe = mod(f2 * 20.0, 1.0);
-						// TODO: smoothstep this
-						if (stripe > 0.5) 
-							stripe = 1.0;
-						else
-							stripe = 0.0;
-						s.color = stripe * s.color + (1.0 - stripe) * stripecolor;
-					}
-#endif
-
-					s.color = phongShading(s.color, normal);
-				}
-#endif
-
-			}
-#endif

@@ -17,7 +17,10 @@ namespace NQVTK
 
 				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
 
-				SetOption("NQVTK_RAYCASTER_STRIPING");
+				//UnsetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
+				UnsetOption("NQVTK_RAYCASTER_LIGHTING");
+
+				//SetOption("NQVTK_RAYCASTER_STRIPING");
 				//SetOption("NQVTK_RAYCASTER_DEFORM");
 				//SetOption("NQVTK_RAYCASTER_SMEAR");
 			}
