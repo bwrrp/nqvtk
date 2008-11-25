@@ -8,6 +8,7 @@ uniform sampler2DRect infoCurrent;
 uniform int layer;
 uniform float viewportX;
 uniform float viewportY;
+uniform vec3 cameraPos;
 
 uniform sampler3D volume[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float volumeDataShift[NQVTK_RAYCASTER_VOLUMECOUNT];
@@ -209,19 +210,32 @@ void main() {
 		// Information recorded for later stages
 		vec3 vector = getVector(0, pos);
 		float focusImportance = 0.0;
+		vec3 focusColor = vec3(0.0);
 
+#ifdef NQVTK_RAYCASTER_FOCUS
 		// Volume 0 is our vector volume
 		if (active[0]) {
 			// Focus visualization
 			mat3 jacobian = linearJacobian(0, pos, kernelSize, vector);
-			float detJacobian = 1.0 / abs(determinant(jacobian));
+			float detJacobian = abs(determinant(jacobian));
 			// TODO: make sure growth and shrinkage are symmetrical
-			float growth = detJacobian - 1.0;
+			float growth = 0.0;
+			if (detJacobian > 1.0) 
+				growth = 1.0 - (1.0 / detJacobian);
+			else
+				growth = detJacobian - 1.0;
+			focusColor = (growth > 0.0) ? vec3(0.3, 0.6, 1.0) : vec3(1.0, 0.9, 0.4);
 			float value = abs(growth);
-			vec3 color = (growth > 0.0) ? vec3(0.3, 0.6, 1.0) : vec3(1.0, 0.9, 0.4);
+			
+			float nongrowthdef = length(vector / (volumeDataScale[0] + volumeDataShift[0])) - value;
+			nongrowthdef *= testParam;
+			if (nongrowthdef > value) focusColor = vec3(1.0, 0.3, 0.0);
+			value = max(value, nongrowthdef);
 			
 			focusImportance = subrange(value, tfStart[0], tfEnd[0]);
+			focusColor *= focusImportance;
 		}
+#endif
 
 		float deformation = length(vector / (volumeDataScale[0] + volumeDataShift[0]));
 
@@ -235,6 +249,7 @@ void main() {
 
 		// Context information
 		float contextImportance = 0.0;
+		vec3 contextColor = vec3(0.0);
 
 		// The other volumes are scalar volumes
 		for (int v = 1; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
@@ -267,9 +282,17 @@ void main() {
 #endif
 				//value = mix(value, subrange(value1, tfStart[v], tfEnd[v]), gm1);
 
+				float dynamicness = subrange(deformation, testParam, 1.0);
+				float contourness = 1.0 - subrange(
+					abs(dot(normalize(cameraPos - position), gradient1)), 
+					0.0, 0.1);
+				value = subrange(
+					contourness * gm1 * value1, 
+					tfStart[v], tfEnd[v]);
+
 				// TODO: implement proper transfer function support
-				float opacity = value;
-				contextImportance = opacity;
+				contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
+				contextImportance = clamp(value * 5.0, 0.0, 1.0);
 			}
 		} // for each scalar volume...
 
@@ -280,7 +303,7 @@ void main() {
 			// TODO: texturing...
 
 			// TODO: compute and apply lighting
-			vec3 color = vec3(1.0, 0.0, 0.0) * focusImportance;
+			vec3 color = focusColor;
 			float opacity = focusImportance;
 
 			// Compute correct opacity for blending
@@ -298,7 +321,7 @@ void main() {
 			// TODO: this is not the right gradient...
 			vec3 gradient = linearRawScalarGradient(1, 
 				position, kernelSize, getRawValue(1, position));
-			vec3 color = vec3(0.0, 1.0, 0.0);
+			vec3 color = contextColor;
 			float opacity = contextImportance;
 
 			if (length(gradient) > 0.0) {

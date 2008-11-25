@@ -23,6 +23,8 @@ namespace NQVTK
 				//SetOption("NQVTK_RAYCASTER_STRIPING");
 				//SetOption("NQVTK_RAYCASTER_DEFORM");
 				//SetOption("NQVTK_RAYCASTER_SMEAR");
+
+				SetOption("NQVTK_RAYCASTER_FOCUS");
 			}
 
 			virtual GLProgram *CreatePainter()

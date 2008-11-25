@@ -186,6 +186,7 @@ namespace NQVTK
 			painter->SetUniform1f("nearPlane", camera->nearZ);
 			painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
 			painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
+			painter->SetUniform3f("cameraPos", camera->position.x, camera->position.y, camera->position.z);
 			ApplyParamSetsArrays(painter);
 			style->UpdatePainterParameters(painter);
 
