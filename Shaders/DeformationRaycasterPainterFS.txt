@@ -287,12 +287,12 @@ void main() {
 					abs(dot(normalize(cameraPos - position), gradient1)), 
 					0.0, 0.1);
 				value = subrange(
-					contourness * gm1 * value1, 
+					contourness * gm1 * value1 * 5.0, 
 					tfStart[v], tfEnd[v]);
 
 				// TODO: implement proper transfer function support
 				contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
-				contextImportance = clamp(value * 5.0, 0.0, 1.0);
+				contextImportance = clamp(value, 0.0, 1.0);
 			}
 		} // for each scalar volume...
 

@@ -202,6 +202,15 @@ public:
 				args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked.mha");
 				//args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/result.mhd");
 				//*/
+				/* Deformation fields - ms data with artificial deformation
+				args.append("D:/Temp/n0231-TP_2004_06_28-T1_3D_meep_box.vtp");
+				args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0231-TP_2004_06_28-T1_3D_box.vtp");
+				//args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0221-TP_2004_12_06-T1_3D_box.vtp");
+				args.append("-");
+				args.append("D:/Temp/n0231-TP_2004_06_28-T1_3D_meep.mha");
+				args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0231-TP_2004_06_28-T1_3D.mha");
+				//args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0221-TP_2004_12_06-T1_3D.mha");
+				//*/
 				/* Deformation fields - test
 				args.append("D:/Temp/meep_box.vtp");
 				args.append("-");
