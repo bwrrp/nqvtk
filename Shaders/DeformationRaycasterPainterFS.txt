@@ -128,6 +128,15 @@ float subrange(float val, float start, float end) {
 	return clamp((val - start) / size, 0.0, 1.0);
 }
 
+vec3 streamlineShading(vec3 matColor, vec3 lineDir, vec3 position) {
+	// Get to-eye vector
+	vec3 toEye = normalize(cameraPos - position);
+	// Get streamline normal
+	vec3 streamlineNormal = toEye - abs(dot(toEye, lineDir)) * lineDir;
+	// Compute lighting
+	return phongShading(matColor, gl_NormalMatrix * streamlineNormal);
+}
+
 vec4 stripeTexture(vec3 vector, vec3 position, vec3 normal) {
 	// Perpendicularness
 	vec3 direction = normalize(vector);
@@ -305,6 +314,13 @@ void main() {
 			// TODO: compute and apply lighting
 			vec3 color = focusColor;
 			float opacity = focusImportance;
+
+#ifdef NQVTK_RAYCASTER_STREAMLINESHADING
+			// Streamline shading test
+			if (length(vector) > 0.0) {
+				color = streamlineShading(color, normalize(vector), position);
+			}
+#endif
 
 			// Compute correct opacity for blending
 			opacity = adjustOpacity(opacity, stepLength);

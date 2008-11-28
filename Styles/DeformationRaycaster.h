@@ -25,6 +25,7 @@ namespace NQVTK
 				//SetOption("NQVTK_RAYCASTER_SMEAR");
 
 				SetOption("NQVTK_RAYCASTER_FOCUS");
+				//SetOption("NQVTK_RAYCASTER_STREAMLINESHADING");
 			}
 
 			virtual GLProgram *CreatePainter()
