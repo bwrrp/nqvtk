@@ -275,45 +275,44 @@ void main() {
 		for (int v = 1; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
 			if (active[v]) {
 				// TODO: Static context
-				float value1 = getRawValue(v, position);
-				float value2 = getRawValue(v, position + vector);
+				float value1 = getRawValue(v, pos);
+				float value2 = getRawValue(v, position);
 
-				vec3 gradient1 = linearRawScalarGradient(v, position, kernelSize, value1);
-				vec3 gradient2 = linearRawScalarGradient(v, position + vector, kernelSize, value2);
+				vec3 gradient1 = linearRawScalarGradient(v, pos, kernelSize, value1);
+				// TODO: this should be the gradient of the deformed volume!
+				vec3 gradient2 = linearRawScalarGradient(v, position, kernelSize, value2);
 				
 				float gm1 = clamp(length(gradient1), 0.0, 1.0);
 				float gm2 = clamp(length(gradient2), 0.0, 1.0);
 				
 				// TODO: Dynamic context
-#ifdef NQVTK_RAYCASTER_SMEAR
-				float value = 0.0;
-				int n = 0;
-				for (float i = 0.0; i <= 2.0 * testParam * length(vector); i += stepSize) {
-					n++;
-					vec3 smearpos = position + i * normalize(vector);
-					value += subrange(getRawValue(v, smearpos), tfStart[v], tfEnd[v]);
-				}
-				value /= float(n);
-#else
-				// Simple morphing
-				float value = mix(
-					subrange(value2 * gm2, tfStart[v], tfEnd[v]), 
-					subrange(value1 * gm1, tfStart[v], tfEnd[v]), 
-					testParam);
-#endif
-				//value = mix(value, subrange(value1, tfStart[v], tfEnd[v]), gm1);
-
 				float dynamicness = subrange(deformation, testParam, 1.0);
-				float contourness = 1.0 - subrange(
-					abs(dot(normalize(cameraPos - position), gradient1)), 
+				float contourness1 = 1.0 - subrange(
+					abs(dot(normalize(cameraPos - pos), gradient1)), 
 					0.0, 0.1);
-				value = subrange(
-					contourness * gm1 * value1 * 5.0, 
+				value1 = subrange(
+					contourness1 * gm1 * value1 * 5.0, 
 					tfStart[v], tfEnd[v]);
 
+				// DUAL CONTEXT TEST
+				float contourness2 = 1.0 - subrange(
+					abs(dot(normalize(cameraPos - pos), gradient2)), 
+					0.0, 0.1);
+				value2 = subrange(
+					contourness2 * gm2 * value2 * 5.0, 
+					tfStart[v], tfEnd[v]);
+				float value;
+				if (value1 >= value2) {
+					contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness1);
+					contextImportance = clamp(value1, 0.0, 1.0);
+				} else {
+					contextColor = mix(vec3(1.0, 0.0, 0.5), vec3(0.65), contourness2);
+					contextImportance = clamp(value2, 0.0, 1.0);
+				}
+
 				// TODO: implement proper transfer function support
-				contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
-				contextImportance = clamp(value, 0.0, 1.0);
+				//contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
+				//contextImportance = clamp(value, 0.0, 1.0);
 			}
 		} // for each scalar volume...
 
