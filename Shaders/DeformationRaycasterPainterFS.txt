@@ -17,6 +17,8 @@ uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
+uniform sampler3D noiseVol;
+
 uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 
@@ -46,6 +48,13 @@ float getRawValue(int v, vec3 pos) {
 // Get actual value from volume
 float getValue(int v, vec3 pos) {
 	return volumeDataShift[v] + volumeDataScale[v] * getRawValue(v, pos);
+}
+
+// Sample the noise volume
+float getNoise(vec3 pos, float density) {
+	vec4 tpos = gl_TextureMatrixInverse[0] * vec4(pos, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[0]) / volumeSize[0];
+	return texture3D(noiseVol, mod(p * density, 1.0)).x;
 }
 
 // Gaussian kernel Jacobian
@@ -235,12 +244,14 @@ void main() {
 				growth = detJacobian - 1.0;
 			focusColor = (growth > 0.0) ? vec3(0.3, 0.6, 1.0) : vec3(1.0, 0.9, 0.4);
 			float value = abs(growth);
-			
+
+#ifndef NQVTK_RAYCASTER_DEFORM
 			float nongrowthdef = length(vector / (volumeDataScale[0] + volumeDataShift[0])) - value;
 			nongrowthdef *= testParam;
 			if (nongrowthdef > value) focusColor = vec3(1.0, 0.3, 0.0);
 			value = max(value, nongrowthdef);
-			
+#endif
+
 			focusImportance = subrange(value, tfStart[0], tfEnd[0]);
 			focusColor *= focusImportance;
 		}
@@ -284,6 +295,7 @@ void main() {
 				}
 				value /= float(n);
 #else
+				// Simple morphing
 				float value = mix(
 					subrange(value2 * gm2, tfStart[v], tfEnd[v]), 
 					subrange(value1 * gm1, tfStart[v], tfEnd[v]), 
@@ -311,9 +323,28 @@ void main() {
 
 			// TODO: texturing...
 
+#ifdef NQVTK_RAYCASTER_NOISESMEAR
+			// NOISE SMEAR TEST
+			float value = 0.0;
+			int n = 0;
+			for (float i = 0.0; i <= 8.0 * testParam * length(vector); i += stepSize) {
+				n++;
+				vec3 smearpos = position + i * normalize(vector);
+				float noise = getNoise(smearpos, 3.0);
+				noise = noise > 0.75 ? noise : 0.0;
+				//noise = pow(noise, 2.0);
+				value += noise;
+			}
+			value /= float(n);
+			value = clamp(value, 0.0, 1.0);
+			vec3 color = vec3(1.0, 0.5, 0.0);
+			float opacity = subrange(value, tfStart[1], tfEnd[1]) * focusImportance;
+			// END NOISE SMEAR TEST
+#else
 			// TODO: compute and apply lighting
 			vec3 color = focusColor;
 			float opacity = focusImportance;
+#endif
 
 #ifdef NQVTK_RAYCASTER_STREAMLINESHADING
 			// Streamline shading test
