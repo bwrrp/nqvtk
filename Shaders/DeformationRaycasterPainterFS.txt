@@ -19,9 +19,23 @@ uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
 uniform sampler3D noiseVol;
 
+// Transfer functions
 uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 
+// Interest functions
+uniform float focusIFStart;
+uniform float focusIFEnd;
+uniform float staticIFStart;
+uniform float staticIFEnd;
+uniform float dynamicIFStart;
+uniform float dynamicIFEnd;
+
+uniform float smearTFStart;
+uniform float smearTFEnd;
+uniform float smearDensity;
+
+// Raycasting parameters
 uniform float stepSize;
 uniform float kernelSize;
 
@@ -183,6 +197,13 @@ vec4 stripeTexture(vec3 vector, vec3 position, vec3 normal) {
 	return vec4(stripecolor, stripe);
 }
 
+struct Mode {
+	float importance;
+	vec3 color;
+	float opacity;
+	vec3 gradient;
+};
+
 // Main shader function
 void main() {
 	// Get info
@@ -227,10 +248,14 @@ void main() {
 	for (int i = 0; i < numSteps + 1; ++i) {
 		// Information recorded for later stages
 		vec3 vector = getVector(0, pos);
-		float focusImportance = 0.0;
-		vec3 focusColor = vec3(0.0);
+		float deformation = length(vector / (volumeDataScale[0] + volumeDataShift[0]));
 
-#ifdef NQVTK_RAYCASTER_FOCUS
+		// Visualization modes
+		Mode focus = Mode(0.0, vec3(0.0), 0.0, vec3(0.0));
+		Mode dynamicContext = Mode(0.0, vec3(0.0), 0.0, vec3(0.0));
+		Mode staticContext = Mode(0.0, vec3(0.0), 0.0, vec3(0.0));
+
+#if defined NQVTK_DEFORMATION_FOCUS || defined NQVTK_DEFORMATION_DYNAMIC_VOLUME
 		// Volume 0 is our vector volume
 		if (active[0]) {
 			// Focus visualization
@@ -242,35 +267,53 @@ void main() {
 				growth = 1.0 - (1.0 / detJacobian);
 			else
 				growth = detJacobian - 1.0;
-			focusColor = (growth > 0.0) ? vec3(0.3, 0.6, 1.0) : vec3(1.0, 0.9, 0.4);
 			float value = abs(growth);
-
-#ifndef NQVTK_RAYCASTER_DEFORM
-			float nongrowthdef = length(vector / (volumeDataScale[0] + volumeDataShift[0])) - value;
-			nongrowthdef *= testParam;
-			if (nongrowthdef > value) focusColor = vec3(1.0, 0.3, 0.0);
-			value = max(value, nongrowthdef);
+#ifdef NQVTK_DEFORMATION_FOCUS
+			// TODO: use separate interest function & transfer function
+			focus.importance = subrange(value, focusIFStart, focusIFEnd);
+			focus.color = (growth > 0.0) ? vec3(0.3, 0.6, 1.0) : vec3(1.0, 0.9, 0.4);
+			focus.opacity = subrange(value, tfStart[0], tfEnd[0]);
+			focus.color *= focus.opacity;
+#if defined NQVTK_DEFORMATION_TEXTURING || defined NQVTK_RAYCASTER_LIGHTING
+			// TODO: compute surface normal for texturing / lighting
+			focus.gradient = vec3(0.0);
 #endif
+#endif
+#ifdef NQVTK_DEFORMATION_DYNAMIC_VOLUME
+			// Compute smear
+			value = 0.0;
+			int n = 0;
+			for (float i = 0.0; i <= 8.0 * testParam * length(vector); i += stepSize) {
+				n++;
+				vec3 smearpos = pos + i * normalize(vector);
+				float noise = getNoise(smearpos, smearDensity);
+				noise = noise > 0.75 ? noise : 0.0;
+				//noise = pow(noise, 2.0);
+				value += noise;
+			}
+			value /= float(n);
+			value = clamp(value, 0.0, 1.0);
 
-			focusImportance = subrange(value, tfStart[0], tfEnd[0]);
-			focusColor *= focusImportance;
+			dynamicContext.importance = subrange(deformation, dynamicIFStart, dynamicIFEnd);
+			dynamicContext.color = vec3(1.0, 0.5, 0.0);
+			dynamicContext.opacity = subrange(value, smearTFStart, smearTFEnd) * 
+				dynamicContext.importance;
+			// Apply streamline shading
+			dynamicContext.color = streamlineShading(
+				dynamicContext.color, normalize(vector), pos);
+#endif
 		}
 #endif
 
-		float deformation = length(vector / (volumeDataScale[0] + volumeDataShift[0]));
-
-#ifdef NQVTK_RAYCASTER_DEFORM
+#ifdef NQVTK_DEFORMATION_MORPH
 		// Adjust pos for volume morphing
-		// TODO: adjust for the transformation of the vector field
+		// TODO: adjust for the transformation of the vector field?
 		vec3 position = pos + (testParam - 0.5) * 4.0 * vector;
 #else
 		vec3 position = pos;
 #endif
 
-		// Context information
-		float contextImportance = 0.0;
-		vec3 contextColor = vec3(0.0);
-
+#if defined NQVTK_DEFORMATION_STATIC || defined NQVTK_DEFORMATION_DYNAMIC_CONTOURS
 		// The other volumes are scalar volumes
 		for (int v = 1; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
 			if (active[v]) {
@@ -285,112 +328,83 @@ void main() {
 				float gm1 = clamp(length(gradient1), 0.0, 1.0);
 				float gm2 = clamp(length(gradient2), 0.0, 1.0);
 				
-				// TODO: Dynamic context
-				float dynamicness = subrange(deformation, testParam, 1.0);
 				float contourness1 = 1.0 - subrange(
 					abs(dot(normalize(cameraPos - pos), gradient1)), 
 					0.0, 0.1);
-				value1 = subrange(
-					contourness1 * gm1 * value1 * 5.0, 
-					tfStart[v], tfEnd[v]);
+				value1 = contourness1 * gm1 * value1 * 5.0;
 
 				// DUAL CONTEXT TEST
 				float contourness2 = 1.0 - subrange(
 					abs(dot(normalize(cameraPos - pos), gradient2)), 
 					0.0, 0.1);
-				value2 = subrange(
-					contourness2 * gm2 * value2 * 5.0, 
-					tfStart[v], tfEnd[v]);
-				float value;
+				value2 = contourness2 * gm2 * value2 * 5.0;
+#ifdef NQVTK_DEFORMATION_STATIC
 				if (value1 >= value2) {
-					contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness1);
-					contextImportance = clamp(value1, 0.0, 1.0);
+					staticContext.importance = subrange(value1, staticIFStart, staticIFEnd);
+					staticContext.color = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness1);
+					staticContext.opacity = subrange(value1, tfStart[v], tfEnd[v]);
+					
 				} else {
-					contextColor = mix(vec3(1.0, 0.0, 0.5), vec3(0.65), contourness2);
-					contextImportance = clamp(value2, 0.0, 1.0);
+					staticContext.importance = subrange(value2, staticIFStart, staticIFEnd);
+					staticContext.color = mix(vec3(1.0, 0.0, 0.5), vec3(0.65), contourness2);
+					staticContext.opacity = subrange(value2, tfStart[v], tfEnd[v]);
 				}
 
-				// TODO: implement proper transfer function support
-				//contextColor = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
-				//contextImportance = clamp(value, 0.0, 1.0);
+				//staticContext.importance = clamp(value, 0.0, 1.0);
+				//staticContext.color = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
+				//staticContext.opacity = clamp(value, 0.0, 1.0);
+
+				// TODO: combine results from all volumes
+
+				// Static context never uses lighting
+#endif
+#ifdef NQVTK_DEFORMATION_DYNAMIC_CONTOURS
+				// TODO: dynamic context contours
+				//float dynamicness = subrange(deformation, testParam, 1.0);
+#endif
 			}
 		} // for each scalar volume...
+#endif
 
-		// TODO: determine importance
-		if (focusImportance > contextImportance) {
+		// Determine most important mode
+		vec3 color = vec3(0.0);
+		float opacity = 0.0;
+		if (focus.importance > staticContext.importance 
+			&& focus.importance > dynamicContext.importance) {
 			// Use focus mode
+			color = focus.color;
+			opacity = focus.opacity;
 
-			// TODO: texturing...
-
-#ifdef NQVTK_RAYCASTER_NOISESMEAR
-			// NOISE SMEAR TEST
-			float value = 0.0;
-			int n = 0;
-			for (float i = 0.0; i <= 8.0 * testParam * length(vector); i += stepSize) {
-				n++;
-				vec3 smearpos = position + i * normalize(vector);
-				float noise = getNoise(smearpos, 3.0);
-				noise = noise > 0.75 ? noise : 0.0;
-				//noise = pow(noise, 2.0);
-				value += noise;
-			}
-			value /= float(n);
-			value = clamp(value, 0.0, 1.0);
-			vec3 color = vec3(1.0, 0.5, 0.0);
-			float opacity = subrange(value, tfStart[1], tfEnd[1]) * focusImportance;
-			// END NOISE SMEAR TEST
-#else
-			// TODO: compute and apply lighting
-			vec3 color = focusColor;
-			float opacity = focusImportance;
+#ifdef NQVTK_DEFORMATION_TEXTURING
+			// Apply texture
+			vec4 stripes = stripeTexture(vector, pos, focus.normal);
+			color = stripes.a * stripes.rgb + (1.0 - stripes.a) * color;
 #endif
 
-#ifdef NQVTK_RAYCASTER_STREAMLINESHADING
-			// Streamline shading test
-			if (length(vector) > 0.0) {
-				color = streamlineShading(color, normalize(vector), position);
-			}
-#endif
-
-			// Compute correct opacity for blending
-			opacity = adjustOpacity(opacity, stepLength);
-
-			// Accumulate colors and opacities
-			accum = vec4(
-				accum.a * color * opacity + accum.rgb, 
-				(1.0 - opacity) * accum.a);
-		} else {
-			// Use context mode
-
-			// TODO: repeat for all scalar volumes...
-
-			// TODO: this is not the right gradient...
-			vec3 gradient = linearRawScalarGradient(1, 
-				position, kernelSize, getRawValue(1, position));
-			vec3 color = contextColor;
-			float opacity = contextImportance;
-
-			if (length(gradient) > 0.0) {
-				vec3 normal = normalize(-gradient);
-#ifdef NQVTK_RAYCASTER_STRIPING
-				// Apply texture
-				vec4 stripes = stripeTexture(vector, position, normal);
-				color = stripes.a * stripes.rgb + (1.0 - stripes.a) * color;
-#endif
 #ifdef NQVTK_RAYCASTER_LIGHTING
-				// Apply lighting
-				color = phongShading(color, gl_NormalMatrix * normal);
-#endif
+			// Apply lighting
+			if (length(focus.gradient) > 0.0) {
+				color = phongShading(color, gl_NormalMatrix * normalize(-focus.gradient));
 			}
-
-			// Compute correct opacity for blending
-			opacity = adjustOpacity(opacity, stepLength);
-
-			// Accumulate colors and opacities
-			accum = vec4(
-				accum.a * color * opacity + accum.rgb, 
-				(1.0 - opacity) * accum.a);
+#endif
+		} else if (dynamicContext.importance > focus.importance 
+			&& dynamicContext.importance > staticContext.importance) {
+			// Use dynamic context mode
+			color = dynamicContext.color;
+			opacity = dynamicContext.opacity;
+		} else {
+			// Use static context mode
+			color = staticContext.color;
+			opacity = staticContext.opacity;
 		}
+
+		// Compute correct opacity for blending
+		opacity = adjustOpacity(opacity, stepLength);
+
+		// Accumulate colors and opacities
+		accum = vec4(
+			accum.a * color * opacity + accum.rgb, 
+			(1.0 - opacity) * accum.a);
 
 		// If alpha is (almost) saturated, terminate the ray
 		if (accum.a < 0.001) i = numSteps + 1;

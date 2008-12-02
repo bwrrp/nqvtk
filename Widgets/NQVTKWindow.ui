@@ -90,9 +90,9 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-404</y>
          <width>177</width>
-         <height>836</height>
+         <height>1170</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -408,6 +408,158 @@
              </property>
              <property name="value" >
               <number>50</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="deformationGroup" >
+          <property name="title" >
+           <string>Deformation visualization</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_5" >
+           <item>
+            <widget class="QLabel" name="focusIFLabel" >
+             <property name="text" >
+              <string>Focus IF</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="focusIFStart" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="focusIFEnd" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="staticIFLabel" >
+             <property name="text" >
+              <string>Static context IF</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="staticIFStart" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="staticIFEnd" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="dynamicIFLabel" >
+             <property name="text" >
+              <string>Dynamic context IF</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="dynamicIFStart" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="dynamicIFEnd" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="smearTFLabel" >
+             <property name="text" >
+              <string>Smear TF</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="smearTFStart" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="smearTFEnd" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="smearDensityLabel" >
+             <property name="text" >
+              <string>Smear density</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="smearDensity" >
+             <property name="minimum" >
+              <number>1</number>
+             </property>
+             <property name="maximum" >
+              <number>500</number>
+             </property>
+             <property name="value" >
+              <number>200</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>

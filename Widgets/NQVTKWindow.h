@@ -88,6 +88,7 @@ public:
 		ui.ibisGroup->hide();
 		ui.scalarsGroup->hide();
 		ui.raycasterGroup->show();
+		ui.deformationGroup->show();
 
 		// Create the styles
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
@@ -451,6 +452,7 @@ protected:
 					ui.ibisGroup->hide();
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->hide();
+					ui.deformationGroup->hide();
 				}
 			}
 			break;
@@ -465,6 +467,7 @@ protected:
 					ui.ibisGroup->show();
 					ui.scalarsGroup->show();
 					ui.raycasterGroup->hide();
+					ui.deformationGroup->hide();
 				}
 			}
 			break;
@@ -479,6 +482,7 @@ protected:
 					ui.ibisGroup->show();
 					ui.scalarsGroup->show();
 					ui.raycasterGroup->hide();
+					ui.deformationGroup->hide();
 				}
 			}
 			break;
@@ -493,6 +497,7 @@ protected:
 					ui.ibisGroup->hide();
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->show();
+					ui.deformationGroup->hide();
 				}
 			}
 			break;
@@ -507,6 +512,7 @@ protected:
 					ui.ibisGroup->hide();
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->show();
+					ui.deformationGroup->show();
 				}
 			}
 			break;
@@ -529,18 +535,17 @@ private slots:
 			.arg(ui.nqvtkwidget->height()));
 	}
 
+	// IBIS parameters
 	void on_useGridTexture_toggled(bool val) 
 	{
 		distfieldStyle->useGridTexture = val;
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_useGlyphTexture_toggled(bool val) 
 	{
 		distfieldStyle->useGlyphTexture = val;
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_classificationThreshold_valueChanged(int val) 
 	{
 		distfieldStyle->classificationThreshold = 
@@ -550,39 +555,35 @@ private slots:
 		
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_useDistanceColorMap_toggled(bool val) 
 	{
 		distfieldStyle->useDistanceColorMap = val;
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_contourDepthEpsilon_valueChanged(int val) 
 	{
 		distfieldStyle->contourDepthEpsilon = 
 			static_cast<double>(val) / 1000.0;
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_useFatContours_toggled(bool val) 
 	{ 
 		distfieldStyle->useFatContours = val;
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_depthCueRange_valueChanged(int val) 
 	{
 		distfieldStyle->depthCueRange = 
 			static_cast<double>(val) / 1000.0;
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_useFog_toggled(bool val) 
 	{
 		distfieldStyle->useFog = val;
 		ui.nqvtkwidget->updateGL();
 	}
 
+	// General parameters
 	void on_opacity_valueChanged(int val)
 	{
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
@@ -594,7 +595,6 @@ private slots:
 		}
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_maxLayers_valueChanged(int val)
 	{
 		NQVTK::LayeredRenderer *renderer = 
@@ -605,7 +605,6 @@ private slots:
 			ui.nqvtkwidget->updateGL();
 		}
 	}
-
 	void on_eyeSpacing_valueChanged(int val)
 	{
 		// Do we have a stereo renderer?
@@ -618,6 +617,7 @@ private slots:
 		}
 	}
 
+	// Raycaster parameters
 	void on_stepSize_valueChanged(int val)
 	{
 		raycastStyle->stepSize = static_cast<double>(val) / 100.0;
@@ -626,7 +626,6 @@ private slots:
 
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_kernelSize_valueChanged(int val)
 	{
 		raycastStyle->kernelSize = static_cast<double>(val) / 100.0;
@@ -636,14 +635,83 @@ private slots:
 		ui.nqvtkwidget->updateGL();
 	}
 
+	// Test purposes only
 	void on_testParam_valueChanged(int val)
 	{
 		// TODO: remove testParam later
-		deformationStyle->testParam = static_cast<double>(val) / 100.0;
+		deformationStyle->testParam = static_cast<float>(val) / 100.0;
 
 		ui.nqvtkwidget->updateGL();
 	}
 
+	// Smear parameters
+	void on_smearTFStart_valueChanged(int val)
+	{
+		deformationStyle->smearTFStart = static_cast<float>(val) / 100.0;
+		ui.smearTFStart->setToolTip(QString("%1").arg(deformationStyle->smearTFStart));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_smearTFEnd_valueChanged(int val)
+	{
+		deformationStyle->smearTFEnd = static_cast<float>(val) / 100.0;
+		ui.smearTFEnd->setToolTip(QString("%1").arg(deformationStyle->smearTFEnd));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_smearDensity_valueChanged(int val)
+	{
+		deformationStyle->smearDensity = static_cast<float>(val) / 100.0;
+		ui.smearDensity->setToolTip(QString("%1").arg(deformationStyle->smearDensity));
+
+		ui.nqvtkwidget->updateGL();
+	}
+
+	// Interest functions
+	void on_focusIFStart_valueChanged(int val)
+	{
+		deformationStyle->focusIFStart = static_cast<float>(val) / 100.0;
+		ui.focusIFStart->setToolTip(QString("%1").arg(deformationStyle->focusIFStart));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_focusIFEnd_valueChanged(int val)
+	{
+		deformationStyle->focusIFEnd = static_cast<float>(val) / 100.0;
+		ui.focusIFEnd->setToolTip(QString("%1").arg(deformationStyle->focusIFEnd));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_staticIFStart_valueChanged(int val)
+	{
+		deformationStyle->staticIFStart = static_cast<float>(val) / 100.0;
+		ui.staticIFStart->setToolTip(QString("%1").arg(deformationStyle->staticIFStart));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_staticIFEnd_valueChanged(int val)
+	{
+		deformationStyle->staticIFEnd = static_cast<float>(val) / 100.0;
+		ui.staticIFEnd->setToolTip(QString("%1").arg(deformationStyle->staticIFEnd));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_dynamicIFStart_valueChanged(int val)
+	{
+		deformationStyle->dynamicIFStart = static_cast<float>(val) / 100.0;
+		ui.dynamicIFStart->setToolTip(QString("%1").arg(deformationStyle->dynamicIFStart));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_dynamicIFEnd_valueChanged(int val)
+	{
+		deformationStyle->dynamicIFEnd = static_cast<float>(val) / 100.0;
+		ui.dynamicIFEnd->setToolTip(QString("%1").arg(deformationStyle->dynamicIFEnd));
+
+		ui.nqvtkwidget->updateGL();
+	}
+
+	// Lighting
 	void on_lightOffsetDirection_valueChanged(int val)
 	{
 		NQVTK::Renderer *renderer = ui.nqvtkwidget->GetRenderer();
@@ -651,7 +719,6 @@ private slots:
 		// TODO: also set this option for all SimpleRenderers?
 		ui.nqvtkwidget->updateGL();
 	}
-
 	void on_lightRelativeToCamera_toggled(bool val)
 	{
 		ui.lightOffsetDirection->setEnabled(val);

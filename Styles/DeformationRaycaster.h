@@ -17,20 +17,33 @@ namespace NQVTK
 
 			DeformationRaycaster() : noiseVol(0)
 			{
+				// Interest functions
+				focusIFStart = 0.0;
+				focusIFEnd = 1.0;
+				staticIFStart = 0.0;
+				staticIFEnd = 1.0;
+				dynamicIFStart = 0.0;
+				dynamicIFEnd = 1.0;
+
 				testParam = 0.5;
+				smearTFStart = 0.0;
+				smearTFEnd = 1.0;
+				smearDensity = 2.0;
 
 				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
 
 				//UnsetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
 				UnsetOption("NQVTK_RAYCASTER_LIGHTING");
 
-				//SetOption("NQVTK_RAYCASTER_STRIPING");
-				SetOption("NQVTK_RAYCASTER_DEFORM");
-				//SetOption("NQVTK_RAYCASTER_SMEAR");
+				//SetOption("NQVTK_DEFORMATION_MORPH");
+				//SetOption("NQVTK_DEFORMATION_TEXTURING");
 
-				SetOption("NQVTK_RAYCASTER_FOCUS");
-				SetOption("NQVTK_RAYCASTER_NOISESMEAR");
-				SetOption("NQVTK_RAYCASTER_STREAMLINESHADING");
+				SetOption("NQVTK_DEFORMATION_FOCUS");
+				SetOption("NQVTK_DEFORMATION_STATIC");
+				SetOption("NQVTK_DEFORMATION_DYNAMIC_CONTOURS");
+				SetOption("NQVTK_DEFORMATION_DYNAMIC_VOLUME");
+				//SetOption("NQVTK_RAYCASTER_NOISESMEAR");
+				//SetOption("NQVTK_RAYCASTER_STREAMLINESHADING");
 			}
 
 			virtual ~DeformationRaycaster()
@@ -85,9 +98,31 @@ namespace NQVTK
 				Superclass::UpdatePainterParameters(painter);
 
 				painter->SetUniform1f("testParam", testParam);
+				// Interest functions
+				painter->SetUniform1f("focusIFStart", focusIFStart);
+				painter->SetUniform1f("focusIFEnd", focusIFStart);
+				painter->SetUniform1f("staticIFStart", staticIFStart);
+				painter->SetUniform1f("staticIFEnd", staticIFEnd);
+				painter->SetUniform1f("dynamicIFStart", dynamicIFStart);
+				painter->SetUniform1f("dynamicIFEnd", dynamicIFEnd);
+				// Other parameters
+				painter->SetUniform1f("smearTFStart", smearTFStart);
+				painter->SetUniform1f("smearTFEnd", smearTFEnd);
+				painter->SetUniform1f("smearDensity", smearDensity);
 			}
 
 			float testParam;
+
+			float focusIFStart;
+			float focusIFEnd;
+			float staticIFStart;
+			float staticIFEnd;
+			float dynamicIFStart;
+			float dynamicIFEnd;
+
+			float smearTFStart;
+			float smearTFEnd;
+			float smearDensity;
 
 		protected:
 			GLTexture3D *noiseVol;
