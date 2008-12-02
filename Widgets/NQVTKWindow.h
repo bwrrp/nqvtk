@@ -666,6 +666,13 @@ private slots:
 
 		ui.nqvtkwidget->updateGL();
 	}
+	void on_smearLength_valueChanged(int val)
+	{
+		deformationStyle->smearLength = static_cast<float>(val) / 100.0;
+		ui.smearLength->setToolTip(QString("%1").arg(deformationStyle->smearLength));
+
+		ui.nqvtkwidget->updateGL();
+	}
 
 	// Interest functions
 	void on_focusIFStart_valueChanged(int val)

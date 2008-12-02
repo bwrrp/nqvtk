@@ -90,9 +90,9 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-404</y>
+         <y>-478</y>
          <width>177</width>
-         <height>1170</height>
+         <height>1212</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -560,6 +560,26 @@
              </property>
              <property name="value" >
               <number>200</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="smearLengthLabel" >
+             <property name="text" >
+              <string>Smear length</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="smearLength" >
+             <property name="maximum" >
+              <number>800</number>
+             </property>
+             <property name="value" >
+              <number>100</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>

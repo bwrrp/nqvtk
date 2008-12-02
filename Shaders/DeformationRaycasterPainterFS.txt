@@ -34,6 +34,7 @@ uniform float dynamicIFEnd;
 uniform float smearTFStart;
 uniform float smearTFEnd;
 uniform float smearDensity;
+uniform float smearLength;
 
 // Raycasting parameters
 uniform float stepSize;
@@ -201,7 +202,7 @@ struct Mode {
 	float importance;
 	vec3 color;
 	float opacity;
-	vec3 gradient;
+	vec3 normal;
 };
 
 // Main shader function
@@ -248,7 +249,9 @@ void main() {
 	for (int i = 0; i < numSteps + 1; ++i) {
 		// Information recorded for later stages
 		vec3 vector = getVector(0, pos);
-		float deformation = length(vector / (volumeDataScale[0] + volumeDataShift[0]));
+		float deformation = length(
+			vector / (volumeDataScale[0] + volumeDataShift[0])) / 
+			length(vec3(1.0));
 
 		// Visualization modes
 		Mode focus = Mode(0.0, vec3(0.0), 0.0, vec3(0.0));
@@ -276,18 +279,18 @@ void main() {
 			focus.color *= focus.opacity;
 #if defined NQVTK_DEFORMATION_TEXTURING || defined NQVTK_RAYCASTER_LIGHTING
 			// TODO: compute surface normal for texturing / lighting
-			focus.gradient = vec3(0.0);
+			focus.normal = vec3(0.0);
 #endif
 #endif
 #ifdef NQVTK_DEFORMATION_DYNAMIC_VOLUME
 			// Compute smear
 			value = 0.0;
 			int n = 0;
-			for (float i = 0.0; i <= 8.0 * testParam * length(vector); i += stepSize) {
+			for (float i = 0.0; i <= smearLength * length(vector); i += stepSize) {
 				n++;
 				vec3 smearpos = pos + i * normalize(vector);
 				float noise = getNoise(smearpos, smearDensity);
-				noise = noise > 0.75 ? noise : 0.0;
+				noise = noise > 0.8 ? noise : 0.0;
 				//noise = pow(noise, 2.0);
 				value += noise;
 			}
@@ -305,10 +308,11 @@ void main() {
 		}
 #endif
 
-#ifdef NQVTK_DEFORMATION_MORPH
 		// Adjust pos for volume morphing
 		// TODO: adjust for the transformation of the vector field?
-		vec3 position = pos + (testParam - 0.5) * 4.0 * vector;
+		vec3 deformedPos = pos + (testParam - 0.5) * 4.0 * vector;
+#ifdef NQVTK_DEFORMATION_MORPHING
+		vec3 position = deformedPos;
 #else
 		vec3 position = pos;
 #endif
@@ -317,28 +321,28 @@ void main() {
 		// The other volumes are scalar volumes
 		for (int v = 1; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
 			if (active[v]) {
-				// TODO: Static context
-				float value1 = getRawValue(v, pos);
-				float value2 = getRawValue(v, position);
-
-				vec3 gradient1 = linearRawScalarGradient(v, pos, kernelSize, value1);
-				// TODO: this should be the gradient of the deformed volume!
-				vec3 gradient2 = linearRawScalarGradient(v, position, kernelSize, value2);
-				
+				// Static context / morphing
+				float value1 = getRawValue(v, position);
+				vec3 gradient1 = linearRawScalarGradient(v, position, kernelSize, value1);
 				float gm1 = clamp(length(gradient1), 0.0, 1.0);
-				float gm2 = clamp(length(gradient2), 0.0, 1.0);
-				
 				float contourness1 = 1.0 - subrange(
 					abs(dot(normalize(cameraPos - pos), gradient1)), 
 					0.0, 0.1);
 				value1 = contourness1 * gm1 * value1 * 5.0;
 
+#ifndef NQVTK_DEFORMATION_MORPHING
+				// Use dual contours
+				float value2 = getRawValue(v, deformedPos);
+				// TODO: this should be the gradient of the deformed volume!
+				vec3 gradient2 = linearRawScalarGradient(v, deformedPos, kernelSize, value2);
+				float gm2 = clamp(length(gradient2), 0.0, 1.0);
 				// DUAL CONTEXT TEST
 				float contourness2 = 1.0 - subrange(
 					abs(dot(normalize(cameraPos - pos), gradient2)), 
 					0.0, 0.1);
 				value2 = contourness2 * gm2 * value2 * 5.0;
 #ifdef NQVTK_DEFORMATION_STATIC
+				// TODO: combine results from all volumes
 				if (value1 >= value2) {
 					staticContext.importance = subrange(value1, staticIFStart, staticIFEnd);
 					staticContext.color = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness1);
@@ -349,18 +353,18 @@ void main() {
 					staticContext.color = mix(vec3(1.0, 0.0, 0.5), vec3(0.65), contourness2);
 					staticContext.opacity = subrange(value2, tfStart[v], tfEnd[v]);
 				}
-
-				//staticContext.importance = clamp(value, 0.0, 1.0);
-				//staticContext.color = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness);
-				//staticContext.opacity = clamp(value, 0.0, 1.0);
-
-				// TODO: combine results from all volumes
-
-				// Static context never uses lighting
 #endif
+#else //NQVTK_DEFORMATION_MORPHING
+#ifdef NQVTK_DEFORMATION_STATIC
+				// TODO: combine results from all volumes
+				staticContext.importance = subrange(value1, staticIFStart, staticIFEnd);
+				staticContext.color = mix(vec3(0.0, 1.0, 0.5), vec3(0.65), contourness1);
+				staticContext.opacity = subrange(value1, tfStart[v], tfEnd[v]);
+#endif
+#endif
+				// Static context never uses lighting
 #ifdef NQVTK_DEFORMATION_DYNAMIC_CONTOURS
-				// TODO: dynamic context contours
-				//float dynamicness = subrange(deformation, testParam, 1.0);
+				// TODO: secondary contours should be dynamic context!
 #endif
 			}
 		} // for each scalar volume...
@@ -376,15 +380,17 @@ void main() {
 			opacity = focus.opacity;
 
 #ifdef NQVTK_DEFORMATION_TEXTURING
-			// Apply texture
-			vec4 stripes = stripeTexture(vector, pos, focus.normal);
-			color = stripes.a * stripes.rgb + (1.0 - stripes.a) * color;
+			if (length(vector) > 0.0 && length(focus.normal) > 0.0) {
+				// Apply texture
+				vec4 stripes = stripeTexture(vector, pos, focus.normal);
+				color = stripes.a * stripes.rgb + (1.0 - stripes.a) * color;
+			}
 #endif
 
 #ifdef NQVTK_RAYCASTER_LIGHTING
 			// Apply lighting
-			if (length(focus.gradient) > 0.0) {
-				color = phongShading(color, gl_NormalMatrix * normalize(-focus.gradient));
+			if (length(focus.normal) > 0.0) {
+				color = phongShading(color, gl_NormalMatrix * focus.normal);
 			}
 #endif
 		} else if (dynamicContext.importance > focus.importance 

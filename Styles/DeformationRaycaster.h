@@ -29,21 +29,20 @@ namespace NQVTK
 				smearTFStart = 0.0;
 				smearTFEnd = 1.0;
 				smearDensity = 2.0;
+				smearLength = 1.0;
 
 				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
 
 				//UnsetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
 				UnsetOption("NQVTK_RAYCASTER_LIGHTING");
 
-				//SetOption("NQVTK_DEFORMATION_MORPH");
+				//SetOption("NQVTK_DEFORMATION_MORPHING");
 				//SetOption("NQVTK_DEFORMATION_TEXTURING");
 
 				SetOption("NQVTK_DEFORMATION_FOCUS");
 				SetOption("NQVTK_DEFORMATION_STATIC");
 				SetOption("NQVTK_DEFORMATION_DYNAMIC_CONTOURS");
 				SetOption("NQVTK_DEFORMATION_DYNAMIC_VOLUME");
-				//SetOption("NQVTK_RAYCASTER_NOISESMEAR");
-				//SetOption("NQVTK_RAYCASTER_STREAMLINESHADING");
 			}
 
 			virtual ~DeformationRaycaster()
@@ -109,6 +108,7 @@ namespace NQVTK
 				painter->SetUniform1f("smearTFStart", smearTFStart);
 				painter->SetUniform1f("smearTFEnd", smearTFEnd);
 				painter->SetUniform1f("smearDensity", smearDensity);
+				painter->SetUniform1f("smearLength", smearLength);
 			}
 
 			float testParam;
@@ -123,6 +123,7 @@ namespace NQVTK
 			float smearTFStart;
 			float smearTFEnd;
 			float smearDensity;
+			float smearLength;
 
 		protected:
 			GLTexture3D *noiseVol;
