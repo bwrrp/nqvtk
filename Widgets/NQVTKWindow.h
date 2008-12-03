@@ -194,7 +194,23 @@ public:
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal.vti");
 				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2.vti");
 				//*/
-				//* Deformation fields - knee cartilage
+				/* msdata lesion masks
+				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2005.10.21-Lesions(DUO)-mask_LES_box.vtp");
+				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2006.03.02-Lesions(DUO)-mask_LES_box.vtp");
+				args.append("-");
+				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2005.10.21-Lesions(DUO)-mask_LES.mha");
+				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2006.03.02-Lesions(DUO)-mask_LES.mha");
+				//*/
+				//* Deformation fields - msdata
+				//args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-F051114-M060203/deformationField_box.vtp");
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-F051114-M060302-hr/deformationField_box.vtp");
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-TP_2005_11_14-T2_box.vtp");
+				args.append("-");
+				//args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-F051114-M060203/padded/deformationField.mha");
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-F051114-M060302-hr/padded/deformationField.mha");
+				args.append("D:/Data/msdata/T2W/T2W_images_normalized/padded/wn0920-TP_2005_11_14-T2.mha");
+				//*/
+				/* Deformation fields - knee cartilage
 				args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/deformationField_box.vtp");
 				args.append("D:/Data/Cartilage/cartilage3D/GARP190-1.2-s401-masked_box.vtp");
 				//args.append("D:/Data/Cartilage/cartilage3D/elastix-190x-nonrigid/result_box.vtp");
