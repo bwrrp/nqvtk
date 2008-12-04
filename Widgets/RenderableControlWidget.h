@@ -77,7 +77,7 @@ public slots:
 
 	void setValue(float val)
 	{
-		slider->setValue(100 * val);
+		slider->setValue(static_cast<int>(100 * val));
 	}
 
 private slots:
