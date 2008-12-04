@@ -258,9 +258,20 @@ void main() {
 		Mode dynamicContext = Mode(0.0, vec3(0.0), 0.0, vec3(0.0));
 		Mode staticContext = Mode(0.0, vec3(0.0), 0.0, vec3(0.0));
 
-#if defined NQVTK_DEFORMATION_FOCUS || defined NQVTK_DEFORMATION_DYNAMIC_VOLUME
 		// Volume 0 is our vector volume
 		if (active[0]) {
+#ifdef NQVTK_DEFORMATION_FOCUS_MAGNITUDE
+#ifdef NQVTK_DEFORMATION_FOCUS
+			focus.importance = subrange(deformation, focusIFStart, focusIFEnd);
+			focus.color = vec3(1.0, 0.5, 0.0);
+			focus.opacity = subrange(deformation, tfStart[0], tfEnd[0]);
+			focus.color *= focus.opacity;
+#if defined NQVTK_DEFORMATION_TEXTURING || defined NQVTK_RAYCASTER_LIGHTING
+			// TODO: compute surface normal for texturing / lighting
+			focus.normal = vec3(0.0);
+#endif
+#endif
+#else // not NQVTK_DEFORMATION_FOCUS_MAGNITUDE
 			// Focus visualization
 			mat3 jacobian = linearJacobian(0, pos, kernelSize, vector);
 			float detJacobian = abs(determinant(jacobian));
@@ -281,10 +292,12 @@ void main() {
 			// TODO: compute surface normal for texturing / lighting
 			focus.normal = vec3(0.0);
 #endif
-#endif
+#endif 
+#endif // NQVTK_DEFORMATION_FOCUS_MAGNITUDE
+
 #ifdef NQVTK_DEFORMATION_DYNAMIC_VOLUME
 			// Compute smear
-			value = 0.0;
+			float smearValue = 0.0;
 			int n = 0;
 			for (float i = 0.0; i <= smearLength * length(vector); i += stepSize) {
 				n++;
@@ -292,21 +305,20 @@ void main() {
 				float noise = getNoise(smearpos, smearDensity);
 				noise = noise > 0.8 ? noise : 0.0;
 				//noise = pow(noise, 2.0);
-				value += noise;
+				smearValue += noise;
 			}
-			value /= float(n);
-			value = clamp(value, 0.0, 1.0);
+			smearValue /= float(n);
+			smearValue = clamp(smearValue, 0.0, 1.0);
 
 			dynamicContext.importance = subrange(deformation, dynamicIFStart, dynamicIFEnd);
 			dynamicContext.color = vec3(1.0, 0.5, 0.0);
-			dynamicContext.opacity = subrange(value, smearTFStart, smearTFEnd) * 
+			dynamicContext.opacity = subrange(smearValue, smearTFStart, smearTFEnd) * 
 				dynamicContext.importance;
 			// Apply streamline shading
 			dynamicContext.color = streamlineShading(
 				dynamicContext.color, normalize(vector), pos);
 #endif
 		}
-#endif
 
 		// Adjust pos for volume morphing
 		// TODO: adjust for the transformation of the vector field?

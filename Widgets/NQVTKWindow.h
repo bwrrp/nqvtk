@@ -201,7 +201,7 @@ public:
 				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2005.10.21-Lesions(DUO)-mask_LES.mha");
 				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2006.03.02-Lesions(DUO)-mask_LES.mha");
 				//*/
-				//* Deformation fields - msdata
+				/* Deformation fields - msdata
 				//args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-F051114-M060203/deformationField_box.vtp");
 				args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-F051114-M060302-hr/deformationField_box.vtp");
 				args.append("D:/Data/msdata/T2W/T2W_images_normalized/wn0920-TP_2005_11_14-T2_box.vtp");
@@ -228,7 +228,7 @@ public:
 				args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0231-TP_2004_06_28-T1_3D.mha");
 				//args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0221-TP_2004_12_06-T1_3D.mha");
 				//*/
-				/* Deformation fields - test
+				//* Deformation fields - test
 				args.append("D:/Temp/meep_box.vtp");
 				args.append("-");
 				args.append("D:/Temp/meep2.mha");
@@ -349,7 +349,7 @@ public:
 			ui.nqvtkwidget->GetRenderer(false));
 		ui.nqvtkwidget->SetInteractor(mainInt);
 
-		//ui.nqvtkwidget->StartContinuousUpdate();
+		ui.nqvtkwidget->StartContinuousUpdate();
 	}
 
 	void AddTrayWidget(QWidget *widget)
@@ -427,9 +427,15 @@ protected:
 					dynamic_cast<NQVTK::OrbitCamera*>(renderer->GetCamera());
 				if (cam)
 				{
-					cam->zoom = 0.62;
-					cam->rotateX = 29.0;
-					cam->rotateY = 180.0;
+					// Landscape data
+					//cam->zoom = 0.62;
+					//cam->rotateX = 29.0;
+					//cam->rotateY = 180.0;
+
+					// Deformation test volume
+					cam->zoom = 0.85;
+					cam->rotateX = -35.0;
+					cam->rotateY = 135.0;
 				}
 			}
 			break;
