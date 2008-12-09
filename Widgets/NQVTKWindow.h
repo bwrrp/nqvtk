@@ -349,7 +349,7 @@ public:
 			ui.nqvtkwidget->GetRenderer(false));
 		ui.nqvtkwidget->SetInteractor(mainInt);
 
-		ui.nqvtkwidget->StartContinuousUpdate();
+		//ui.nqvtkwidget->StartContinuousUpdate();
 	}
 
 	void AddTrayWidget(QWidget *widget)
