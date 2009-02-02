@@ -159,6 +159,7 @@ SET( ${ProjectName}_TextHeaders
 SET( ${ProjectName}_Shaders_Text
 	LibUtility.txt
 	LibCSG.txt
+	SimplePCAVS.txt
 	GenericPainterVS.txt
 	DepthPeelingScribeFS.txt
 	DepthPeelingPainterFS.txt

@@ -3,10 +3,11 @@
 #include "Renderer.h"
 
 #include "GLBlaat/GLUtility.h"
+#include "GLBlaat/GLProgram.h"
 
 #include <QObject> // for qDebug
 #include <cassert>
-
+#include <vector>
 
 namespace NQVTK
 {
@@ -15,7 +16,12 @@ namespace NQVTK
 	public:
 		typedef Renderer Superclass;
 
-		SimpleRenderer() { }
+		SimpleRenderer() : shader(0) { }
+
+		virtual ~SimpleRenderer()
+		{
+			delete shader;
+		}
 
 		virtual void UpdateLighting()
 		{
@@ -36,6 +42,16 @@ namespace NQVTK
 			glEnable(GL_LIGHT0);
 		}
 
+		virtual void PrepareForRenderable(int objectId, NQVTK::Renderable *renderable)
+		{
+			if (shaderAttribs.size() > 0)
+			{
+				NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+				if (mesh) mesh->SetupAttributes(shaderAttribs);
+				renderable->ApplyParamSets(shader);
+			}
+		}
+
 		virtual void Draw()
 		{
 			// Prepare for rendering
@@ -48,17 +64,36 @@ namespace NQVTK
 				glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 			}
 
+			// TODO: update shader params, attrib bindings etc.
+			if (shader) shader->Start();
+
 			Clear();
 			DrawCamera();
 			UpdateLighting();
 			DrawRenderables();
 			GLUtility::CheckOpenGLError("SimpleRenderer::Draw()");
 
+			if (shader) shader->Stop();
+
 			if (fboTarget)
 			{
 				fboTarget->Unbind();
 			}
 		}
+
+		GLProgram *GetShader() { return shader; }
+		GLProgram *SetShader(GLProgram *shader)
+		{
+			GLProgram *oldshader = this->shader;
+			this->shader = shader;
+			shaderAttribs.clear();
+			if (shader) shaderAttribs = shader->GetActiveAttributes();
+			return oldshader;
+		}
+
+	protected:
+		GLProgram *shader;
+		std::vector<GLAttributeInfo> shaderAttribs;
 
 	private:
 		// Not implemented

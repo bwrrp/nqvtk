@@ -1,0 +1,29 @@
+#define NQVTK_USE_PCA 8
+
+#ifdef NQVTK_USE_PCA
+// Define NQVTK_USE_PCA to the number of eigenvectors
+attribute vec3 eigvecs[NQVTK_USE_PCA];
+uniform float weights[NQVTK_USE_PCA];
+#endif
+
+// From LibUtility
+vec3 phongShading(vec3 matColor, vec3 normal);
+
+// Shader main function
+void main() {
+	vec4 vertex = gl_Vertex;
+	
+#ifdef NQVTK_USE_PCA
+	// Deform the vertex position according to the weights and eigenvectors
+	for (int i = 0; i < NQVTK_USE_PCA; ++i) {
+		vertex += vec4(weights[i] * eigvecs[i], 0.0);
+	}
+#endif
+	
+	vec4 pos = gl_ModelViewMatrix * vertex;
+	gl_Position = gl_ProjectionMatrix * pos;
+	
+	vec3 normal = normalize(gl_NormalMatrix * gl_Normal);
+	gl_FrontColor = vec4(phongShading(gl_Color.rgb, normal), 1.0);
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+}

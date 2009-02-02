@@ -22,6 +22,10 @@
 
 #include "Math/Vector3.h"
 
+#include "GLBlaat/GLProgram.h"
+
+#include "Shaders.h"
+
 #include <vtkMetaImageReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLPolyDataReader.h>
@@ -52,7 +56,8 @@ public:
 			this, SLOT(slider_valueChanged(int)));
 		line->addWidget(slider);
 		// - Value readout
-		label = new QLabel("0.0", this);
+		// utf-8 square root sigma
+		label = new QLabel(QString::fromUtf8("0.000\342\210\232\317\203"), this);
 		label->setMaximumWidth(50);
 		label->setMinimumWidth(50);
 		line->addWidget(label);
@@ -84,7 +89,8 @@ private slots:
 	void slider_valueChanged(int val)
 	{
 		float v = static_cast<float>(val) / 100.0;
-		label->setText(QString("%1").arg(v, 0, 'f', 3));
+		// utf-8 square root sigma
+		label->setText(QString::fromUtf8("%1\342\210\232\317\203").arg(v, 0, 'f', 3));
 		emit valueChanged(v);
 	}
 
@@ -176,6 +182,24 @@ public:
 		{
 			NQVTK::PCAParamSet *pcaps = new NQVTK::PCAParamSet(numEigenModes);
 			pd->SetParamSet("pca", pcaps);
+			// Add the PCA deformation shader
+			GLProgram *pcaShader = GLProgram::New();
+			// TODO: prepend #define for number of eigenmodes
+			bool ok = pcaShader->AddVertexShader(Shaders::SimplePCAVS);
+			if (ok) ok = pcaShader->AddVertexShader(Shaders::LibUtility);
+			if (ok) ok = pcaShader->Link();
+			qDebug(pcaShader->GetInfoLogs().c_str());
+			if (!ok)
+			{
+				delete pcaShader;
+				pcaShader = 0;
+			}
+			NQVTK::SimpleRenderer *ren = 
+				dynamic_cast<NQVTK::SimpleRenderer*>(
+				simpleView->GetRenderer());
+			assert(ren);
+			GLProgram *oldShader = ren->SetShader(pcaShader);
+			delete oldShader;
 		}
 
 		// TODO: update interactor
@@ -499,6 +523,7 @@ protected slots:
 			{
 				pcaps->weights[modeId] = val;
 				// TODO: use queued signal to prevent multiple separate updates
+				simpleView->updateGL();
 				mainView->updateGL();
 			}
 		}
