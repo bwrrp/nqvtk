@@ -13,6 +13,9 @@ namespace NQVTK
 
 		CameraInteractor(NQVTK::OrbitCamera *orbitCam) : Interactor() 
 		{
+			// TODO: remove dependency on OrbitCamera
+			// TODO: move OrbitCamera logic to the interactor
+			// TODO: add an ArcballCameraInteractor
 			assert(orbitCam);
 			camera = orbitCam;
 			lastX = lastY = 0;

@@ -51,6 +51,8 @@ namespace NQVTK
 
 		virtual void FocusOn(const Renderable *obj)
 		{
+			// TODO: add a way to set the initial position
+			// TODO: zoom in/out to show the full object
 			focus = obj->GetCenter();
 		}
 
