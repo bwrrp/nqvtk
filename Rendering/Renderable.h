@@ -74,6 +74,7 @@ namespace NQVTK
 
 		void GetBounds(double bounds[6]) const
 		{
+			// TODO: bounds should take transformations into account
 			GetBounds(
 				bounds[0], bounds[1], 
 				bounds[2], bounds[3], 
@@ -82,6 +83,7 @@ namespace NQVTK
 
 		Vector3 GetCenter() const
 		{
+			// TODO: center should take transformations into account
 			return Vector3(
 				(this->bounds[0] + this->bounds[1]) / 2.0, 
 				(this->bounds[2] + this->bounds[3]) / 2.0, 

@@ -204,6 +204,9 @@ public:
 
 		// TODO: update interactor
 		//simpleView->SetInteractor(new NQVTK::MainViewInteractor(simpleRen));
+
+		// Update the camera
+		FocusObject();
 	}
 
 	void LoadDistanceField(const std::string &filename)
@@ -285,8 +288,7 @@ public slots:
 	{
 		if (!renderable) return;
 		NQVTK::Camera *cam = mainView->GetRenderer()->GetCamera();
-		cam->focus = renderable->GetCenter();
-		// TODO: why doesn't this work?
+		cam->FocusOn(renderable);
 	}
 
 	void ShowTFWidget()

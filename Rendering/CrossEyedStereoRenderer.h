@@ -41,7 +41,7 @@ namespace NQVTK
 				offset.x = eyeSpacing / 2.0;
 			}
 
-			// TODO: replace this, add camera reset to focus on all renderables
+			// TODO: fix me for new camera
 			Renderable *renderable = renderables[0];
 			camera->position = renderable->GetCenter() - offset;
 			camera->FocusOn(renderable);

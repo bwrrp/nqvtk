@@ -14,6 +14,7 @@
 
 #include <QObject> // for qDebug
 #include <cassert>
+#include <limits>
 
 
 namespace NQVTK
@@ -128,12 +129,26 @@ namespace NQVTK
 
 		virtual void DrawCamera()
 		{
-			// TODO: replace this, add camera reset to focus on all renderables
-			if (renderables.size() > 0)
+			// Get bounds for all renderables
+			const double inf = std::numeric_limits<double>::infinity();
+			double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
+			unsigned int numRenderables = GetNumberOfRenderables();
+			for (unsigned int i = 0; i < numRenderables; ++i)
 			{
-				Renderable *renderable = renderables[0];
-				if (renderable) camera->FocusOn(renderable);
+				Renderable *renderable = GetRenderable(i);
+				if (renderable)
+				{
+					double rbounds[6];
+					renderable->GetBounds(rbounds);
+					for (int i = 0; i < 3; ++i)
+					{
+						if (rbounds[i*2] < bounds[i*2]) bounds[i*2] = rbounds[i*2];
+						if (rbounds[i*2+1] > bounds[i*2+1]) bounds[i*2+1] = rbounds[i*2+1];
+					}
+				}
 			}
+
+			camera->SetZPlanes(bounds);
 
 			// Set up the camera (matrices)
 			camera->Draw();

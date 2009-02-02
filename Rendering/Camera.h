@@ -6,6 +6,7 @@
 #include "Math/Vector3.h"
 
 #include <algorithm>
+#include <limits>
 
 namespace NQVTK 
 {
@@ -23,26 +24,34 @@ namespace NQVTK
 
 		Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0) { };
 
+		virtual void SetZPlanes(double *bounds)
+		{
+			// Project each of the bounding box corners on the view vector
+			// and check max / min distance
+			Vector3 viewvec = (focus - position).normalized();
+			double minDepth = std::numeric_limits<double>::infinity();
+			double maxDepth = -minDepth;
+			for (int x = 0; x < 2; ++x)
+			{
+				for (int y = 0; y < 2; ++y)
+				{
+					for (int z = 0; z < 2; ++z)
+					{
+						Vector3 p = Vector3(bounds[x], bounds[y+2], bounds[z+4]) - position;
+						double depth = p.dot(viewvec);
+						if (depth < minDepth) minDepth = depth;
+						if (depth > maxDepth) maxDepth = depth;
+					}
+				}
+			}
+			// Set Z planes
+			nearZ = std::max(1.0, minDepth);
+			farZ = std::min(maxDepth, std::numeric_limits<double>::max());
+		}
+
 		virtual void FocusOn(const Renderable *obj)
 		{
-			// Get object info
-			double bounds[6];
-			obj->GetBounds(bounds);
-
-			double size[3];
-			for (int i = 0; i < 3; ++i)
-			{
-				size[i] = bounds[2 * i + 1] - bounds[2 * i];
-			}
-
-			// TODO: calculate actual size of bounding box instead
-			double radius = 0.9 * std::max(size[0], std::max(size[1], size[2]));
-
-			// TODO: this assumes our focus is the center of obj
-			double focusToPos = (position - focus).length();
-			
-			nearZ = std::max(1.0, focusToPos - radius);
-			farZ = focusToPos + radius;
+			focus = obj->GetCenter();
 		}
 
 		// For use by more complicated camera controls

@@ -180,9 +180,9 @@ public:
 				//* Ventricle PCA
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
-				args.append("-");
-				args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
-				args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				//args.append("-");
+				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
 				/* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");

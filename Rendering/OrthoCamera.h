@@ -24,6 +24,9 @@ namespace NQVTK
 
 		virtual void FocusOn(const Renderable *obj)
 		{
+			// Set focus
+			Superclass::FocusOn(obj);
+
 			// Get object info
 			double bounds[6];
 			obj->GetBounds(bounds);
@@ -35,17 +38,12 @@ namespace NQVTK
 			}
 
 			// TODO: calculate actual size of bounding box instead
-			radius = 0.7 * std::max(size[0], std::max(size[1], size[2]));
-
-			focus = obj->GetCenter();
+			radius = 0.9 * std::max(size[0], std::max(size[1], size[2]));
 
 			width = 2.0 * radius;
 			height = 2.0 * radius;
 
 			if (preserveAspect) width *= aspect;
-
-			// Set near and far clipping planes
-			Superclass::FocusOn(obj);
 		}
 
 		virtual void Draw()
