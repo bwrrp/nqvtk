@@ -10,7 +10,12 @@ If \\athene\datasets is mounted as drive R do the following:
 NQVTK.exe r:\stef\msdata\Ventricles\stef_ventricle_199_20040510_textured.vtp r:\stef\msdata\Ventricles\stef_ventricle_199_20041124_textured.vtp - r:\stef\msdata\Ventricles\stef_ventricle_199_20041124_padded.vti r:\stef\msdata\Ventricles\stef_ventricle_199_20040510_padded.vti
 
 Keys: 
-F1, F2, F3: switch styles (F1: depth peeling, F2: IBIS, F3: distance fields)
+Fn: switch styles:
+    F1: depth peeling
+    F2: IBIS
+    F3: distance fields
+    F4: raycaster
+    F5: deformation field raycaster
 1, 2: toggle visibility of objects
 C: toggle clipping object
 R: reset objects
