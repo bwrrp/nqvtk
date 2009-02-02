@@ -90,9 +90,9 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-478</y>
+         <y>0</y>
          <width>177</width>
-         <height>1212</height>
+         <height>1278</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -291,14 +291,14 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2" >
            <item>
-            <widget class="QLabel" name="classificationThresholdLabel" >
+            <widget class="QLabel" name="distanceThresholdLabel" >
              <property name="text" >
-              <string>Classification threshold:</string>
+              <string>Distance threshold:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="classificationThresholdDisplay" >
+            <widget class="QLabel" name="distanceThresholdDisplay" >
              <property name="frameShape" >
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -306,12 +306,12 @@
               <enum>QFrame::Sunken</enum>
              </property>
              <property name="text" >
-              <string>0</string>
+              <string>Distance >= 0</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QSlider" name="classificationThreshold" >
+            <widget class="QSlider" name="distanceThreshold" >
              <property name="sizePolicy" >
               <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
                <horstretch>0</horstretch>
@@ -319,13 +319,46 @@
               </sizepolicy>
              </property>
              <property name="maximum" >
-              <number>1000</number>
+              <number>15000</number>
              </property>
              <property name="pageStep" >
               <number>10</number>
              </property>
              <property name="value" >
               <number>0</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="pvalueThresholdLabel" >
+             <property name="text" >
+              <string>P-value threshold:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="pvalueThresholdDisplay" >
+             <property name="frameShape" >
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow" >
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <property name="text" >
+              <string>P-value ≤ 1.0</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="pvalueThreshold" >
+             <property name="maximum" >
+              <number>1000</number>
+             </property>
+             <property name="value" >
+              <number>1000</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>

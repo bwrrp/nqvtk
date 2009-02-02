@@ -34,7 +34,8 @@ namespace NQVTK
 
 				// Set default parameters
 				useDistanceColorMap = false;
-				classificationThreshold = 0.0;
+				distanceThreshold = 0.0;
+				pvalueThreshold = 1.0;
 				useGridTexture = false;
 				useGlyphTexture = false;
 			}
@@ -80,7 +81,8 @@ namespace NQVTK
 			{
 				// Set program parameters
 				scribe->SetUniform1i("useDistanceColorMap", useDistanceColorMap);
-				scribe->SetUniform1f("classificationThreshold", classificationThreshold);
+				scribe->SetUniform1f("distanceThreshold", distanceThreshold);
+				scribe->SetUniform1f("pvalueThreshold", pvalueThreshold);
 				scribe->SetUniform1i("useGridTexture", useGridTexture);
 				scribe->SetUniform1i("useGlyphTexture", useGlyphTexture);
 			}
@@ -88,7 +90,8 @@ namespace NQVTK
 			// Program parameters
 			// - Scribe
 			bool useDistanceColorMap;
-			float classificationThreshold;
+			float distanceThreshold;
+			float pvalueThreshold;
 			bool useGridTexture;
 			bool useGlyphTexture;
 

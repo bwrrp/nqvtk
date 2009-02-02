@@ -22,8 +22,12 @@ uniform vec3 distanceFieldSize;
 uniform bool useDistanceColorMap;
 #endif
 
-#if defined NQVTK_USE_DISTANCEFIELDS || defined NQVTK_USE_PVALS
-uniform float classificationThreshold;
+#ifdef NQVTK_USE_DISTANCEFIELDS
+uniform float distanceThreshold;
+#endif
+
+#ifdef NQVTK_USE_PVALS
+uniform float pvalueThreshold;
 #endif
 
 #ifdef NQVTK_USE_SHADOWMAP
@@ -91,7 +95,7 @@ void main() {
 		float dist = texture3D(distanceField, p).x;
 		dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);
 
-		if (dist < classificationThreshold * 15.0) {
+		if (dist < distanceThreshold) {
 			classification = 0.0;
 			col = vec4(1.0);
 		}
@@ -100,9 +104,9 @@ void main() {
 
 #ifdef NQVTK_USE_PVALS
 	// P-value thresholding
-	if (pvalue >= classificationThreshold) {
-		classification = 0.0;
-		col = vec4(1.0);
+	if (pvalue > pvalueThreshold) {
+		classification = 0.1;
+		col = vec4(0.95, 0.95, 0.95, 1.0);
 	}
 #endif
 

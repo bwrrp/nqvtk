@@ -71,9 +71,9 @@ public:
 	{
 		// Set up the main view
 		NQVTK::LayeredRenderer *renderer;
-		renderer = new NQVTK::LayeredRenderer();
+		//renderer = new NQVTK::LayeredRenderer();
 		//renderer = new NQVTK::CrossEyedStereoRenderer();
-		//renderer = new NQVTK::ShadowMappingRenderer();
+		renderer = new NQVTK::ShadowMappingRenderer();
 
 		// Hide eye spacing widgets (only works for stereo renderers)
 		ui.eyeSpacing->hide();
@@ -102,9 +102,15 @@ public:
 		distfieldStyle->SetOption("NQVTK_USE_PCA", "8");
 
 		// Set renderer style
-		//renderer->SetStyle(distfieldStyle);
+		renderer->SetStyle(distfieldStyle);
 		//renderer->SetStyle(raycastStyle);
-		renderer->SetStyle(deformationStyle);
+		//renderer->SetStyle(deformationStyle);
+
+		// Initial UI configuration
+		ui.ibisGroup->show();
+		ui.scalarsGroup->show();
+		ui.raycasterGroup->hide();
+		ui.deformationGroup->hide();
 
 		// Set camera to the interactive orbiting camera
 		renderer->SetCamera(new NQVTK::OrbitCamera());
@@ -171,12 +177,12 @@ public:
 				args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
 				args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
 				//*/
-				/* Ventricle PCA
+				//* Ventricle PCA
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
-				//args.append("-");
-				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
-				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				args.append("-");
+				args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+				args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
 				/* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
@@ -228,7 +234,7 @@ public:
 				args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0231-TP_2004_06_28-T1_3D.mha");
 				//args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0221-TP_2004_12_06-T1_3D.mha");
 				//*/
-				//* Deformation fields - test
+				/* Deformation fields - test
 				args.append("D:/Temp/meep_box.vtp");
 				args.append("-");
 				args.append("D:/Temp/meep2.mha");
@@ -568,12 +574,23 @@ private slots:
 		distfieldStyle->useGlyphTexture = val;
 		ui.nqvtkwidget->updateGL();
 	}
-	void on_classificationThreshold_valueChanged(int val) 
+	void on_distanceThreshold_valueChanged(int val) 
 	{
-		distfieldStyle->classificationThreshold = 
+		distfieldStyle->distanceThreshold = 
 			static_cast<double>(val) / 1000.0;
-		ui.classificationThresholdDisplay->setText(QString("%1").arg(
-			distfieldStyle->classificationThreshold, 0, 'f', 3));
+		ui.distanceThresholdDisplay->setText(
+			QString::fromUtf8("Distance \342\211\245 %1").arg( // utf-8 >= character
+				distfieldStyle->distanceThreshold, 0, 'f', 3));
+		
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_pvalueThreshold_valueChanged(int val) 
+	{
+		distfieldStyle->pvalueThreshold = 
+			static_cast<double>(val) / 1000.0;
+		ui.pvalueThresholdDisplay->setText(
+			QString::fromUtf8("P-value \342\211\244 %1").arg( // utf-8 <= character
+				distfieldStyle->pvalueThreshold, 0, 'f', 3));
 		
 		ui.nqvtkwidget->updateGL();
 	}
