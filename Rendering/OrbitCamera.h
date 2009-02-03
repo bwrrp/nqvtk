@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GLBlaat/GL.h"
 #include "Camera.h"
 
 #include <algorithm>

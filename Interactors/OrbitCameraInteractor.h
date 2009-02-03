@@ -6,12 +6,12 @@
 
 namespace NQVTK
 {
-	class CameraInteractor : public NQVTK::Interactor
+	class OrbitCameraInteractor : public NQVTK::Interactor
 	{
 	public:
 		typedef Interactor Superclass;
 
-		CameraInteractor(NQVTK::OrbitCamera *orbitCam) : Interactor() 
+		OrbitCameraInteractor(NQVTK::OrbitCamera *orbitCam)
 		{
 			// TODO: remove dependency on OrbitCamera
 			// TODO: move OrbitCamera logic to the interactor
@@ -62,7 +62,7 @@ namespace NQVTK
 
 	private:
 		// Not implemented
-		CameraInteractor(const CameraInteractor&);
-		void operator=(const CameraInteractor&);
+		OrbitCameraInteractor(const OrbitCameraInteractor&);
+		void operator=(const OrbitCameraInteractor&);
 	};
 }

@@ -2,7 +2,8 @@
 
 #include "Interactor.h"
 
-#include "CameraInteractor.h"
+#include "OrbitCameraInteractor.h"
+#include "ArcballCameraInteractor.h"
 #include "ObjectInteractor.h"
 #include "BrushingInteractor.h"
 
@@ -33,7 +34,7 @@ namespace NQVTK
 			}
 
 			NQVTK::OrbitCamera *ocam = dynamic_cast<NQVTK::OrbitCamera*>(ren->GetCamera());
-			if (ocam) cameraInt = new NQVTK::CameraInteractor(ocam);
+			if (ocam) cameraInt = new NQVTK::OrbitCameraInteractor(ocam);
 			NQVTK::Renderable *renderable = ren->GetRenderable(0);
 			if (renderable) objectInt = new NQVTK::ObjectInteractor(renderable);
 			NQVTK::Renderable *clipper = ren->GetRenderable(2);
@@ -80,7 +81,7 @@ namespace NQVTK
 		}
 
 	protected:
-		NQVTK::CameraInteractor *cameraInt;
+		NQVTK::OrbitCameraInteractor *cameraInt;
 		NQVTK::ObjectInteractor *objectInt;
 		NQVTK::ObjectInteractor *clipperInt;
 		NQVTK::BrushingInteractor *brushInt;

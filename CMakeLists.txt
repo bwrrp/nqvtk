@@ -101,6 +101,7 @@ SET( ${ProjectName}_ModuleNames
 
 SET( ${ProjectName}_Math_Classes
 	Vector3
+	Matrix3x3
 )
 
 SET( ${ProjectName}_Rendering_Classes
@@ -114,6 +115,7 @@ SET( ${ProjectName}_Rendering_Classes
 	Camera
 	OrbitCamera
 	OrthoCamera
+	ArcballCamera
 	Renderer
 	SimpleRenderer
 	LayeredRenderer
@@ -141,7 +143,8 @@ SET( ${ProjectName}_Styles_Classes
 
 SET( ${ProjectName}_Interactors_Classes
 	Interactor
-	CameraInteractor
+	OrbitCameraInteractor
+	ArcballCameraInteractor
 	ObjectInteractor
 	MainViewInteractor
 	BrushingInteractor
