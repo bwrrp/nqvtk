@@ -3,6 +3,7 @@
 #include "VBOMesh.h"
 
 #include "PCAParamSet.h"
+#include "PCACorrespondenceParamSet.h"
 
 #include "GLBlaat/GLBuffer.h"
 
@@ -51,6 +52,11 @@ namespace NQVTK
 			}
 			lineIndices->Unmap();
 			lineIndices->Unbind();
+
+			// Add a combined param set for the weights
+			SetParamSet("pcacorrespondence", new PCACorrespondenceParamSet(
+				dynamic_cast<PCAParamSet*>(obj1->GetParamSet("pca")), 
+				dynamic_cast<PCAParamSet*>(obj2->GetParamSet("pca"))));
 		}
 
 		virtual void Draw() const

@@ -354,6 +354,7 @@ public:
 		}
 
 		// Add point correspondence renderable
+		// TODO: update this when one of the meshes changes
 		{
 			NQVTK::VBOMesh *obj0 = dynamic_cast<NQVTK::VBOMesh*>(renderer->GetRenderable(0));
 			NQVTK::VBOMesh *obj1 = dynamic_cast<NQVTK::VBOMesh*>(renderer->GetRenderable(1));

@@ -20,10 +20,15 @@ namespace NQVTK
 
 		virtual void SetupProgram(GLProgram *program)
 		{
+			SetupProgram(program, "weights");
+		}
+
+		virtual void SetupProgram(GLProgram *program, const std::string &varname)
+		{
 			for (unsigned int i = 0; i < weights.size(); ++i)
 			{
 				std::ostringstream name;
-				name << "weights[" << i << "]";
+				name << varname << "[" << i << "]";
 				program->SetUniform1f(name.str(), weights[i]);
 			}
 		}

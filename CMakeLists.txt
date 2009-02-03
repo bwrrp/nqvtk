@@ -133,6 +133,7 @@ SET( ${ProjectName}_Rendering_Classes
 	ParamSet
 	DistanceFieldParamSet
 	PCAParamSet
+	PCACorrespondenceParamSet
 	TransferFunctionParamSet
 )
 
