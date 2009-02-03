@@ -78,6 +78,7 @@ void NQVTKWidget::resizeGL(int w, int h)
 	if (initialized)
 	{
 		renderer->Resize(w, h);
+		if (interactor) interactor->ResizeEvent(w, h);
 		emit cameraUpdated(GetRenderer()->GetCamera());
 	}
 }
@@ -164,8 +165,44 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 		}
 	}
 
-	// Compute projection-netral coordinates
+	// Compute projection-neutral coordinates
 	double x = (2.0 * static_cast<double>(event->x()) / this->width() - 1.0) * renderer->GetCamera()->aspect;
 	double y = 2.0 * static_cast<double>(event->y()) / this->height() - 1.0;
 	emit cursorPosChanged(x, y);
+}
+
+// ----------------------------------------------------------------------------
+void NQVTKWidget::mousePressEvent(QMouseEvent *event)
+{
+	// Pass the event to the interactor
+	if (interactor)
+	{
+		if (interactor->MousePressEvent(event))
+		{
+			event->accept();
+			updateGL();
+		}
+		else
+		{
+			event->ignore();
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+void NQVTKWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	// Pass the event to the interactor
+	if (interactor)
+	{
+		if (interactor->MouseReleaseEvent(event))
+		{
+			event->accept();
+			updateGL();
+		}
+		else
+		{
+			event->ignore();
+		}
+	}
 }

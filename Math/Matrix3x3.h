@@ -53,6 +53,26 @@ namespace NQVTK
 			return Matrix3x3(ID);
 		}
 
+		static const Matrix3x3 fromCols(Vector3 c1, Vector3 c2, Vector3 c3)
+		{
+			double M[3][3] = {
+				{c1.x, c2.x, c3.x}, 
+				{c1.y, c2.y, c3.y}, 
+				{c1.z, c2.z, c3.z}
+			};
+			return Matrix3x3(M);
+		}
+
+		static const Matrix3x3 fromRows(Vector3 r1, Vector3 r2, Vector3 r3)
+		{
+			double M[3][3] = {
+				{r1.x, r1.y, r1.z}, 
+				{r2.x, r2.y, r2.z}, 
+				{r3.x, r3.y, r3.z}
+			};
+			return Matrix3x3(M);
+		}
+
 		Vector3 row(int i) const { return Vector3(A[i][0], A[i][1], A[i][2]); }
 		Vector3 col(int i) const { return Vector3(A[0][i], A[1][i], A[2][i]); }
 
@@ -81,6 +101,12 @@ namespace NQVTK
 			{
 				eigenvecs[i] = evec.col(i);
 			}
+		}
+
+		double det() const
+		{
+			return a00 * a11 * a22 - a00 * a12 * a21 - a01 * a10 * a22 
+				+ a01 * a12 * a20 + a02 * a10 * a21 - a02 * a11 * a20;
 		}
 
 		// Operators

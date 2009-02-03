@@ -1,29 +1,31 @@
 #pragma once
 
-#include "Interactor.h"
+#include "CameraInteractor.h"
 
 #include "Rendering/OrbitCamera.h"
 
+#include <cassert>
+
 namespace NQVTK
 {
-	class OrbitCameraInteractor : public NQVTK::Interactor
+	class OrbitCameraInteractor : public CameraInteractor
 	{
 	public:
-		typedef Interactor Superclass;
+		typedef CameraInteractor Superclass;
 
-		OrbitCameraInteractor(NQVTK::OrbitCamera *orbitCam)
+		OrbitCameraInteractor(NQVTK::OrbitCamera *orbitCam) 
+			: CameraInteractor(orbitCam)
 		{
-			// TODO: remove dependency on OrbitCamera
-			// TODO: move OrbitCamera logic to the interactor
-			// TODO: add an ArcballCameraInteractor
 			assert(orbitCam);
-			camera = orbitCam;
 			lastX = lastY = 0;
 		}
 
 		virtual bool MouseMoveEvent(QMouseEvent *event)
 		{
 			bool handled = false;
+
+			OrbitCamera *camera = dynamic_cast<OrbitCamera*>(this->camera);
+			assert(camera);
 
 			// Mouse controls camera
 			if (event->buttons() & Qt::LeftButton)
@@ -50,12 +52,11 @@ namespace NQVTK
 			lastX = event->x();
 			lastY = event->y();
 
+			if (!handled) return Superclass::MouseMoveEvent(event);
 			return handled;
 		}
 
 	protected:
-		NQVTK::OrbitCamera *camera;
-
 		// Previous mouse coordinates
 		int lastX;
 		int lastY;

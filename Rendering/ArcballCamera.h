@@ -19,10 +19,18 @@ namespace NQVTK
 
 		virtual void StartArcball(Vector3 from)
 		{
+			// Store initial camera frame
 			initialPosition = position;
 			initialUp = up;
-			dragFrom = from.normalized();
+			Vector3 z = (focus - position).normalized();
+			Vector3 y = -up.normalized();
+			Vector3 x = z.cross(y).normalized();
+			y = z.cross(x);
+			initialFrame = Matrix3x3::fromCols(x, y, z);
+			// Store drag parameters
+			dragFrom = initialFrame * from.normalized();
 			rotation = Matrix3x3::identity();
+			// We're dragging the arcball
 			active = true;
 		}
 
@@ -35,7 +43,7 @@ namespace NQVTK
 
 		virtual void SetRotation(Vector3 dragTo)
 		{
-			Vector3 to = dragTo.normalized();
+			Vector3 to = initialFrame * dragTo.normalized();
 			Vector3 axis = to.cross(dragFrom);
 			double sinangle = axis.length();
 			axis = axis / sinangle;
@@ -59,8 +67,9 @@ namespace NQVTK
 		{
 			if (active)
 			{
-				position = initialPosition * rotation;
-				up = initialUp * rotation;
+				Vector3 relpos = initialPosition - focus;
+				position = focus + rotation * relpos;
+				up = rotation * initialUp;
 			}
 		}
 
@@ -70,6 +79,7 @@ namespace NQVTK
 		Vector3 initialUp;
 		Vector3 dragFrom;
 		Matrix3x3 rotation;
+		Matrix3x3 initialFrame;
 
 	private:
 		// Not implemented

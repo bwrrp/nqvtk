@@ -23,6 +23,7 @@ public:
 	{
 		assert(!this->interactor);
 		this->interactor = interactor;
+		interactor->ResizeEvent(this->width(), this->height());
 	}
 
 	NQVTK::Renderer *GetRenderer(bool getInner = true);
@@ -69,6 +70,8 @@ protected:
 private:
 	void timerEvent(QTimerEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
+	void mousePressEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 
 	// The renderer
 	NQVTK::Renderer *renderer;

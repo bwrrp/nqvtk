@@ -2,6 +2,7 @@
 
 #include "Interactor.h"
 
+#include "CameraInteractor.h"
 #include "OrbitCameraInteractor.h"
 #include "ArcballCameraInteractor.h"
 #include "ObjectInteractor.h"
@@ -33,8 +34,18 @@ namespace NQVTK
 				ren = oren->GetBaseRenderer();
 			}
 
+			// Create the proper camera interactor
 			NQVTK::OrbitCamera *ocam = dynamic_cast<NQVTK::OrbitCamera*>(ren->GetCamera());
-			if (ocam) cameraInt = new NQVTK::OrbitCameraInteractor(ocam);
+			if (ocam)
+			{
+				cameraInt = new NQVTK::OrbitCameraInteractor(ocam);
+			}
+			else
+			{
+				NQVTK::ArcballCamera *acam = dynamic_cast<NQVTK::ArcballCamera*>(ren->GetCamera());
+				if (acam) cameraInt = new NQVTK::ArcballCameraInteractor(acam);
+			}
+			// Create object interactors
 			NQVTK::Renderable *renderable = ren->GetRenderable(0);
 			if (renderable) objectInt = new NQVTK::ObjectInteractor(renderable);
 			NQVTK::Renderable *clipper = ren->GetRenderable(2);
@@ -76,12 +87,34 @@ namespace NQVTK
 			}
 			else
 			{
-				return false;
+				return Superclass::MouseMoveEvent(event);
 			}
 		}
 
+		virtual bool MousePressEvent(QMouseEvent *event)
+		{
+			// Only the camera interactor uses this for now
+			if (cameraInt) return cameraInt->MousePressEvent(event);
+			return Superclass::MousePressEvent(event);
+		}
+
+		virtual bool MouseReleaseEvent(QMouseEvent *event)
+		{
+			// Only the camera interactor uses this for now
+			if (cameraInt) return cameraInt->MouseReleaseEvent(event);
+			return Superclass::MouseReleaseEvent(event);
+		}
+
+		virtual void ResizeEvent(int width, int height)
+		{
+			if (cameraInt) cameraInt->ResizeEvent(width, height);
+			if (objectInt) objectInt->ResizeEvent(width, height);
+			if (clipperInt) clipperInt->ResizeEvent(width, height);
+			if (brushInt) brushInt->ResizeEvent(width, height);
+		}
+
 	protected:
-		NQVTK::OrbitCameraInteractor *cameraInt;
+		NQVTK::CameraInteractor *cameraInt;
 		NQVTK::ObjectInteractor *objectInt;
 		NQVTK::ObjectInteractor *clipperInt;
 		NQVTK::BrushingInteractor *brushInt;

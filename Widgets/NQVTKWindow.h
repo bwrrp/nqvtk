@@ -30,6 +30,7 @@
 #include "Styles/Raycaster.h"
 #include "Styles/DeformationRaycaster.h"
 
+#include "Rendering/ArcballCamera.h"
 #include "Rendering/OrbitCamera.h"
 
 #include "Rendering/PolyData.h"
@@ -113,7 +114,8 @@ public:
 		ui.deformationGroup->hide();
 
 		// Set camera to the interactive orbiting camera
-		renderer->SetCamera(new NQVTK::OrbitCamera());
+		//renderer->SetCamera(new NQVTK::OrbitCamera());
+		renderer->SetCamera(new NQVTK::ArcballCamera());
 
 		// Add a brushing overlay
 		NQVTK::BrushingRenderer *brushRen = new NQVTK::BrushingRenderer();
