@@ -21,6 +21,7 @@ namespace NQVTK
 			: CameraInteractor(arcballCam)
 		{
 			assert(arcballCam);
+			lastX = lastY = 0;
 		}
 
 		virtual bool MouseMoveEvent(QMouseEvent *event)
@@ -28,15 +29,31 @@ namespace NQVTK
 			ArcballCamera *camera = dynamic_cast<ArcballCamera*>(this->camera);
 			assert(camera);
 
+			bool handled = false;
+
 			if (event->buttons() & Qt::LeftButton)
 			{
 				// Update arcball rotation
 				Vector3 newPos = GetBallPoint(event->x(), event->y());
 				camera->SetRotation(newPos);
-				return true;
+				handled = true;
+			}
+			else if (event->buttons() & Qt::RightButton)
+			{
+				// Zoom
+				double zoom = 1.0 + (event->y() - lastY) * 0.005f;
+				if (zoom < 0.01) zoom = 0.01;
+				Vector3 focusToPos = camera->position - camera->focus;
+				focusToPos *= zoom;
+				camera->position = camera->focus + focusToPos;
+				handled = true;
 			}
 
-			return Superclass::MouseMoveEvent(event);
+			lastX = event->x();
+			lastY = event->y();
+
+			if (!handled) return Superclass::MouseMoveEvent(event);
+			return true;
 		}
 
 		virtual bool MousePressEvent(QMouseEvent *event)
@@ -71,6 +88,10 @@ namespace NQVTK
 		}
 
 	protected:
+		// Previous mouse coordinates
+		int lastX;
+		int lastY;
+
 		Vector3 GetBallPoint(int x, int y)
 		{
 			// Assume the ball is centered on the screen and has a 
