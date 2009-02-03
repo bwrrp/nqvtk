@@ -24,6 +24,8 @@
 #include "Rendering/PointFilteringRenderer.h"
 #include "Rendering/PointCloud.h"
 
+#include "Rendering/PCAPointCorrespondenceGlyphs.h"
+
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
 #include "Styles/DistanceFields.h"
@@ -351,10 +353,10 @@ public:
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
 
-		/* TODO: add point correspondence renderable
+		// Add point correspondence renderable
 		{
-			NQVTK::Renderable *obj0 = renderer->GetRenderable(0);
-			NQVTK::Renderable *obj1 = renderer->GetRenderable(1);
+			NQVTK::VBOMesh *obj0 = dynamic_cast<NQVTK::VBOMesh*>(renderer->GetRenderable(0));
+			NQVTK::VBOMesh *obj1 = dynamic_cast<NQVTK::VBOMesh*>(renderer->GetRenderable(1));
 			assert(obj0);
 			assert(obj1);
 			NQVTK::Renderable *renderable = new NQVTK::PCAPointCorrespondenceGlyphs(obj0, obj1);
@@ -363,7 +365,6 @@ public:
 			renderable->color = NQVTK::Vector3(0.0, 0.0, 0.0);
 			renderable->opacity = 1.0;
 		}
-		//*/
 
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first

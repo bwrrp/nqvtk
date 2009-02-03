@@ -22,7 +22,7 @@ namespace NQVTK
 		virtual ~AttributeSet()
 		{
 			delete buffer;
-			if (pointer) delete pointer;
+			delete pointer;
 		}
 
 		void SetData(int numTuples, void *data, GLenum usage = GL_STATIC_DRAW)
@@ -95,6 +95,10 @@ namespace NQVTK
 
 		int GetNumberOfTuples() { return numTuples; }
 		int GetNumberOfComponents() { return numComponents; }
+		GLenum GetValueType() { return valueType; }
+
+		// Advanced use only...
+		GLBuffer *GetBuffer() { return buffer; }
 
 	protected:
 		GLBuffer *buffer;

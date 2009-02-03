@@ -111,6 +111,7 @@ SET( ${ProjectName}_Rendering_Classes
 	VBOMesh
 	PolyData
 	PointCloud
+	PCAPointCorrespondenceGlyphs
 	ImageDataTexture3D
 	Camera
 	OrbitCamera
