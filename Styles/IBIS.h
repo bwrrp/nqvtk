@@ -144,6 +144,7 @@ namespace NQVTK
 				painter->SetUniform1f("contourDepthEpsilon", contourDepthEpsilon);
 				painter->SetUniform1i("useFog", useFog);
 				painter->SetUniform1f("depthCueRange", depthCueRange);
+				painter->SetUniform1i("clipId", clipId);
 			}
 
 			// Program parameters
@@ -152,6 +153,7 @@ namespace NQVTK
 			float contourDepthEpsilon;
 			bool useFog;
 			float depthCueRange;
+			int clipId;
 
 		private:
 			// Not implemented

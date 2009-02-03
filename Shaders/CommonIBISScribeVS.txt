@@ -37,6 +37,11 @@ void main() {
 	// Vertex position
 	vertex = gl_Vertex;
 
+#ifndef NQVTK_GENERATE_SHADOWMAP
+	// Normal
+	normal = normalize(gl_NormalMatrix * gl_Normal);
+#endif
+
 #ifdef NQVTK_USE_PCA
 	// Deform the vertex position according to the weights and eigenvectors
 	for (int i = 0; i < NQVTK_USE_PCA; ++i) {
@@ -44,10 +49,6 @@ void main() {
 	}
 #endif
 
-#ifndef NQVTK_GENERATE_SHADOWMAP
-	// Normal
-	normal = normalize(gl_NormalMatrix * gl_Normal);
-#endif
 	// Unlit surface color
 	color = gl_Color;
 
@@ -61,7 +62,7 @@ void main() {
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
 #ifdef NQVTK_USE_SHADOWMAP
-	shadowCoord = gl_TextureMatrix[3] * gl_ModelViewMatrix * vertex;
+	shadowCoord = gl_TextureMatrix[4] * gl_ModelViewMatrix * vertex;
 	vec4 shadowPos = shadowMVM * gl_TextureMatrix[objectId] * vertex;
 	float shadowDepthRange = (shadowFarPlane - shadowNearPlane);
 	depthInShadow = (-shadowPos.z / shadowPos.w - shadowNearPlane) / shadowDepthRange;

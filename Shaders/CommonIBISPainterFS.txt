@@ -22,6 +22,8 @@ uniform bool useFog;
 uniform float depthCueRange; // = 10.0
 #endif
 
+uniform int clipId;
+
 // Prototypes from LibUtility
 bool getBit(float byte, int bit);
 #ifndef NQVTK_GENERATE_SHADOWMAP
@@ -82,11 +84,10 @@ void main() {
 	}
 #endif
 
-	// Clipping: objectId 2 is our clipping object
-	// TODO: Clipping object should probably be configurable
-	if (getBit(maskAfter, 2) && !getBit(maskBefore, 2)) {
+	// Clipping: objectId clipId is our clipping object
+	if (getBit(maskAfter, clipId) && !getBit(maskBefore, clipId)) {
 		color.a = 0.0; // Just render the fog for this slab
-	} else if ((getBit(maskAfter, 2) || getBit(maskBefore, 2))) {
+	} else if ((getBit(maskAfter, clipId) || getBit(maskBefore, clipId))) {
 		discard; // Nothing to render for this slab
 	}
 

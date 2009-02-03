@@ -102,10 +102,11 @@ namespace NQVTK
 			glGetFloatv(GL_MODELVIEW_MATRIX, mvm);
 			glGetFloatv(GL_PROJECTION_MATRIX, inv);
 			Matrix4x4Inverse(mvm, inv);
-			// Load the third texture matrix with the transform for shadow mapping
+			// Load the fourth texture matrix with the transform for shadow mapping
 			// (the first two are currently used for object transforms)
-			// TODO: this assumes two renderables, it's probably better to use custom uniforms
-			glActiveTexture(GL_TEXTURE3);
+			// this assumes it's not used by a renderable...
+			// TODO: use custom uniforms instead
+			glActiveTexture(GL_TEXTURE4);
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
 			// - Screen coordinates to texture coordinates

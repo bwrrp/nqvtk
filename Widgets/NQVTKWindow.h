@@ -334,10 +334,11 @@ public:
 			triangulate->Update();
 			// Create the renderable
 			NQVTK::Renderable *renderable = new NQVTK::PolyData(triangulate->GetOutput());
-			// TODO: make clipper object id adaptive to number of renderables
-			// Alternatively: make every object capable of being a clipper
+			// TODO: make every object capable of being a clipper
 			int id = renderer->AddRenderable(renderable);
-			assert(id = 2);
+			ibisStyle->clipId = id;
+			distfieldStyle->clipId = id;
+			assert(id > 1);
 			if (renderer->GetRenderable(0))
 			{
 				// TODO: adapt position to new renderables
@@ -349,6 +350,20 @@ public:
 			renderable->opacity = 0.3;
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
+
+		/* TODO: add point correspondence renderable
+		{
+			NQVTK::Renderable *obj0 = renderer->GetRenderable(0);
+			NQVTK::Renderable *obj1 = renderer->GetRenderable(1);
+			assert(obj0);
+			assert(obj1);
+			NQVTK::Renderable *renderable = new NQVTK::PCAPointCorrespondenceGlyphs(obj0, obj1);
+			renderer->AddRenderable(renderable);
+			renderable->visible = true;
+			renderable->color = NQVTK::Vector3(0.0, 0.0, 0.0);
+			renderable->opacity = 1.0;
+		}
+		//*/
 
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first
@@ -411,8 +426,8 @@ protected:
 			{
 				renderer->ResetRenderables();
 				// Reset clipper position
-				NQVTK::Renderable *clipper = renderer->GetRenderable(2);
-				if (clipper)
+				NQVTK::Renderable *clipper = renderer->GetRenderable(ibisStyle->clipId);
+				if (clipper && renderer->GetRenderable(0))
 				{
 					clipper->position = renderer->GetRenderable(0)->GetCenter();
 				}
@@ -421,7 +436,7 @@ protected:
 		case Qt::Key_C:
 			{
 				// Toggle clipper visibility
-				NQVTK::Renderable *clipper = renderer->GetRenderable(2);
+				NQVTK::Renderable *clipper = renderer->GetRenderable(ibisStyle->clipId);
 				if (clipper)
 				{
 					clipper->visible = !clipper->visible;
