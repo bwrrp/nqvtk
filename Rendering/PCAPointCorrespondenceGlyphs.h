@@ -38,8 +38,11 @@ namespace NQVTK
 				AddAttributeSet(name.str(), vecset, true);
 			}
 
-			// Create index buffer for glyph lines
+			// Lines are created between corresponding points on the two objects
 			numLines = obj1->GetAttributeSet("gl_Vertex")->GetNumberOfTuples();
+			// Create objectId buffer
+			float *ids = new float[numLines * 2];
+			// Create index buffer for glyph lines
 			lineIndices = GLBuffer::New();
 			lineIndices->BindAsIndexData();
 			lineIndices->SetData(numLines * 2 * sizeof(GLuint), 0, GL_STATIC_DRAW);
@@ -47,11 +50,20 @@ namespace NQVTK
 			// Create indices
 			for (int i = 0; i < numLines; ++i)
 			{
+				// Line start and end points
 				indices[i * 2] = i;
 				indices[i * 2 + 1] = i + numLines;
+				// Source ids, for determining which weights to use in the shader
+				ids[i] = 0.0;
+				ids[i + numLines] = 10.0;
 			}
 			lineIndices->Unmap();
 			lineIndices->Unbind();
+
+			AttributeSet *idset = new AttributeSet(GL_FLOAT, 1);
+			idset->SetData(numLines * 2, ids);
+			AddAttributeSet("sourceId", idset, true);
+			delete [] ids;
 
 			// Add a combined param set for the weights
 			SetParamSet("pcacorrespondence", new PCACorrespondenceParamSet(

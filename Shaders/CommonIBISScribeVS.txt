@@ -22,6 +22,9 @@ varying float pvalue;
 // Define NQVTK_USE_PCA to the number of eigenvectors
 attribute vec3 eigvecs[NQVTK_USE_PCA];
 uniform float weights[NQVTK_USE_PCA];
+// For the correspondence glyphs
+uniform float weights2[NQVTK_USE_PCA];
+attribute float sourceId;
 #endif
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
@@ -44,8 +47,14 @@ void main() {
 
 #ifdef NQVTK_USE_PCA
 	// Deform the vertex position according to the weights and eigenvectors
-	for (int i = 0; i < NQVTK_USE_PCA; ++i) {
-		vertex += vec4(weights[i] * eigvecs[i], 0.0);
+	if (sourceId < 0.5) {
+		for (int i = 0; i < NQVTK_USE_PCA; ++i) {
+			vertex += vec4(weights[i] * eigvecs[i], 0.0);
+		}
+	} else {
+		for (int i = 0; i < NQVTK_USE_PCA; ++i) {
+			vertex += vec4(weights2[i] * eigvecs[i], 0.0);
+		}
 	}
 #endif
 
