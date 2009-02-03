@@ -10,6 +10,10 @@ PROJECT( ${ProjectName} )
 
 cmake_minimum_required( VERSION 2.4.0 )
 
+IF( COMMAND cmake_policy )
+	cmake_policy( SET CMP0003 NEW )
+ENDIF( COMMAND cmake_policy )
+
 # We need VTK for its datatypes
 FIND_PACKAGE( VTK REQUIRED )
 INCLUDE( ${VTK_USE_FILE} )
