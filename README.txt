@@ -17,6 +17,7 @@ Fn: switch styles:
     F4: raycaster
     F5: deformation field raycaster
 1, 2: toggle visibility of objects
+4: toggle point correspondence glyphs
 C: toggle clipping object
 R: reset objects
 V: reset camera
