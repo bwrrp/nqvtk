@@ -183,7 +183,7 @@ public:
 				//*/
 				//* Ventricle PCA
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
-				args.append("D:/data/Luca/PCA/G3/mean-textured.vtp");
+				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				//args.append("-");
 				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
 				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
@@ -353,7 +353,7 @@ public:
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
 
-		// Add point correspondence renderable
+		// Add renderable for point correspondence glyphs
 		// TODO: update this when one of the meshes changes
 		{
 			NQVTK::VBOMesh *obj0 = dynamic_cast<NQVTK::VBOMesh*>(renderer->GetRenderable(0));
@@ -362,7 +362,8 @@ public:
 			assert(obj1);
 			NQVTK::Renderable *renderable = new NQVTK::PCAPointCorrespondenceGlyphs(obj0, obj1);
 			renderer->AddRenderable(renderable);
-			renderable->visible = true;
+			// Initially invisible
+			renderable->visible = false;
 			renderable->color = NQVTK::Vector3(0.0, 0.0, 0.0);
 			renderable->opacity = 1.0;
 		}

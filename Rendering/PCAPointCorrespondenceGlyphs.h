@@ -83,6 +83,7 @@ namespace NQVTK
 			BindAttributes();
 
 			glDisable(GL_LIGHTING);
+			glNormal3d(0.0, 0.0, 0.0);
 			glLineWidth(2.0);
 
 			lineIndices->BindAsIndexData();
