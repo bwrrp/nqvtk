@@ -16,6 +16,7 @@ uniform float farPlane;
 uniform float nearPlane;
 
 // Parameters
+uniform bool useContours;
 uniform bool useFatContours;
 uniform float contourDepthEpsilon; // = 0.001
 uniform bool useFog;
@@ -64,23 +65,25 @@ void main() {
 	}
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
-	// Apply contouring
-	vec4 left	= texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));
-	vec4 right	= texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));
-	vec4 top	= texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));
-	vec4 bottom	= texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));
-	float depth = unpackFloat(infoAfter.zw);
-	float diffL = abs(unpackFloat(left.zw) - depth);
-	float diffR = abs(unpackFloat(right.zw) - depth);
-	float diffT = abs(unpackFloat(top.zw) - depth);
-	float diffB = abs(unpackFloat(bottom.zw) - depth);
-	bool contourL = (left.y   != infoAfter.y && diffL < contourDepthEpsilon);
-	bool contourR = (right.y  != infoAfter.y && diffR < contourDepthEpsilon);
-	bool contourT = (top.y    != infoAfter.y && diffT < contourDepthEpsilon);
-	bool contourB = (bottom.y != infoAfter.y && diffB < contourDepthEpsilon);
-	if (contourL || contourT || (useFatContours && (contourR || contourB))) {
-		litFragment = vec3(0.0);
-		color.a = 1.0;
+	if (useContours) {
+		// Apply contouring
+		vec4 left	= texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));
+		vec4 right	= texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));
+		vec4 top	= texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));
+		vec4 bottom	= texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));
+		float depth = unpackFloat(infoAfter.zw);
+		float diffL = abs(unpackFloat(left.zw) - depth);
+		float diffR = abs(unpackFloat(right.zw) - depth);
+		float diffT = abs(unpackFloat(top.zw) - depth);
+		float diffB = abs(unpackFloat(bottom.zw) - depth);
+		bool contourL = (left.y   != infoAfter.y && diffL < contourDepthEpsilon);
+		bool contourR = (right.y  != infoAfter.y && diffR < contourDepthEpsilon);
+		bool contourT = (top.y    != infoAfter.y && diffT < contourDepthEpsilon);
+		bool contourB = (bottom.y != infoAfter.y && diffB < contourDepthEpsilon);
+		if (contourL || contourT || (useFatContours && (contourR || contourB))) {
+			litFragment = vec3(0.0);
+			color.a = 1.0;
+		}
 	}
 #endif
 

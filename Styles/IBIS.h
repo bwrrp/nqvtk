@@ -23,10 +23,12 @@ namespace NQVTK
 			IBIS()
 			{ 
 				// Set default parameters
+				useContours = true;
 				useFatContours = false;
 				contourDepthEpsilon = 0.005f;
 				useFog = true;
 				depthCueRange = 10.0f;
+				pvalueThreshold = 1.0;
 
 				SetOption("NQVTK_USE_PVALS");
 			}
@@ -140,6 +142,7 @@ namespace NQVTK
 			virtual void UpdatePainterParameters(GLProgram *painter)
 			{
 				// Set program parameters
+				painter->SetUniform1i("useContours", useContours);
 				painter->SetUniform1i("useFatContours", useFatContours);
 				painter->SetUniform1f("contourDepthEpsilon", contourDepthEpsilon);
 				painter->SetUniform1i("useFog", useFog);
@@ -147,13 +150,22 @@ namespace NQVTK
 				painter->SetUniform1i("clipId", clipId);
 			}
 
+			virtual void UpdateScribeParameters(GLProgram *scribe)
+			{
+				// Set program parameters
+				scribe->SetUniform1f("pvalueThreshold", pvalueThreshold);
+			}
+
 			// Program parameters
 			// - Painter
+			bool useContours;
 			bool useFatContours;
 			float contourDepthEpsilon;
 			bool useFog;
 			float depthCueRange;
 			int clipId;
+			// - Scribe
+			float pvalueThreshold;
 
 		private:
 			// Not implemented

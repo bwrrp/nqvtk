@@ -92,7 +92,7 @@
          <x>0</x>
          <y>0</y>
          <width>177</width>
-         <height>1278</height>
+         <height>1303</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -232,6 +232,16 @@
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="useContours" >
+             <property name="text" >
+              <string>Intersection contours</string>
+             </property>
+             <property name="checked" >
+              <bool>true</bool>
              </property>
             </widget>
            </item>

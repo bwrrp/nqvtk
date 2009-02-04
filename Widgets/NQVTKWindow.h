@@ -185,7 +185,7 @@ public:
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				//args.append("-");
-				//args.append("D:/data/Luca/PCA/G3/mean-dist256.vti");
+				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
 				/* Raycaster test
@@ -606,8 +606,9 @@ private slots:
 	}
 	void on_pvalueThreshold_valueChanged(int val) 
 	{
-		distfieldStyle->pvalueThreshold = 
+		ibisStyle->pvalueThreshold = 
 			static_cast<double>(val) / 1000.0;
+		distfieldStyle->pvalueThreshold = ibisStyle->pvalueThreshold;
 		ui.pvalueThresholdDisplay->setText(
 			QString::fromUtf8("P-value \342\211\244 %1").arg( // utf-8 <= character
 				distfieldStyle->pvalueThreshold, 0, 'f', 3));
@@ -621,23 +622,33 @@ private slots:
 	}
 	void on_contourDepthEpsilon_valueChanged(int val) 
 	{
-		distfieldStyle->contourDepthEpsilon = 
+		ibisStyle->contourDepthEpsilon = 
 			static_cast<double>(val) / 1000.0;
+		distfieldStyle->contourDepthEpsilon = ibisStyle->contourDepthEpsilon;
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_useContours_toggled(bool val)
+	{
+		ibisStyle->useContours = val;
+		distfieldStyle->useContours = val;
 		ui.nqvtkwidget->updateGL();
 	}
 	void on_useFatContours_toggled(bool val) 
-	{ 
+	{
+		ibisStyle->useFatContours = val;
 		distfieldStyle->useFatContours = val;
 		ui.nqvtkwidget->updateGL();
 	}
 	void on_depthCueRange_valueChanged(int val) 
 	{
-		distfieldStyle->depthCueRange = 
+		ibisStyle->depthCueRange = 
 			static_cast<double>(val) / 1000.0;
+		distfieldStyle->depthCueRange = ibisStyle->depthCueRange;
 		ui.nqvtkwidget->updateGL();
 	}
 	void on_useFog_toggled(bool val) 
 	{
+		ibisStyle->useFog = val;
 		distfieldStyle->useFog = val;
 		ui.nqvtkwidget->updateGL();
 	}
