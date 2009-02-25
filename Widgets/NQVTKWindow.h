@@ -105,15 +105,9 @@ public:
 		distfieldStyle->SetOption("NQVTK_USE_PCA", "8");
 
 		// Set renderer style
-		renderer->SetStyle(distfieldStyle);
+		//renderer->SetStyle(distfieldStyle);
 		//renderer->SetStyle(raycastStyle);
-		//renderer->SetStyle(deformationStyle);
-
-		// Initial UI configuration
-		ui.ibisGroup->show();
-		ui.scalarsGroup->show();
-		ui.raycasterGroup->hide();
-		ui.deformationGroup->hide();
+		renderer->SetStyle(deformationStyle);
 
 		// Set camera to the interactive orbiting camera
 		//renderer->SetCamera(new NQVTK::OrbitCamera());
@@ -181,12 +175,12 @@ public:
 				args.append("D:/data/Luca/PolyDataG3/Patient00-dist256.vti");
 				args.append("D:/data/Luca/PolyDataG0/Patient00-dist256.vti");
 				//*/
-				//* Ventricle PCA
+				/* Ventricle PCA
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
 				args.append("D:/data/Luca/PCA/G0/mean-textured.vtp");
-				//args.append("-");
-				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
-				//args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				args.append("-");
+				args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
+				args.append("D:/data/Luca/PCA/G0/mean-dist256.vti");
 				//*/
 				/* Raycaster test
 				args.append("D:/Data/Misc/stent8_256_box.vtp");
@@ -238,10 +232,10 @@ public:
 				args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0231-TP_2004_06_28-T1_3D.mha");
 				//args.append("D:/Data/msdata/T1W/T1_3D/T1_3D_images_original/n0221-TP_2004_12_06-T1_3D.mha");
 				//*/
-				/* Deformation fields - test
-				args.append("D:/Temp/meep_box.vtp");
+				//* Deformation fields - test
+				args.append("D:/Data/VectorFields/meep_box.vtp");
 				args.append("-");
-				args.append("D:/Temp/meep2.mha");
+				args.append("D:/Data/VectorFields/meep2.mha");
 				//*/
 			}
 			else
@@ -312,7 +306,7 @@ public:
 			renderableControlWidgets[i]->LoadDistanceField(distFieldPaths[i]);
 		}
 
-		// Add a clipping cylinder for testing
+		/* Add a clipping cylinder for testing
 		{
 			// Create a cylinder
 			vtkSmartPointer<vtkCylinderSource> source = 
@@ -352,8 +346,9 @@ public:
 			renderable->opacity = 0.3;
 			renderable->color = NQVTK::Vector3(1.0, 0.0, 0.0);
 		}
+		//*/
 
-		// Add renderable for point correspondence glyphs
+		/* Add renderable for point correspondence glyphs
 		// TODO: update this when one of the meshes changes
 		{
 			NQVTK::VBOMesh *obj0 = dynamic_cast<NQVTK::VBOMesh*>(renderer->GetRenderable(0));
@@ -367,6 +362,7 @@ public:
 			renderable->color = NQVTK::Vector3(0.0, 0.0, 0.0);
 			renderable->opacity = 1.0;
 		}
+		//*/
 
 		// Set main view interactor
 		// NOTE: This requires the camera and renderables to be set first
@@ -690,16 +686,16 @@ private slots:
 	// Raycaster parameters
 	void on_stepSize_valueChanged(int val)
 	{
-		raycastStyle->stepSize = static_cast<double>(val) / 100.0;
-		deformationStyle->stepSize = static_cast<double>(val) / 100.0;
+		raycastStyle->stepSize = static_cast<double>(val) / 10.0;
+		deformationStyle->stepSize = raycastStyle->stepSize;
 		ui.stepSize->setToolTip(QString("%1").arg(raycastStyle->stepSize));
 
 		ui.nqvtkwidget->updateGL();
 	}
 	void on_kernelSize_valueChanged(int val)
 	{
-		raycastStyle->kernelSize = static_cast<double>(val) / 100.0;
-		deformationStyle->kernelSize = static_cast<double>(val) / 100.0;
+		raycastStyle->kernelSize = static_cast<double>(val) / 10.0;
+		deformationStyle->kernelSize = raycastStyle->kernelSize;
 		ui.kernelSize->setToolTip(QString("%1").arg(raycastStyle->kernelSize));
 
 		ui.nqvtkwidget->updateGL();

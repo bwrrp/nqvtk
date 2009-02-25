@@ -26,10 +26,13 @@ namespace NQVTK
 
 			Raycaster()
 			{
-				// Step size in world-space units
-				// TODO: should probably depend on size and resolution of the volumes
-				stepSize = 1.0;//0.25;
-				kernelSize = 0.25;
+				// This is later set to the minimum spacing in any direction 
+				// over all volumes
+				unitSize = 1.0;
+
+				// Step size in units
+				stepSize = 1.0;
+				kernelSize = 1.0;
 
 				// TODO: find out why setting this to 1 does not work
 				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
@@ -170,6 +173,8 @@ namespace NQVTK
 
 				// Add volumes to tm from stored paramsets
 				// TODO: per-obejct textures should be handled through the paramsets as well
+				// This also recomputes the unit size
+				unitSize = 1000000.0;
 				for (unsigned int i = 0; i < volumes.size(); ++i)
 				{
 					NQVTK::DistanceFieldParamSet *dfps = volumes[i];
@@ -177,6 +182,17 @@ namespace NQVTK
 					{
 						tm->AddTexture(GetVarName("volume", i), 
 							dfps->distanceField, false);
+						// Compute spacings and update unitSize if any are smaller
+						NQVTK::Vector3 size = dfps->distanceField->GetOriginalSize();
+						float spX = size.x / static_cast<double>(
+							dfps->distanceField->GetWidth() - 1);
+						float spY = size.y / static_cast<double>(
+							dfps->distanceField->GetHeight() - 1);
+						float spZ = size.z / static_cast<double>(
+							dfps->distanceField->GetDepth() - 1);
+						if (spX < unitSize) unitSize = spX;
+						if (spY < unitSize) unitSize = spY;
+						if (spZ < unitSize) unitSize = spZ;
 					}
 					else
 					{
@@ -189,8 +205,8 @@ namespace NQVTK
 			{
 				// Volume parameters are set by the distance field paramsets
 				// Set other parameters
-				painter->SetUniform1f("stepSize", stepSize);
-				painter->SetUniform1f("kernelSize", kernelSize);
+				painter->SetUniform1f("stepSize", stepSize * unitSize);
+				painter->SetUniform1f("kernelSize", kernelSize * unitSize);
 			}
 
 			float stepSize;
@@ -205,6 +221,9 @@ namespace NQVTK
 				name << baseName << "[" << index << "]";
 				return name.str();
 			}
+
+			// Unit used for stepSize and kernelSize
+			float unitSize;
 
 		private:
 			// Not implemented
