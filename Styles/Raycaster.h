@@ -31,7 +31,7 @@ namespace NQVTK
 				unitSize = 1.0;
 
 				// Step size in units
-				stepSize = 1.0;
+				stepSize = 10.0;
 				kernelSize = 1.0;
 
 				// TODO: find out why setting this to 1 does not work
