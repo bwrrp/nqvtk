@@ -124,6 +124,7 @@ SET( ${ProjectName}_Rendering_Classes
 	Renderer
 	SimpleRenderer
 	LayeredRenderer
+	LayeredRaycastingRenderer
 	PointExtractingRenderer
 	PointFilteringRenderer
 	BrushingRenderer
@@ -145,6 +146,7 @@ SET( ${ProjectName}_Styles_Classes
 	ShadowMap
 	Raycaster
 	DeformationRaycaster
+	LayeredIsoRaycaster
 )
 
 SET( ${ProjectName}_Interactors_Classes
