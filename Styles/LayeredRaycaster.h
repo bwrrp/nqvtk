@@ -2,11 +2,6 @@
 
 #include "RenderStyle.h"
 
-#include "GLBlaat/GL.h"
-#include "GLBlaat/GLFramebuffer.h"
-#include "GLBlaat/GLProgram.h"
-#include "GLBlaat/GLUtility.h"
-
 namespace NQVTK
 {
 	namespace Styles
@@ -20,6 +15,12 @@ namespace NQVTK
 
 			LayeredRaycaster()
 			{
+			}
+
+			virtual GLFramebuffer *CreateFBO(int w, int h)
+			{
+				// TODO: create FBO for scribe stage passes
+				return 0;
 			}
 
 			// Scribe stage peeling pass

@@ -32,6 +32,7 @@
 #include "Styles/DistanceFields.h"
 #include "Styles/Raycaster.h"
 #include "Styles/DeformationRaycaster.h"
+#include "Styles/LayeredRaycaster.h"
 
 #include "Rendering/ArcballCamera.h"
 #include "Rendering/OrbitCamera.h"
@@ -91,11 +92,6 @@ public:
 		ui.contourDepthEpsilon->hide();
 		ui.contourDepthEpsilonLabel->hide();
 		ui.brushTest->hide();
-		// Set initial widget group visibility
-		ui.ibisGroup->hide();
-		ui.scalarsGroup->hide();
-		ui.raycasterGroup->show();
-		ui.deformationGroup->show();
 
 		// Create the styles
 		depthpeelStyle = new NQVTK::Styles::DepthPeeling();
@@ -103,6 +99,7 @@ public:
 		distfieldStyle = new NQVTK::Styles::DistanceFields();
 		raycastStyle = new NQVTK::Styles::Raycaster();
 		deformationStyle = new NQVTK::Styles::DeformationRaycaster();
+		layeredRaycastStyle = new NQVTK::Styles::LayeredRaycaster();
 
 		// TODO: handle this somewhere else
 		ibisStyle->SetOption("NQVTK_USE_PCA", "8");
@@ -111,9 +108,16 @@ public:
 		// Set renderer style
 		//renderer->SetStyle(distfieldStyle);
 		//renderer->SetStyle(raycastStyle);
-		renderer->SetStyle(deformationStyle);
+		//renderer->SetStyle(deformationStyle);
+		renderer->SetStyle(layeredRaycastStyle);
 
-		// Set camera to the interactive orbiting camera
+		// Set initial widget group visibility
+		ui.ibisGroup->hide();
+		ui.scalarsGroup->hide();
+		ui.raycasterGroup->show();
+		ui.deformationGroup->hide();
+
+		// Set initial camera
 		//renderer->SetCamera(new NQVTK::OrbitCamera());
 		renderer->SetCamera(new NQVTK::ArcballCamera());
 
@@ -395,6 +399,7 @@ protected:
 	NQVTK::Styles::DistanceFields *distfieldStyle;
 	NQVTK::Styles::Raycaster *raycastStyle;
 	NQVTK::Styles::DeformationRaycaster *deformationStyle;
+	NQVTK::Styles::LayeredRaycaster *layeredRaycastStyle;
 
 	std::vector<RenderableControlWidget*> renderableControlWidgets;
 
@@ -493,7 +498,6 @@ protected:
 			{
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
-				// TODO: should disable the widget if this fails
 				if (lrenderer) 
 				{
 					lrenderer->SetStyle(depthpeelStyle);
@@ -508,7 +512,6 @@ protected:
 			{
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
-				// TODO: should disable the widget if this fails
 				if (lrenderer) 
 				{
 					lrenderer->SetStyle(ibisStyle);
@@ -523,7 +526,6 @@ protected:
 			{
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
-				// TODO: should disable the widget if this fails
 				if (lrenderer) 
 				{
 					lrenderer->SetStyle(distfieldStyle);
@@ -538,7 +540,6 @@ protected:
 			{
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
-				// TODO: should disable the widget if this fails
 				if (lrenderer) 
 				{
 					lrenderer->SetStyle(raycastStyle);
@@ -553,7 +554,6 @@ protected:
 			{
 				NQVTK::LayeredRenderer *lrenderer = 
 					dynamic_cast<NQVTK::LayeredRenderer*>(renderer);
-				// TODO: should disable the widget if this fails
 				if (lrenderer) 
 				{
 					lrenderer->SetStyle(deformationStyle);
@@ -561,6 +561,20 @@ protected:
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->show();
 					ui.deformationGroup->show();
+				}
+			}
+			break;
+		case Qt::Key_F6:
+			{
+				NQVTK::LayeredRaycastingRenderer *lrenderer = 
+					dynamic_cast<NQVTK::LayeredRaycastingRenderer*>(renderer);
+				if (lrenderer)
+				{
+					lrenderer->SetStyle(layeredRaycastStyle);
+					ui.ibisGroup->hide();
+					ui.scalarsGroup->hide();
+					ui.raycasterGroup->show();
+					ui.deformationGroup->hide();
 				}
 			}
 			break;
