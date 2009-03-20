@@ -35,12 +35,11 @@ namespace NQVTK
 				dynamic_cast<NQVTK::Styles::LayeredRaycaster*>(this->style);
 			if (style)
 			{
-				// TODO: get raycaster program from style instead
 				raycaster = style->CreateRaycaster();
 				if (!raycaster)
 				{
 					qDebug("Failed to build Raycaster!");
-					// We can't really expect the style to work without it's raycaster
+					// We can't really expect the style to work without its raycaster
 					// Otherwise we could just set layeredRaycasting to false...
 					return false;
 				}
@@ -125,8 +124,10 @@ namespace NQVTK
 			raycaster->SetUniform3f("cameraPos", 
 				camera->position.x, camera->position.y, camera->position.z);
 			ApplyParamSetsArrays(raycaster);
-			// We assume parameters are shared between both scribe passes
+			// TODO: figure out where to put the raycaster parameters
+			// For now, just apply both sets of parameters and see what fits
 			style->UpdateScribeParameters(raycaster);
+			style->UpdatePainterParameters(raycaster);
 
 			// The raycaster uses the same input as the painter, except that the 
 			// "current" layer is the geometry layer from the peeling pass

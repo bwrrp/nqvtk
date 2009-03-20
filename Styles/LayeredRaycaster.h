@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderStyle.h"
+#include "Raycaster.h"
 
 namespace NQVTK
 {
@@ -8,10 +8,10 @@ namespace NQVTK
 	{
 		// TODO: we may want to create an abstract superclass for raycaster styles
 		// (they have an extra stage)
-		class LayeredRaycaster : public NQVTK::RenderStyle
+		class LayeredRaycaster : public NQVTK::Styles::Raycaster
 		{
 		public:
-			typedef NQVTK::RenderStyle Superclass;
+			typedef NQVTK::Styles::Raycaster Superclass;
 
 			LayeredRaycaster()
 			{
@@ -19,8 +19,26 @@ namespace NQVTK
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
 			{
-				// TODO: create FBO for scribe stage passes
-				return 0;
+				GLFramebuffer *fbo = GLFramebuffer::New(w, h);
+				fbo->CreateDepthTextureRectangle();
+				int nBufs = 2;
+				GLenum bufs[] = {
+					GL_COLOR_ATTACHMENT0_EXT, // Positions, in-out buffer
+					GL_COLOR_ATTACHMENT1_EXT, // Normals / gradients, object IDs
+					GL_COLOR_ATTACHMENT2_EXT  // Colors, opacities
+				};
+				for (int i = 0; i < nBufs; ++i)
+				{
+					fbo->CreateColorTextureRectangle(
+						bufs[i], GL_RGBA16F_ARB, GL_RGBA, GL_FLOAT);
+					GLUtility::SetDefaultColorTextureParameters(
+						fbo->GetTexture2D(bufs[i]));
+				}
+				glDrawBuffers(nBufs, bufs);
+				if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
+				fbo->Unbind();
+
+				return fbo;
 			}
 
 			// Scribe stage peeling pass
@@ -85,6 +103,22 @@ namespace NQVTK
 					return 0;
 				}
 				return painter;
+			}
+
+			// Used for both the painter and the scribe raycaster passes
+			virtual void RegisterPainterTextures(GLFramebuffer *current, GLFramebuffer *previous) 
+			{
+				// Register infobuffers and volumes
+				Superclass::RegisterPainterTextures(current, previous);
+				
+				// Current layer normals and IDs
+				GLTexture *normals = current->GetTexture2D(GL_COLOR_ATTACHMENT1_EXT);
+				assert(normals);
+				tm->AddTexture("normals", normals, false);
+				// Current layer colors
+				GLTexture *colors = current->GetTexture2D(GL_COLOR_ATTACHMENT2_EXT);
+				assert(colors);
+				tm->AddTexture("colors", colors, false);
 			}
 
 		private:
