@@ -76,8 +76,11 @@ public:
 		// Set up the main view
 		NQVTK::LayeredRenderer *renderer;
 		//renderer = new NQVTK::LayeredRenderer();
+		renderer = new NQVTK::LayeredRaycastingRenderer();
+		// TODO: stereo renderer should use a nested renderer, not inheritance
+		// TODO: shadowmapping renderer should use a nested renderer, not inheritance
 		//renderer = new NQVTK::CrossEyedStereoRenderer();
-		renderer = new NQVTK::ShadowMappingRenderer();
+		//renderer = new NQVTK::ShadowMappingRenderer();
 
 		// Hide eye spacing widgets (only works for stereo renderers)
 		ui.eyeSpacing->hide();

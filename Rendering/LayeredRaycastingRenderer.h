@@ -13,6 +13,7 @@ namespace NQVTK
 
 		LayeredRaycastingRenderer() : fboG(0), raycaster(0)
 		{
+			layeredRaycasting = false;
 		}
 
 		virtual ~LayeredRaycastingRenderer()
@@ -25,24 +26,31 @@ namespace NQVTK
 		{
 			if (!Superclass::Initialize()) return false;
 
-			NQVTK::Styles::LayeredRaycaster *style = 
-				dynamic_cast<NQVTK::Styles::LayeredRaycaster*>(this->style);
-			if (!style) 
-			{
-				qDebug("RenderStyle should be a LayeredRaycaster!");
-				return false;
-			}
-
 			delete fboG;
 			fboG = 0;
 
 			delete raycaster;
-			// TODO: get raycaster program from style instead
-			raycaster = style->CreateRaycaster();
-			if (!raycaster)
+
+			NQVTK::Styles::LayeredRaycaster *style = 
+				dynamic_cast<NQVTK::Styles::LayeredRaycaster*>(this->style);
+			if (style)
 			{
-				qDebug("Failed to build Raycaster!");
-				return false;
+				// TODO: get raycaster program from style instead
+				raycaster = style->CreateRaycaster();
+				if (!raycaster)
+				{
+					qDebug("Failed to build Raycaster!");
+					// We can't really expect the style to work without it's raycaster
+					// Otherwise we could just set layeredRaycasting to false...
+					return false;
+				}
+
+				// Ready for layered raycasting
+				layeredRaycasting = true;
+			}
+			else
+			{
+				layeredRaycasting = false;
 			}
 
 			return true;
@@ -52,17 +60,21 @@ namespace NQVTK
 		{
 			Superclass::Resize(w, h);
 
-			// The geometry infobuffer (peeling pass) and the layer infobuffer 
-			// (raycasting pass) have the same format. If raycasting doesn't 
-			// encounter anything interesting, the result is a simple copy. 
-			// This allows us to easily combine geometry and volume features.
-			if (!fboG) 
+			if (layeredRaycasting)
 			{
-				fboG = style->CreateFBO(w, h);
-			}
-			else
-			{
-				if (!fboG->Resize(w, h)) qDebug("WARNING! fboG resize failed!");
+				// The geometry infobuffer (peeling pass) and the layer infobuffer 
+				// (raycasting pass) have the same format. If raycasting doesn't 
+				// encounter anything interesting, the result is a simple copy. 
+				// This allows us to easily combine geometry and volume features.
+				// NOTE: The extra buffer is always created / resized / deleted for now
+				if (!fboG) 
+				{
+					fboG = style->CreateFBO(w, h);
+				}
+				else
+				{
+					if (!fboG->Resize(w, h)) qDebug("WARNING! fboG resize failed!");
+				}
 			}
 		}
 
@@ -73,7 +85,7 @@ namespace NQVTK
 			// - Peeling - renders geometry (bounding and other) with depth peeling
 			// - Raycasting - renders volume features
 			// Both result in an infobuffer, which is visualized by the painter.
-			if (layer > 0)
+			if (layer > 0 && layeredRaycasting)
 			{
 				// Bind the geometry layer FBO
 				fbo1->Unbind();
@@ -84,7 +96,7 @@ namespace NQVTK
 			// TODO: This assumes scribe is the peel scribe pass
 			Superclass::DrawScribePass(layer);
 
-			if (layer > 0)
+			if (layer > 0 && layeredRaycasting)
 			{
 				// Restore the normal scribe stage FBO
 				fboG->Unbind();
@@ -143,5 +155,8 @@ namespace NQVTK
 	protected:
 		GLFramebuffer *fboG;
 		GLProgram *raycaster;
+
+		// Whether the current style requires layered raycasting
+		bool layeredRaycasting;
 	};
 }
