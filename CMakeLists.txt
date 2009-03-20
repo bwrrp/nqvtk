@@ -146,7 +146,7 @@ SET( ${ProjectName}_Styles_Classes
 	ShadowMap
 	Raycaster
 	DeformationRaycaster
-	LayeredIsoRaycaster
+	LayeredRaycaster
 )
 
 SET( ${ProjectName}_Interactors_Classes
@@ -183,6 +183,10 @@ SET( ${ProjectName}_Shaders_Text
 	RaycasterScribeFS.txt
 	RaycasterPainterFS.txt
 	DeformationRaycasterPainterFS.txt
+	LayeredRaycasterScribePeelVS.txt
+	LayeredRaycasterScribePeelFS.txt
+	LayeredRaycasterScribeCastFS.txt
+	LayeredRaycasterPainterFS.txt
 )
 
 # --------------------------------------------------

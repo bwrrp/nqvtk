@@ -16,6 +16,7 @@
 
 #include "Rendering/SimpleRenderer.h"
 #include "Rendering/LayeredRenderer.h"
+#include "Rendering/LayeredRaycastingRenderer.h"
 #include "Rendering/CrossEyedStereoRenderer.h"
 #include "Rendering/ShadowMappingRenderer.h"
 #include "Rendering/BrushingRenderer.h"
