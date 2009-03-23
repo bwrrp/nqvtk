@@ -1,0 +1,42 @@
+#extension GL_ARB_texture_rectangle : enable
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler2DRect infoPrevious;
+uniform sampler2DRect infoCurrent;
+uniform sampler2DRect normals;
+uniform sampler2DRect colors;
+
+uniform int layer;
+uniform float viewportX;
+uniform float viewportY;
+
+uniform sampler3D volume[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float volumeDataShift[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float volumeDataScale[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
+
+// Prototypes from LibUtility
+vec3 phongShading(vec3 matColor, vec3 normal);
+
+void main() {
+	// Get info
+	vec4 r0 = gl_FragCoord;
+	r0.x -= viewportX;
+	r0.y -= viewportY;
+	vec4 infoBefore = texture2DRect(infoPrevious, r0.xy);
+	vec4 infoAfter = texture2DRect(infoCurrent, r0.xy);
+	vec4 normalid = texture2DRect(normals, r0.xy);
+	vec3 normal = normalize(normalid.rgb);
+	float gm = length(normalid.rgb);
+	float id = normalid.a;
+	vec4 color = texture2DRect(colors, r0.xy);
+
+	// Simple lighting
+	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
+	//gl_FragColor = vec4(phongShading(color.rgb, normal), 0.6);
+	gl_FragColor = color;
+}

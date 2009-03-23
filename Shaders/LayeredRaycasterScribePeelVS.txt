@@ -1,0 +1,15 @@
+uniform int objectId;
+
+varying vec4 pos;
+varying vec3 normal;
+varying vec4 color;
+
+// Shader main function
+void main() {
+	// Compute position in view space
+	pos = gl_TextureMatrix[objectId] * gl_Vertex;
+	gl_Position = ftransform();
+	
+	normal = normalize(gl_NormalMatrix * gl_Normal);
+	color = gl_Color;
+}

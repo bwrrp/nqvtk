@@ -30,6 +30,7 @@ namespace NQVTK
 			fboG = 0;
 
 			delete raycaster;
+			raycaster = 0;
 
 			NQVTK::Styles::LayeredRaycaster *style = 
 				dynamic_cast<NQVTK::Styles::LayeredRaycaster*>(this->style);
@@ -113,6 +114,7 @@ namespace NQVTK
 		virtual void DrawRaycastPass(int layer)
 		{
 			glDisable(GL_DEPTH_TEST);
+			glDepthMask(GL_FALSE);
 
 			// Start raycaster program
 			raycaster->Start();
@@ -151,6 +153,7 @@ namespace NQVTK
 			style->UnregisterPainterTextures();
 
 			glEnable(GL_DEPTH_TEST);
+			glDepthMask(GL_TRUE);
 		}
 
 	protected:

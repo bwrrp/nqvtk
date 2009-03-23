@@ -21,7 +21,7 @@ namespace NQVTK
 			{
 				GLFramebuffer *fbo = GLFramebuffer::New(w, h);
 				fbo->CreateDepthTextureRectangle();
-				int nBufs = 2;
+				int nBufs = 3;
 				GLenum bufs[] = {
 					GL_COLOR_ATTACHMENT0_EXT, // Positions, in-out buffer
 					GL_COLOR_ATTACHMENT1_EXT, // Normals / gradients, object IDs
