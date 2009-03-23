@@ -73,6 +73,12 @@ namespace NQVTK
 			}
 		}
 
+		virtual void Draw()
+		{
+			Update();
+			Superclass::Draw();
+		}
+
 	protected:
 		bool active;
 		Vector3 initialPosition;
