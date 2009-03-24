@@ -44,6 +44,9 @@ namespace NQVTK
 					}
 				}
 			}
+			// Slightly increase the boundaries to prevent accuracy issues
+			minDepth *= 0.9;
+			maxDepth *= 1.1;
 			// Set Z planes
 			nearZ = std::max(1.0, minDepth);
 			farZ = std::min(maxDepth, std::numeric_limits<double>::max());
