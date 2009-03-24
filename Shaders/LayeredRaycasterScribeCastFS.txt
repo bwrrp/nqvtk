@@ -19,6 +19,12 @@ uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
+uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
+
+uniform float stepSize;
+uniform float kernelSize;
+
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
@@ -40,37 +46,60 @@ void main() {
 	// Discard background
 	if (length(infoAfter) == 0.0) discard;
 
-	// TODO: implement raycasting.
-
+	// Should be set to infoBefore if raycasting hits a surface
 	vec4 info = infoAfter;
-	
-	// Test: sphere
-	vec3 ray = infoAfter.xyz - infoBefore.xyz;
-	float l = length(ray);
-	ray = normalize(ray);
-	vec3 dst = infoBefore.xyz;
-	float B = dot(dst, ray);
-	float C = dot(dst, dst) - 25.0;
-	float D = B * B - C;
-	if (D > 0.0) {
-		float D = -B - sqrt(D);
-		if (D < l) {
-			// Intersection
-			vec3 p = infoBefore.xyz + D * ray;
-			vec3 n = normalize(p);
-			bool facing = dot(n, ray) < 0;
-			if (getBit(infoBefore.a, 2) != facing) {
-				normalid = vec4(gl_NormalMatrix * n, normalid.a);
-				info = vec4(p, info.a);
-				color = vec4(vec3(1.0), 0.3);
-				info = infoBefore;
-				info.a = setBit(info.a, 2, facing);
+
+	// Raycast into the slab
+	vec3 startPos = infoBefore.rgb;
+	vec3 endPos = infoAfter.rgb;
+	vec3 ray = endPos - startPos;
+
+	// Determine step, number of steps
+	vec3 step = normalize(ray) * stepSize;
+	float stepLength = stepSize;
+	int numSteps = int(ceil(length(ray) / stepSize));
+
+	// Start raycasting
+	vec3 pos = startPos;
+	bool firstSample = true;
+	float firstVal = 0.0;
+	bool done = false;
+	// For each step along the ray...
+	for (int i = 0; i < numSteps + 1 && !done; ++i) {
+		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT && !done; ++v) {
+			// If the volume is active, sample it
+			if (getBit(infoBefore.a, v)) {
+				vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+				vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+				float val = texture3D(volume[v], p).x;
+				if (firstSample) {
+					// The first sample can never hit a surface
+					// TODO: we may want to use the in-out mask for this
+					firstVal = val;
+					firstSample = false;
+				} else {
+					if ((val < tfStart[v]) != (firstVal < tfStart[v])) {
+						// Found an isosurface
+						done = true;
+						info = vec4(pos, infoBefore.a);
+						color = vec4(vec3(1.0), 0.6);
+						normal = vec3(0.0);
+					}
+				}
 			}
 		}
+
+		// The last step should stay within the slab
+		if (i == numSteps) {
+			step = endPos - pos;
+			stepLength = length(step);
+		}
+		// Step along the ray
+		pos += step;
 	}
 
 	// Fill the infobuffer
 	gl_FragData[0] = info;
-	gl_FragData[1] = normalid;
+	gl_FragData[1] = vec4(normal, id);
 	gl_FragData[2] = color;
 }

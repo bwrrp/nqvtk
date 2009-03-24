@@ -198,13 +198,13 @@ public:
 				args.append("D:/Data/Misc/stent8_256.vti");
 				//*/
 				/* Raycaster test 2
-				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal1_box.vtp");
-				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal_box.vtp");
-				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2_box.vtp");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/vti/PatientA-Sagittal1_box.vtp");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/vti/PatientA-Transversal_box.vtp");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/vti/PatientA-Sagittal2_box.vtp");
 				args.append("-");
-				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal1.vti");
-				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Transversal.vti");
-				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/PatientA-Sagittal2.vti");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/vti/PatientA-Sagittal1.vti");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/vti/PatientA-Transversal.vti");
+				args.append("D:/Data/Cartilage/cartilage3D/new_data_20060812/vti/PatientA-Sagittal2.vti");
 				//*/
 				/* msdata lesion masks
 				args.append("D:/Data/msdata/T2W/T2W_lesionmasks_normalized_16its/padded/wn0920-TP_2005.10.21-Lesions(DUO)-mask_LES_box.vtp");
@@ -706,6 +706,7 @@ private slots:
 	{
 		raycastStyle->stepSize = static_cast<double>(val) / 10.0;
 		deformationStyle->stepSize = raycastStyle->stepSize;
+		layeredRaycastStyle->stepSize = raycastStyle->stepSize;
 		ui.stepSize->setToolTip(QString("%1").arg(raycastStyle->stepSize));
 
 		ui.nqvtkwidget->updateGL();
@@ -714,6 +715,7 @@ private slots:
 	{
 		raycastStyle->kernelSize = static_cast<double>(val) / 10.0;
 		deformationStyle->kernelSize = raycastStyle->kernelSize;
+		layeredRaycastStyle->kernelSize = raycastStyle->kernelSize;
 		ui.kernelSize->setToolTip(QString("%1").arg(raycastStyle->kernelSize));
 
 		ui.nqvtkwidget->updateGL();
