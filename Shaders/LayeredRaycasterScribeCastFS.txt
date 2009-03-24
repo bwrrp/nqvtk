@@ -21,6 +21,8 @@ uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
+bool getBit(float byte, int bit);
+float setBit(float byte, int bit, bool on);
 
 void main() {
 	// Get info
@@ -38,10 +40,37 @@ void main() {
 	// Discard background
 	if (length(infoAfter) == 0.0) discard;
 
-	// TODO: implement raycasting. For now, we just copy the current infobuffer
+	// TODO: implement raycasting.
+
+	vec4 info = infoAfter;
+	
+	// Test: sphere
+	vec3 ray = infoAfter.xyz - infoBefore.xyz;
+	float l = length(ray);
+	ray = normalize(ray);
+	vec3 dst = infoBefore.xyz;
+	float B = dot(dst, ray);
+	float C = dot(dst, dst) - 25.0;
+	float D = B * B - C;
+	if (D > 0.0) {
+		float D = -B - sqrt(D);
+		if (D < l) {
+			// Intersection
+			vec3 p = infoBefore.xyz + D * ray;
+			vec3 n = normalize(p);
+			bool facing = dot(n, ray) < 0;
+			if (getBit(infoBefore.a, 2) != facing) {
+				normalid = vec4(gl_NormalMatrix * n, normalid.a);
+				info = vec4(p, info.a);
+				color = vec4(vec3(1.0), 0.3);
+				info = infoBefore;
+				info.a = setBit(info.a, 2, facing);
+			}
+		}
+	}
 
 	// Fill the infobuffer
-	gl_FragData[0] = infoAfter;
+	gl_FragData[0] = info;
 	gl_FragData[1] = normalid;
 	gl_FragData[2] = color;
 }

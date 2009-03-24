@@ -73,6 +73,8 @@ namespace NQVTK
 				// Raycaster fragment shaders
 				if (res) res = raycaster->AddFragmentShader(
 					AddShaderDefines(Shaders::LayeredRaycasterScribeCastFS));
+				if (res) res = raycaster->AddFragmentShader(
+					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = raycaster->Link();
 				qDebug(raycaster->GetInfoLogs().c_str());
 				if (!res) 
