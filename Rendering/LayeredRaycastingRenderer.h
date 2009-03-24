@@ -70,6 +70,9 @@ namespace NQVTK
 				if (!fboG) 
 				{
 					fboG = style->CreateFBO(w, h);
+					// this fbo does not need a depth buffer
+					delete fboG->DetachRendertarget(GL_DEPTH_ATTACHMENT_EXT);
+					fboG->Unbind();
 				}
 				else
 				{
@@ -80,6 +83,8 @@ namespace NQVTK
 
 		virtual void DrawScribePass(int layer)
 		{
+			Clear();
+
 			// The first layer is a special case (only geometry, no volumes)
 			// For all other layers, we split the scribe stage into two passes:
 			// - Peeling - renders geometry (bounding and other) with depth peeling
@@ -88,8 +93,12 @@ namespace NQVTK
 			if (layer > 0 && layeredRaycasting)
 			{
 				// Bind the geometry layer FBO
+				// We need to use the same depth buffer as fbo1 here
+				GLRendertarget *depthbuffer = fbo1->DetachRendertarget(GL_DEPTH_ATTACHMENT_EXT);
 				fbo1->Unbind();
 				fboG->Bind();
+				fboG->AttachRendertarget(GL_DEPTH_ATTACHMENT_EXT, depthbuffer);
+				assert(fboG->IsOk());
 			}
 
 			// Draw the scribe pass to render the next geometry layer infobuffer
@@ -99,8 +108,11 @@ namespace NQVTK
 			if (layer > 0 && layeredRaycasting)
 			{
 				// Restore the normal scribe stage FBO
+				GLRendertarget *depthbuffer = fboG->DetachRendertarget(GL_DEPTH_ATTACHMENT_EXT);
 				fboG->Unbind();
 				fbo1->Bind();
+				fbo1->AttachRendertarget(GL_DEPTH_ATTACHMENT_EXT, depthbuffer);
+				assert(fbo1->IsOk());
 
 				// Draw the raycasting scribe pass to render the actual infobuffer
 				// The raycasting pass is more similar to the painter pass in that 

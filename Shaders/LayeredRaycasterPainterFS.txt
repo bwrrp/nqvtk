@@ -37,6 +37,7 @@ void main() {
 
 	// Simple lighting
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
-	//gl_FragColor = vec4(phongShading(color.rgb, normal), 0.6);
-	gl_FragColor = color;
+
+	// Premultiply colors
+	gl_FragColor = vec4(color.rgb * color.a, color.a);
 }

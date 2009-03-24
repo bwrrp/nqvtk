@@ -134,7 +134,8 @@ namespace NQVTK
 			// For scribes that don't have a vertex shader
 			glEnable(GL_COLOR_MATERIAL);
 
-			// Depth clamping avoids clipping problems
+			// Depth clamping "avoids" clipping problems
+			// TODO: it's better to fill holes by first drawing the near clipping plane
 			if (GLEW_NV_depth_clamp)
 			{
 				glEnable(GL_DEPTH_CLAMP_NV);

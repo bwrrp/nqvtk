@@ -35,6 +35,9 @@ void main() {
 	float id = normalid.a;
 	vec4 color = texture2DRect(colors, r0.xy);
 
+	// Discard background
+	if (length(infoAfter) == 0.0) discard;
+
 	// TODO: implement raycasting. For now, we just copy the current infobuffer
 
 	// Fill the infobuffer
