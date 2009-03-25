@@ -22,6 +22,8 @@ uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 
+uniform float testParam;
+
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
 
@@ -38,6 +40,8 @@ void main() {
 	float id = normalid.a;
 	vec4 color = texture2DRect(colors, r0.xy);
 
+	if (layer < int(testParam * 100.0)) discard;
+
 	// Simple lighting
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
 
@@ -52,6 +56,11 @@ void main() {
 	bool contourB = (bottom.a != id);
 	if (contourL || contourT || contourR || contourB) {
 		color = vec4(vec3(0.0), 1.0);
+	} else if (abs(dot(normalize(left.rgb), normal)) < tfEnd[0] || 
+		abs(dot(normalize(right.rgb), normal)) < tfEnd[0] || 
+		abs(dot(normalize(top.rgb), normal)) < tfEnd[0] || 
+		abs(dot(normalize(bottom.rgb), normal)) < tfEnd[0]) {
+		color = vec4(vec3(0.0, 0.3, 0.0), 1.0);
 	}
 
 	// Premultiply colors

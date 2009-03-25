@@ -123,6 +123,14 @@ namespace NQVTK
 				tm->AddTexture("colors", colors, false);
 			}
 
+			virtual void UpdatePainterParameters(GLProgram *painter)
+			{
+				Superclass::UpdatePainterParameters(painter);
+				painter->SetUniform1f("testParam", testParam);
+			}
+
+			float testParam;
+
 		private:
 			// Not implemented
 			LayeredRaycaster(const LayeredRaycaster&);

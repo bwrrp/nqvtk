@@ -726,6 +726,7 @@ private slots:
 	{
 		// TODO: remove testParam later
 		deformationStyle->testParam = static_cast<float>(val) / 100.0;
+		layeredRaycastStyle->testParam = static_cast<float>(val) / 100.0;
 
 		ui.nqvtkwidget->updateGL();
 	}
