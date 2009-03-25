@@ -30,18 +30,35 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
 float setBit(float byte, int bit, bool on);
 
-float getValue(vec3 pos, int v) {
+float getValue(int v, vec3 pos) {
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
 	return texture3D(volume[v], p).x;
 }
 
-vec3 refineHitpoint(vec3 pos, vec3 step, int v, float isoval, bool belowAtPos) {
+// Compute gradient of the volume
+vec3 computeGradient(int v, vec3 pos, float delta, float val) {
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+	float dx = (getValue(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getValue(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	float dy = (getValue(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getValue(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	float dz = (getValue(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getValue(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+#else
+	float dx = (getValue(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	float dy = (getValue(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	float dz = (getValue(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+#endif
+	return vec3(dx, dy, dz);
+}
+
+vec3 refineHitpoint(int v, vec3 pos, vec3 step, float isoval, bool belowAtPos) {
 	vec3 s = 0.5 * step;
 	vec3 p = pos - s;
-	// 5 refinements should be enough for now
-	for (int r = 0; r < 5; ++r) {
-		float val = getValue(p, v);
+	// 6 refinements should be enough for now
+	for (int r = 0; r < 6; ++r) {
+		float val = getValue(v, p);
 		// Halve the step size
 		s *= 0.5;
 		// Step in which direction?
@@ -84,33 +101,40 @@ void main() {
 	int numSteps = int(ceil(length(ray) / stepSize));
 
 	// Start raycasting
-	vec3 pos = startPos;
+	vec3 pos = startPos + step * 0.5;
 	bool firstSample = true;
 	float firstVal = 0.0;
+	bool belowAtStart = false;
 	bool done = false;
 	// For each step along the ray...
 	for (int i = 0; i < numSteps + 1 && !done; ++i) {
 		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT && !done; ++v) {
 			// If the volume is active, sample it
 			if (getBit(infoBefore.a, v)) {
-				float val = getValue(pos, v);
+				float val = getValue(v, pos);
 				if (firstSample) {
 					// The first sample can never hit a surface
 					// TODO: we may want to use the in-out mask for this
 					firstVal = val;
 					firstSample = false;
+					belowAtStart = (firstVal < tfStart[v]);
 				} else {
-					if ((val < tfStart[v]) != (firstVal < tfStart[v])) {
+					bool belowAtPos = (val < tfStart[v]);
+					if (belowAtPos != belowAtStart) {
 						// Found an isosurface
 						done = true;
+						id = float(v + 2);
 						// TODO: if multiple volumes hit an isosurface, 
 						//       check which is first by refinement
-						pos = refineHitpoint(pos, step, v, tfStart[v], (val < tfStart[v]));
-						// TODO: update in-out mask
-						info = vec4(pos, infoBefore.a);
+						pos = refineHitpoint(v, pos, step, tfStart[v], belowAtPos);
+						// TODO: Check in-out mask for earlier intersections with this surface
+						info = vec4(pos, setBit(infoBefore.a, id, !belowAtPos));
 						color = vec4(vec3(1.0), 0.6);
-						// TODO: compute normal
-						normal = vec3(0.0);
+						// Compute normal
+						// TODO: replace with kernel / spline-based method?
+						normal = computeGradient(v, pos, kernelSize, getValue(pos, v));
+						if (belowAtStart) normal = -normal;
+						normal = gl_NormalMatrix * normal;
 					}
 				}
 			}
