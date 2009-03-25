@@ -27,6 +27,15 @@ uniform float testParam;
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
 
+float stripes(float f, int size, int part) {
+	return int(f) % size < part ? 0.0 : 1.0;
+}
+
+float testTexture(vec2 c) {
+	return 1.0 - stripes(c.x, 20, 8) * stripes(c.y, 20, 8) * 
+		(1.0 - stripes(c.x + 8, 20, 4) * stripes(c.y + 8, 20, 4));
+}
+
 void main() {
 	// Get info
 	vec4 r0 = gl_FragCoord;
@@ -62,6 +71,8 @@ void main() {
 		abs(dot(normalize(bottom.rgb), normal)) < tfEnd[0]) {
 		color = vec4(vec3(0.0, 0.3, 0.0), 1.0);
 	}
+
+	if (id > 1) color.rgb *= (0.5 + 0.5 * testTexture(r0.xy));
 
 	// Premultiply colors
 	gl_FragColor = vec4(color.rgb * color.a, color.a);
