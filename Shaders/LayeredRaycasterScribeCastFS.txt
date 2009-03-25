@@ -30,6 +30,30 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
 float setBit(float byte, int bit, bool on);
 
+float getValue(vec3 pos, int v) {
+	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+	return texture3D(volume[v], p).x;
+}
+
+vec3 refineHitpoint(vec3 pos, vec3 step, int v, float isoval, bool belowAtPos) {
+	vec3 s = 0.5 * step;
+	vec3 p = pos - s;
+	// 5 refinements should be enough for now
+	for (int r = 0; r < 5; ++r) {
+		float val = getValue(p, v);
+		// Halve the step size
+		s *= 0.5;
+		// Step in which direction?
+		if ((val < isoval) == belowAtPos) {
+			p -= s;
+		} else {
+			p += s;
+		}
+	}
+	return p;
+}
+
 void main() {
 	// Get info
 	vec4 r0 = gl_FragCoord;
@@ -69,9 +93,7 @@ void main() {
 		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT && !done; ++v) {
 			// If the volume is active, sample it
 			if (getBit(infoBefore.a, v)) {
-				vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
-				vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-				float val = texture3D(volume[v], p).x;
+				float val = getValue(pos, v);
 				if (firstSample) {
 					// The first sample can never hit a surface
 					// TODO: we may want to use the in-out mask for this
@@ -81,8 +103,13 @@ void main() {
 					if ((val < tfStart[v]) != (firstVal < tfStart[v])) {
 						// Found an isosurface
 						done = true;
+						// TODO: if multiple volumes hit an isosurface, 
+						//       check which is first by refinement
+						pos = refineHitpoint(pos, step, v, tfStart[v], (val < tfStart[v]));
+						// TODO: update in-out mask
 						info = vec4(pos, infoBefore.a);
 						color = vec4(vec3(1.0), 0.6);
+						// TODO: compute normal
 						normal = vec3(0.0);
 					}
 				}
