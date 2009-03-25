@@ -19,6 +19,9 @@ uniform vec3 volumeOrigin[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSize[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform vec3 volumeSpacing[NQVTK_RAYCASTER_VOLUMECOUNT];
 
+uniform float tfStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
+
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
 
@@ -39,14 +42,14 @@ void main() {
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
 
 	// Apply contouring
-	vec4 left	= texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y));
-	vec4 right	= texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y));
-	vec4 top	= texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0));
-	vec4 bottom	= texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0));
-	bool contourL = (left.a   != infoAfter.a);
-	bool contourR = (right.a  != infoAfter.a);
-	bool contourT = (top.a    != infoAfter.a);
-	bool contourB = (bottom.a != infoAfter.a);
+	vec4 left	= texture2DRect(normals, vec2(r0.x - 1.0, r0.y));
+	vec4 right	= texture2DRect(normals, vec2(r0.x + 1.0, r0.y));
+	vec4 top	= texture2DRect(normals, vec2(r0.x, r0.y - 1.0));
+	vec4 bottom	= texture2DRect(normals, vec2(r0.x, r0.y + 1.0));
+	bool contourL = (left.a   != id);
+	bool contourR = (right.a  != id);
+	bool contourT = (top.a    != id);
+	bool contourB = (bottom.a != id);
 	if (contourL || contourT || contourR || contourB) {
 		color = vec4(vec3(0.0), 1.0);
 	}
