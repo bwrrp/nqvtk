@@ -101,43 +101,39 @@ void main() {
 	int numSteps = int(ceil(length(ray) / stepSize));
 
 	// Start raycasting
-	vec3 pos = startPos + step * 0.5;
-	bool firstSample[NQVTK_RAYCASTER_VOLUMECOUNT];
+	vec3 pos = startPos;
+	bool active[NQVTK_RAYCASTER_VOLUMECOUNT];
 	bool belowAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 	for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
-		firstSample[v] = true;
-		belowAtStart[v] = false;
+		active[v] = getBit(infoBefore.a, v);
+		belowAtStart[v] = !getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
 	}
 	bool done = false;
 	// For each step along the ray...
 	for (int i = 0; i < numSteps + 1 && !done; ++i) {
 		for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT && !done; ++v) {
 			// If the volume is active, sample it
-			if (getBit(infoBefore.a, v)) {
+			if (active[v]) {
 				float val = getValue(v, pos);
-				if (firstSample[v]) {
-					// The first sample can never hit a surface
-					// TODO: we may want to use the in-out mask for this
-					firstSample[v] = false;
-					belowAtStart[v] = (val < tfStart[v]);
-				} else {
-					bool belowAtPos = (val < tfStart[v]);
-					if (belowAtPos != belowAtStart[v]) {
-						// Found an isosurface
-						done = true;
-						id = float(v + 2);
-						// TODO: if multiple volumes hit an isosurface, 
-						//       check which is first by refinement
-						pos = refineHitpoint(v, pos, step, tfStart[v], belowAtPos);
-						// TODO: Check in-out mask for earlier intersections with this surface
-						info = vec4(pos, setBit(infoBefore.a, int(id), !belowAtPos));
-						color = vec4(vec3(1.0), 0.6);
-						// Compute normal
-						// TODO: replace with kernel / spline-based method?
-						normal = computeGradient(v, pos, kernelSize, getValue(v, pos));
-						if (belowAtStart[v]) normal = -normal;
-						normal = gl_NormalMatrix * normal;
-					}
+				bool belowAtPos = (val < tfStart[v]);
+				if (belowAtPos != belowAtStart[v]) {
+					// Found an isosurface
+					done = true;
+					// TODO: if multiple volumes hit an isosurface, 
+					//       check which is first by refinement
+					vec3 refinedPos = refineHitpoint(v, pos, step, tfStart[v], belowAtPos);
+					// refinedPos can be on either side of the surface, but pos
+					// is definitely on the other side, so we continue from there
+					info = vec4(pos, setBit(infoBefore.a, 
+						v + NQVTK_RAYCASTER_VOLUMECOUNT, !belowAtPos));
+					//color = vec4(belowAtPos ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 0.0, 1.0), 0.6);
+					color = vec4(vec3(1.0), 0.6);
+					// Compute normal
+					// TODO: replace with kernel / spline-based method?
+					normal = computeGradient(v, refinedPos, kernelSize, getValue(v, refinedPos));
+					if (belowAtStart[v]) normal = -normal;
+					normal = gl_NormalMatrix * normal;
+					id = float(v + NQVTK_RAYCASTER_VOLUMECOUNT);
 				}
 			}
 		}

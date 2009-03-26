@@ -15,6 +15,7 @@ namespace NQVTK
 
 			LayeredRaycaster()
 			{
+				testParam = 0.0;
 			}
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)

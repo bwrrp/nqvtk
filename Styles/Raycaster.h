@@ -35,7 +35,7 @@ namespace NQVTK
 				kernelSize = 1.0;
 
 				// TODO: find out why setting this to 1 does not work
-				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
+				SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "2");
 
 				SetOption("NQVTK_RAYCASTER_LIGHTING");
 				SetOption("NQVTK_RAYCASTER_DITHERPOS");
