@@ -102,9 +102,12 @@ void main() {
 
 	// Start raycasting
 	vec3 pos = startPos + step * 0.5;
-	bool firstSample = true;
-	float firstVal = 0.0;
-	bool belowAtStart = false;
+	bool firstSample[NQVTK_RAYCASTER_VOLUMECOUNT];
+	bool belowAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+	for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
+		firstSample[v] = true;
+		belowAtStart[v] = false;
+	}
 	bool done = false;
 	// For each step along the ray...
 	for (int i = 0; i < numSteps + 1 && !done; ++i) {
@@ -112,15 +115,14 @@ void main() {
 			// If the volume is active, sample it
 			if (getBit(infoBefore.a, v)) {
 				float val = getValue(v, pos);
-				if (firstSample) {
+				if (firstSample[v]) {
 					// The first sample can never hit a surface
 					// TODO: we may want to use the in-out mask for this
-					firstVal = val;
-					firstSample = false;
-					belowAtStart = (firstVal < tfStart[v]);
+					firstSample[v] = false;
+					belowAtStart[v] = (val < tfStart[v]);
 				} else {
 					bool belowAtPos = (val < tfStart[v]);
-					if (belowAtPos != belowAtStart) {
+					if (belowAtPos != belowAtStart[v]) {
 						// Found an isosurface
 						done = true;
 						id = float(v + 2);
@@ -128,12 +130,12 @@ void main() {
 						//       check which is first by refinement
 						pos = refineHitpoint(v, pos, step, tfStart[v], belowAtPos);
 						// TODO: Check in-out mask for earlier intersections with this surface
-						info = vec4(pos, setBit(infoBefore.a, id, !belowAtPos));
+						info = vec4(pos, setBit(infoBefore.a, int(id), !belowAtPos));
 						color = vec4(vec3(1.0), 0.6);
 						// Compute normal
 						// TODO: replace with kernel / spline-based method?
-						normal = computeGradient(v, pos, kernelSize, getValue(pos, v));
-						if (belowAtStart) normal = -normal;
+						normal = computeGradient(v, pos, kernelSize, getValue(v, pos));
+						if (belowAtStart[v]) normal = -normal;
 						normal = gl_NormalMatrix * normal;
 					}
 				}

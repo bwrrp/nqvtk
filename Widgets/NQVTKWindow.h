@@ -242,7 +242,9 @@ public:
 				//*/
 				//* Deformation fields - test
 				args.append("D:/Data/VectorFields/meep_box.vtp");
+				args.append("D:/Data/VectorFields/meep_box.vtp");
 				args.append("-");
+				args.append("D:/Data/VectorFields/meep2.mha");
 				args.append("D:/Data/VectorFields/meep2.mha");
 				//*/
 			}

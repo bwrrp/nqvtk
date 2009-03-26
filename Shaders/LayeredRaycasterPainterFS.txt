@@ -31,9 +31,13 @@ float stripes(float f, int size, int part) {
 	return int(f) % size < part ? 0.0 : 1.0;
 }
 
-float testTexture(vec2 c) {
+float plusTexture(vec2 c) {
 	return 1.0 - stripes(c.x, 20, 8) * stripes(c.y, 20, 8) * 
 		(1.0 - stripes(c.x + 8, 20, 4) * stripes(c.y + 8, 20, 4));
+}
+
+float stripeTexture(vec2 c) {
+	return stripes(abs(c.x + c.y), 20, 8);
 }
 
 void main() {
@@ -54,6 +58,13 @@ void main() {
 	// Simple lighting
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
 
+	// Test: screen-space textures for visualizing ids
+	if (int(id) == 2) {
+		color.rgb *= (0.5 + 0.5 * stripeTexture(r0.xy));
+	} else if (int(id) == 3) {
+		color.rgb *= (0.5 + 0.5 * plusTexture(r0.xy));
+	}
+
 	// Apply contouring
 	vec4 left	= texture2DRect(normals, vec2(r0.x - 1.0, r0.y));
 	vec4 right	= texture2DRect(normals, vec2(r0.x + 1.0, r0.y));
@@ -71,8 +82,6 @@ void main() {
 		abs(dot(normalize(bottom.rgb), normal)) < tfEnd[0]) {
 		color = vec4(vec3(0.0, 0.3, 0.0), 1.0);
 	}
-
-	if (id > 1) color.rgb *= (0.5 + 0.5 * testTexture(r0.xy));
 
 	// Premultiply colors
 	gl_FragColor = vec4(color.rgb * color.a, color.a);
