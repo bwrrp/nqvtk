@@ -26,6 +26,7 @@ uniform float testParam;
 
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
+bool getBit(float byte, int bit);
 
 float stripes(float f, int size, int part) {
 	return int(f) % size < part ? 0.0 : 1.0;
@@ -46,6 +47,7 @@ void main() {
 	r0.x -= viewportX;
 	r0.y -= viewportY;
 	vec4 infoBefore = texture2DRect(infoPrevious, r0.xy);
+	if (layer == 0) infoBefore = vec4(0.0);
 	vec4 infoAfter = texture2DRect(infoCurrent, r0.xy);
 	vec4 normalid = texture2DRect(normals, r0.xy);
 	vec3 normal = normalize(normalid.rgb);
@@ -54,6 +56,19 @@ void main() {
 	vec4 color = texture2DRect(colors, r0.xy);
 
 	if (layer < int(testParam * 100.0)) discard;
+
+	// Some extra coloring effects for volume features
+	if (length(infoBefore) > 0.0) {
+		if (int(id) == 2) color.rgb = vec3(1.0, 0.5, 0.0);
+		if (int(id) == 3) color.rgb = vec3(0.0, 0.5, 1.0);
+		if ((getBit(infoBefore.a, 2) && getBit(infoBefore.a, 3)) != 
+			(getBit(infoAfter.a, 2) && getBit(infoAfter.a, 3))) {
+			color.a = 1.0;
+		} else if (int(id) == 2 || int(id) == 3) {
+			color.a = 0.3;
+			color.rgb = mix(color.rgb, vec3(1.0), 0.5);
+		}
+	}
 
 	// Simple lighting
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
