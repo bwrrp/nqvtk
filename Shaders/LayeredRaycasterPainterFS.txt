@@ -33,7 +33,7 @@ float stripes(float f, int size, int part) {
 
 float plusTexture(vec2 c) {
 	return 1.0 - stripes(c.x, 20, 8) * stripes(c.y, 20, 8) * 
-		(1.0 - stripes(c.x + 8, 20, 4) * stripes(c.y + 8, 20, 4));
+		(1.0 - stripes(c.x + 8.0, 20, 4) * stripes(c.y + 8.0, 20, 4));
 }
 
 float stripeTexture(vec2 c) {
