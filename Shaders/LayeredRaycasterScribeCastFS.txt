@@ -55,7 +55,11 @@ vec3 computeGradient(int v, vec3 pos, float delta, float val) {
 	return vec3(dx, dy, dz);
 }
 
-vec3 refineHitpoint(int v, vec3 pos, vec3 step, float isoval, bool belowAtPos) {
+bool isInside(int v, float val) {
+	return (val > tfStart[v] && val < tfEnd[v]);
+}
+
+vec3 refineHitpoint(int v, vec3 pos, vec3 step, bool insideAtPos) {
 	vec3 s = 0.5 * step;
 	vec3 p = pos - s;
 	// 6 refinements should be enough for now
@@ -64,7 +68,7 @@ vec3 refineHitpoint(int v, vec3 pos, vec3 step, float isoval, bool belowAtPos) {
 		// Halve the step size
 		s *= 0.5;
 		// Step in which direction?
-		if ((val < isoval) == belowAtPos) {
+		if (isInside(v, val) == insideAtPos) {
 			p -= s;
 		} else {
 			p += s;
@@ -105,13 +109,13 @@ void main() {
 	// Start raycasting
 	vec3 pos = startPos;
 	bool active[NQVTK_RAYCASTER_VOLUMECOUNT];
-	bool belowAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
+	bool insideAtStart[NQVTK_RAYCASTER_VOLUMECOUNT];
 	bool hit[NQVTK_RAYCASTER_VOLUMECOUNT];
 	vec3 refined[NQVTK_RAYCASTER_VOLUMECOUNT];
 	vec3 gradient[NQVTK_RAYCASTER_VOLUMECOUNT];
 	for (int v = 0; v < NQVTK_RAYCASTER_VOLUMECOUNT; ++v) {
 		active[v] = getBit(infoBefore.a, v);
-		belowAtStart[v] = !getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
+		insideAtStart[v] = getBit(infoBefore.a, v + NQVTK_RAYCASTER_VOLUMECOUNT);
 		hit[v] = false;
 		refined[v] = vec3(0.0);
 		gradient[v] = vec3(0.0);
@@ -123,13 +127,13 @@ void main() {
 			// If the volume is active, sample it
 			if (active[v]) {
 				float val = getValue(v, pos);
-				bool belowAtPos = (val < tfStart[v]);
-				if (belowAtPos != belowAtStart[v]) {
+				bool insideAtPos = isInside(v, val);
+				if (insideAtPos != insideAtStart[v]) {
 					// Found an isosurface, so this is the last step
 					hit[v] = true;
 					hitVol = v;
 					// Refine the hit for this volume
-					refined[v] = refineHitpoint(v, pos, step, tfStart[v], belowAtPos);
+					refined[v] = refineHitpoint(v, pos, step, insideAtPos);
 					// Compute gradient
 					// NOTE: we can't optimize this out, as volume[v] is currently 
 					// only possible for deterministic v (constant or for-loop)
@@ -166,11 +170,11 @@ void main() {
 		// pos is definitely on the other side, so we continue from there
 		info = vec4(pos, setBit(infoBefore.a, 
 			nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
-			belowAtStart[nearestV]));
+			!insideAtStart[nearestV]));
 		color = vec4(vec3(1.0), isoOpacity);
 		id = float(nearestV + NQVTK_RAYCASTER_VOLUMECOUNT);
 		normal = gradient[nearestV];
-		if (belowAtStart[nearestV]) normal = -normal;
+		if (!insideAtStart[nearestV]) normal = -normal;
 		normal = gl_NormalMatrix * normal;
 	}
 
