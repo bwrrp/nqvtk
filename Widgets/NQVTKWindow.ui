@@ -90,9 +90,9 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-229</y>
+         <y>-805</y>
          <width>177</width>
-         <height>1303</height>
+         <height>1465</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -628,6 +628,69 @@
               <number>800</number>
              </property>
              <property name="value" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="isosurfaceGroup" >
+          <property name="title" >
+           <string>Isosurface rendering</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_6" >
+           <item>
+            <widget class="QLabel" name="isoOpacityLabel" >
+             <property name="text" >
+              <string>Isosurface opacity:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="isoOpacity" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="value" >
+              <number>60</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="occlusionEdgeThresholdLabel" >
+             <property name="text" >
+              <string>Occlusion edge threshold:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="occlusionEdgeThreshold" >
+             <property name="maximum" >
+              <number>100</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="cornerEdgeThresholdLabel" >
+             <property name="text" >
+              <string>Corner edge threshold:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="cornerEdgeThreshold" >
+             <property name="maximum" >
               <number>100</number>
              </property>
              <property name="orientation" >

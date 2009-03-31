@@ -116,6 +116,7 @@ public:
 		ui.scalarsGroup->hide();
 		ui.raycasterGroup->show();
 		ui.deformationGroup->hide();
+		ui.isosurfaceGroup->show();
 
 		// Set initial camera
 		//renderer->SetCamera(new NQVTK::OrbitCamera());
@@ -507,6 +508,7 @@ protected:
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->hide();
 					ui.deformationGroup->hide();
+					ui.isosurfaceGroup->hide();
 				}
 			}
 			break;
@@ -521,6 +523,7 @@ protected:
 					ui.scalarsGroup->show();
 					ui.raycasterGroup->hide();
 					ui.deformationGroup->hide();
+					ui.isosurfaceGroup->hide();
 				}
 			}
 			break;
@@ -535,6 +538,7 @@ protected:
 					ui.scalarsGroup->show();
 					ui.raycasterGroup->hide();
 					ui.deformationGroup->hide();
+					ui.isosurfaceGroup->hide();
 				}
 			}
 			break;
@@ -549,6 +553,7 @@ protected:
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->show();
 					ui.deformationGroup->hide();
+					ui.isosurfaceGroup->hide();
 				}
 			}
 			break;
@@ -563,6 +568,7 @@ protected:
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->show();
 					ui.deformationGroup->show();
+					ui.isosurfaceGroup->hide();
 				}
 			}
 			break;
@@ -577,6 +583,7 @@ protected:
 					ui.scalarsGroup->hide();
 					ui.raycasterGroup->show();
 					ui.deformationGroup->hide();
+					ui.isosurfaceGroup->show();
 				}
 			}
 			break;
@@ -803,6 +810,32 @@ private slots:
 	{
 		deformationStyle->dynamicIFEnd = static_cast<float>(val) / 100.0;
 		ui.dynamicIFEnd->setToolTip(QString("%1").arg(deformationStyle->dynamicIFEnd));
+
+		ui.nqvtkwidget->updateGL();
+	}
+
+	// Isosurface rendering (layered raycasting)
+	void on_isoOpacity_valueChanged(int val)
+	{
+		layeredRaycastStyle->isoOpacity = static_cast<float>(val) / 100.0;
+		ui.isoOpacity->setToolTip(QString("%1").arg(
+			layeredRaycastStyle->isoOpacity));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_occlusionEdgeThreshold_valueChanged(int val)
+	{
+		layeredRaycastStyle->occlusionEdgeThreshold = static_cast<float>(val) / 100.0;
+		ui.occlusionEdgeThreshold->setToolTip(QString("%1").arg(
+			layeredRaycastStyle->occlusionEdgeThreshold));
+
+		ui.nqvtkwidget->updateGL();
+	}
+	void on_cornerEdgeThreshold_valueChanged(int val)
+	{
+		layeredRaycastStyle->cornerEdgeThreshold = static_cast<float>(val) / 100.0;
+		ui.cornerEdgeThreshold->setToolTip(QString("%1").arg(
+			layeredRaycastStyle->cornerEdgeThreshold));
 
 		ui.nqvtkwidget->updateGL();
 	}

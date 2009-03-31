@@ -16,6 +16,9 @@ namespace NQVTK
 			LayeredRaycaster()
 			{
 				testParam = 0.0;
+				isoOpacity = 0.6;
+				occlusionEdgeThreshold = 0.0;
+				cornerEdgeThreshold = 0.0;
 			}
 
 			virtual GLFramebuffer *CreateFBO(int w, int h)
@@ -128,9 +131,16 @@ namespace NQVTK
 			{
 				Superclass::UpdatePainterParameters(painter);
 				painter->SetUniform1f("testParam", testParam);
+				painter->SetUniform1f("isoOpacity", isoOpacity);
+				painter->SetUniform1f("occlusionEdgeThreshold", occlusionEdgeThreshold);
+				painter->SetUniform1f("cornerEdgeThreshold", cornerEdgeThreshold);
 			}
 
 			float testParam;
+
+			float isoOpacity;
+			float occlusionEdgeThreshold;
+			float cornerEdgeThreshold;
 
 		private:
 			// Not implemented

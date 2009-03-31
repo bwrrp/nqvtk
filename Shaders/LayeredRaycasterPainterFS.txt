@@ -24,6 +24,9 @@ uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 
 uniform float testParam;
 
+uniform float occlusionEdgeThreshold;
+uniform float cornerEdgeThreshold;
+
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
@@ -65,7 +68,6 @@ void main() {
 			(getBit(infoAfter.a, 2) && getBit(infoAfter.a, 3))) {
 			color.a = 1.0;
 		} else if (int(id) == 2 || int(id) == 3) {
-			color.a = 0.3;
 			color.rgb = mix(color.rgb, vec3(1.0), 0.5);
 		}
 	}
@@ -91,10 +93,11 @@ void main() {
 	bool contourB = (bottom.a != id);
 	if (contourL || contourT || contourR || contourB) {
 		color = vec4(vec3(0.0), 1.0);
-	} else if (abs(dot(normalize(left.rgb), normal)) < tfEnd[0] || 
-		abs(dot(normalize(right.rgb), normal)) < tfEnd[0] || 
-		abs(dot(normalize(top.rgb), normal)) < tfEnd[0] || 
-		abs(dot(normalize(bottom.rgb), normal)) < tfEnd[0]) {
+	} else if (abs(dot(normalize(left.rgb), normal)) < cornerEdgeThreshold || 
+		// TODO: test for occlusion edges first (depth difference)
+		abs(dot(normalize(right.rgb), normal)) < cornerEdgeThreshold || 
+		abs(dot(normalize(top.rgb), normal)) < cornerEdgeThreshold || 
+		abs(dot(normalize(bottom.rgb), normal)) < cornerEdgeThreshold) {
 		color = vec4(vec3(0.0, 0.3, 0.0), 1.0);
 	}
 

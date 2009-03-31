@@ -25,6 +25,8 @@ uniform float tfEnd[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float stepSize;
 uniform float kernelSize;
 
+uniform float isoOpacity;
+
 // Prototypes from LibUtility
 vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
@@ -165,7 +167,7 @@ void main() {
 		info = vec4(pos, setBit(infoBefore.a, 
 			nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
 			belowAtStart[nearestV]));
-		color = vec4(vec3(1.0), 0.6);
+		color = vec4(vec3(1.0), isoOpacity);
 		id = float(nearestV + NQVTK_RAYCASTER_VOLUMECOUNT);
 		normal = gradient[nearestV];
 		if (belowAtStart[nearestV]) normal = -normal;
