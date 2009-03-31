@@ -174,7 +174,7 @@ void main() {
 		color = vec4(vec3(1.0), isoOpacity);
 		id = float(nearestV + NQVTK_RAYCASTER_VOLUMECOUNT);
 		normal = gradient[nearestV];
-		if (!insideAtStart[nearestV]) normal = -normal;
+		if (dot(normal, step) > 0) normal = -normal;
 		normal = gl_NormalMatrix * normal;
 	}
 
