@@ -90,7 +90,7 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-687</y>
+         <y>-660</y>
          <width>177</width>
          <height>1465</height>
         </rect>
@@ -677,7 +677,7 @@
               <number>1000</number>
              </property>
              <property name="value" >
-              <number>100</number>
+              <number>400</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>

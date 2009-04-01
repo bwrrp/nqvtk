@@ -825,7 +825,7 @@ private slots:
 	}
 	void on_occlusionEdgeThreshold_valueChanged(int val)
 	{
-		layeredRaycastStyle->occlusionEdgeThreshold = static_cast<float>(val) / 100.0;
+		layeredRaycastStyle->occlusionEdgeThreshold = static_cast<float>(val) / 1000.0;
 		ui.occlusionEdgeThreshold->setToolTip(QString("%1").arg(
 			layeredRaycastStyle->occlusionEdgeThreshold));
 

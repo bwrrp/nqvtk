@@ -17,7 +17,7 @@ namespace NQVTK
 			{
 				testParam = 0.0;
 				isoOpacity = 0.6;
-				occlusionEdgeThreshold = 1.0;
+				occlusionEdgeThreshold = 0.4;
 				cornerEdgeThreshold = 0.0;
 			}
 
@@ -132,8 +132,23 @@ namespace NQVTK
 				Superclass::UpdatePainterParameters(painter);
 				painter->SetUniform1f("testParam", testParam);
 				painter->SetUniform1f("isoOpacity", isoOpacity);
-				painter->SetUniform1f("occlusionEdgeThreshold", occlusionEdgeThreshold);
 				painter->SetUniform1f("cornerEdgeThreshold", cornerEdgeThreshold);
+
+				double maxRayLength = 0.0;
+				for (unsigned int i = 0; i < volumes.size(); ++i)
+				{
+					NQVTK::DistanceFieldParamSet *dfps = volumes[i];
+					if (dfps)
+					{
+						double w = dfps->distanceField->GetWidth();
+						double h = dfps->distanceField->GetHeight();
+						double d = dfps->distanceField->GetDepth();
+						double diameter = sqrt(w * w + h * h + d * d);
+						if (diameter > maxRayLength) maxRayLength = diameter;
+					}
+				}
+				painter->SetUniform1f("occlusionEdgeThreshold", 
+					occlusionEdgeThreshold * maxRayLength / 10.0);
 			}
 
 			float testParam;
