@@ -27,6 +27,7 @@ namespace NQVTK
 			scribe(0), painter(0), query(0) 
 		{ 
 			maxLayers = 8;
+			skipLayers = 0;
 			drawBackground = true;
 		}
 
@@ -267,8 +268,11 @@ namespace NQVTK
 					fboTarget->Bind();
 				}
 
-				// Draw the painter pass (visualize layer, blend with previous results)
-				DrawPainterPass(layer);
+				if (layer >= skipLayers) 
+				{
+					// Draw the painter pass (visualize layer, blend with previous results)
+					DrawPainterPass(layer);
+				}
 
 				unsigned int numfragments = query->GetResultui();
 				++layer;
@@ -386,6 +390,7 @@ namespace NQVTK
 		}
 
 		int maxLayers;
+		int skipLayers;
 		bool drawBackground;
 
 	protected:

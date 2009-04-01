@@ -698,6 +698,16 @@ private slots:
 			ui.nqvtkwidget->updateGL();
 		}
 	}
+	void on_skipLayers_valueChanged(int val)
+	{
+		NQVTK::LayeredRenderer *renderer = 
+			dynamic_cast<NQVTK::LayeredRenderer*>(ui.nqvtkwidget->GetRenderer());
+		if (renderer)
+		{
+			renderer->skipLayers = val;
+			ui.nqvtkwidget->updateGL();
+		}
+	}
 	void on_eyeSpacing_valueChanged(int val)
 	{
 		// Do we have a stereo renderer?

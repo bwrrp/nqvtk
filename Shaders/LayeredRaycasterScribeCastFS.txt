@@ -91,7 +91,7 @@ void main() {
 	vec4 normalid = texture2DRect(normals, r0.xy);
 	vec3 normal = normalize(normalid.rgb);
 	float gm = length(normalid.rgb);
-	float id = normalid.a;
+	int id = int(normalid.a) - 1;
 	vec4 color = texture2DRect(colors, r0.xy);
 	// Should be set to infoBefore if raycasting hits a surface
 	vec4 info = infoAfter;
@@ -172,14 +172,14 @@ void main() {
 			nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
 			!insideAtStart[nearestV]));
 		color = vec4(vec3(1.0), isoOpacity);
-		id = float(nearestV + NQVTK_RAYCASTER_VOLUMECOUNT);
+		id = nearestV + NQVTK_RAYCASTER_VOLUMECOUNT;
 		normal = gradient[nearestV];
-		if (dot(normal, step) > 0) normal = -normal;
+		if (dot(normal, step) > 0.0) normal = -normal;
 		normal = gl_NormalMatrix * normal;
 	}
 
 	// Fill the infobuffer
 	gl_FragData[0] = info;
-	gl_FragData[1] = vec4(normal, id);
+	gl_FragData[1] = vec4(normal, float(id + 1));
 	gl_FragData[2] = color;
 }

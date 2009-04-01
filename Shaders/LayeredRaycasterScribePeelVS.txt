@@ -11,6 +11,6 @@ void main() {
 	gl_Position = ftransform();
 	
 	normal = normalize(gl_NormalMatrix * gl_Normal);
-	if (normal.z < 0) normal = -normal;
+	if (normal.z < 0.0) normal = -normal;
 	color = gl_Color;
 }

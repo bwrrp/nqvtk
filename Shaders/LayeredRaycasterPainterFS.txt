@@ -55,19 +55,17 @@ void main() {
 	vec4 normalid = texture2DRect(normals, r0.xy);
 	vec3 normal = normalize(normalid.rgb);
 	float gm = length(normalid.rgb);
-	float id = normalid.a;
+	int id = int(normalid.a) - 1;
 	vec4 color = texture2DRect(colors, r0.xy);
-
-	if (layer < int(testParam * 100.0)) discard;
 
 	// Some extra coloring effects for volume features
 	if (length(infoBefore) > 0.0) {
-		if (int(id) == 2) color.rgb = vec3(1.0, 0.5, 0.0);
-		if (int(id) == 3) color.rgb = vec3(0.0, 0.5, 1.0);
+		if (id == 2) color.rgb = vec3(1.0, 0.5, 0.0);
+		if (id == 3) color.rgb = vec3(0.0, 0.5, 1.0);
 		if ((getBit(infoBefore.a, 2) && getBit(infoBefore.a, 3)) != 
 			(getBit(infoAfter.a, 2) && getBit(infoAfter.a, 3))) {
 			color.a = 1.0;
-		} else if (int(id) == 2 || int(id) == 3) {
+		} else if (id == 2 || id == 3) {
 			color.rgb = mix(color.rgb, vec3(1.0), 0.5);
 		}
 	}
@@ -76,21 +74,23 @@ void main() {
 	if (gm > 0.0) color = vec4(phongShading(color.rgb, normal), color.a);
 
 	// Test: screen-space textures for visualizing ids
-	if (int(id) == 2) {
+	if (id == 2) {
 		color.rgb *= (0.5 + 0.5 * stripeTexture(r0.xy));
-	} else if (int(id) == 3) {
+	} else if (id == 3) {
 		color.rgb *= (0.5 + 0.5 * plusTexture(r0.xy));
 	}
 
 	// Apply contouring
+	// Sample normals and ids
 	vec4 left	= texture2DRect(normals, vec2(r0.x - 1.0, r0.y));
 	vec4 right	= texture2DRect(normals, vec2(r0.x + 1.0, r0.y));
 	vec4 top	= texture2DRect(normals, vec2(r0.x, r0.y - 1.0));
 	vec4 bottom	= texture2DRect(normals, vec2(r0.x, r0.y + 1.0));
-	bool contourL = (left.a   != id);
-	bool contourR = (right.a  != id);
-	bool contourT = (top.a    != id);
-	bool contourB = (bottom.a != id);
+	// Detect id contours
+	bool contourL = id != int(left.a) - 1;
+	bool contourR = id != int(right.a) - 1;
+	bool contourT = id != int(top.a) - 1;
+	bool contourB = id != int(bottom.a) - 1;
 	if (contourL || contourT || contourR || contourB) {
 		color = vec4(vec3(0.0), 1.0);
 	} else {
@@ -108,14 +108,14 @@ void main() {
 		float bottomDepth = length(
 			texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0)).rgb - 
 			infoAfter.rgb);
-		if (abs(leftDepth - rightDepth) > occlusionEdgeThreshold || 
-			abs(topDepth - bottomDepth) > occlusionEdgeThreshold) {
+		if ((abs(leftDepth - rightDepth) > occlusionEdgeThreshold) || 
+			(abs(topDepth - bottomDepth) > occlusionEdgeThreshold)) {
 			// Occlusion edge
 			color = vec4(0.0, 0.0, 0.3, 1.0);
-		} else if (abs(dot(normalize(left.rgb), normal)) < cornerEdgeThreshold || 
-			abs(dot(normalize(right.rgb), normal)) < cornerEdgeThreshold || 
-			abs(dot(normalize(top.rgb), normal)) < cornerEdgeThreshold || 
-			abs(dot(normalize(bottom.rgb), normal)) < cornerEdgeThreshold) {
+		} else if ((abs(dot(normalize(left.rgb), normal)) < cornerEdgeThreshold) || 
+			(abs(dot(normalize(right.rgb), normal)) < cornerEdgeThreshold) || 
+			(abs(dot(normalize(top.rgb), normal)) < cornerEdgeThreshold) || 
+			(abs(dot(normalize(bottom.rgb), normal)) < cornerEdgeThreshold)) {
 			// Corner edge
 			color = vec4(0.0, 0.3, 0.0, 1.0);
 		}

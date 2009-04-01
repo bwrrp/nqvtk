@@ -90,9 +90,9 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-660</y>
+         <y>0</y>
          <width>177</width>
-         <height>1465</height>
+         <height>1507</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3" >
@@ -125,6 +125,23 @@
              </property>
              <property name="value" >
               <number>8</number>
+             </property>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="skipLayersLabel" >
+             <property name="text" >
+              <string>Skip # layers</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="skipLayers" >
+             <property name="maximum" >
+              <number>50</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>
