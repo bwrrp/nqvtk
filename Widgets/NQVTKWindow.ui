@@ -90,7 +90,7 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-805</y>
+         <y>-687</y>
          <width>177</width>
          <height>1465</height>
         </rect>
@@ -674,6 +674,9 @@
            <item>
             <widget class="QSlider" name="occlusionEdgeThreshold" >
              <property name="maximum" >
+              <number>1000</number>
+             </property>
+             <property name="value" >
               <number>100</number>
              </property>
              <property name="orientation" >

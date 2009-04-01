@@ -93,12 +93,32 @@ void main() {
 	bool contourB = (bottom.a != id);
 	if (contourL || contourT || contourR || contourB) {
 		color = vec4(vec3(0.0), 1.0);
-	} else if (abs(dot(normalize(left.rgb), normal)) < cornerEdgeThreshold || 
-		// TODO: test for occlusion edges first (depth difference)
-		abs(dot(normalize(right.rgb), normal)) < cornerEdgeThreshold || 
-		abs(dot(normalize(top.rgb), normal)) < cornerEdgeThreshold || 
-		abs(dot(normalize(bottom.rgb), normal)) < cornerEdgeThreshold) {
-		color = vec4(vec3(0.0, 0.3, 0.0), 1.0);
+	} else {
+		// Test for occlusion edges (depth difference)
+		// TODO: these positions are not refined surface hits!
+		float leftDepth = length(
+			texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y)).rgb - 
+			infoAfter.rgb);
+		float rightDepth = length(
+			texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y)).rgb - 
+			infoAfter.rgb);
+		float topDepth = length(
+			texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0)).rgb - 
+			infoAfter.rgb);
+		float bottomDepth = length(
+			texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0)).rgb - 
+			infoAfter.rgb);
+		if (abs(leftDepth - rightDepth) > occlusionEdgeThreshold || 
+			abs(topDepth - bottomDepth) > occlusionEdgeThreshold) {
+			// Occlusion edge
+			color = vec4(0.0, 0.0, 0.3, 1.0);
+		} else if (abs(dot(normalize(left.rgb), normal)) < cornerEdgeThreshold || 
+			abs(dot(normalize(right.rgb), normal)) < cornerEdgeThreshold || 
+			abs(dot(normalize(top.rgb), normal)) < cornerEdgeThreshold || 
+			abs(dot(normalize(bottom.rgb), normal)) < cornerEdgeThreshold) {
+			// Corner edge
+			color = vec4(0.0, 0.3, 0.0, 1.0);
+		}
 	}
 
 	// Premultiply colors

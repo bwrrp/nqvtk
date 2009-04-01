@@ -17,7 +17,7 @@ namespace NQVTK
 			{
 				testParam = 0.0;
 				isoOpacity = 0.6;
-				occlusionEdgeThreshold = 0.0;
+				occlusionEdgeThreshold = 1.0;
 				cornerEdgeThreshold = 0.0;
 			}
 
