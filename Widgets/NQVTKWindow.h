@@ -723,7 +723,7 @@ private slots:
 	// Raycaster parameters
 	void on_stepSize_valueChanged(int val)
 	{
-		raycastStyle->stepSize = static_cast<double>(val) / 10.0;
+		raycastStyle->stepSize = static_cast<double>(val) / 100.0;
 		deformationStyle->stepSize = raycastStyle->stepSize;
 		layeredRaycastStyle->stepSize = raycastStyle->stepSize;
 		ui.stepSize->setToolTip(QString("%1").arg(raycastStyle->stepSize));
@@ -732,7 +732,7 @@ private slots:
 	}
 	void on_kernelSize_valueChanged(int val)
 	{
-		raycastStyle->kernelSize = static_cast<double>(val) / 10.0;
+		raycastStyle->kernelSize = static_cast<double>(val) / 100.0;
 		deformationStyle->kernelSize = raycastStyle->kernelSize;
 		layeredRaycastStyle->kernelSize = raycastStyle->kernelSize;
 		ui.kernelSize->setToolTip(QString("%1").arg(raycastStyle->kernelSize));

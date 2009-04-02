@@ -90,7 +90,7 @@
        <property name="geometry" >
         <rect>
          <x>0</x>
-         <y>-752</y>
+         <y>-391</y>
          <width>177</width>
          <height>1507</height>
         </rect>
@@ -421,13 +421,16 @@
               <string>10.0</string>
              </property>
              <property name="minimum" >
-              <number>5</number>
+              <number>25</number>
              </property>
              <property name="maximum" >
-              <number>200</number>
+              <number>2000</number>
+             </property>
+             <property name="pageStep" >
+              <number>100</number>
              </property>
              <property name="value" >
-              <number>100</number>
+              <number>1000</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>
@@ -447,13 +450,16 @@
               <string>1.0</string>
              </property>
              <property name="minimum" >
-              <number>5</number>
+              <number>25</number>
              </property>
              <property name="maximum" >
-              <number>200</number>
+              <number>2000</number>
+             </property>
+             <property name="pageStep" >
+              <number>100</number>
              </property>
              <property name="value" >
-              <number>10</number>
+              <number>250</number>
              </property>
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>
