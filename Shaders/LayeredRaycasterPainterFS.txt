@@ -11,6 +11,7 @@ uniform sampler2DRect colors;
 uniform int layer;
 uniform float viewportX;
 uniform float viewportY;
+uniform vec3 cameraPos;
 
 uniform sampler3D volume[NQVTK_RAYCASTER_VOLUMECOUNT];
 uniform float volumeDataShift[NQVTK_RAYCASTER_VOLUMECOUNT];
@@ -42,6 +43,10 @@ float plusTexture(vec2 c) {
 
 float stripeTexture(vec2 c) {
 	return stripes(abs(c.x + c.y), 20, 8);
+}
+
+bool ignoreObject(int id) {
+	return id == 1;
 }
 
 void main() {
@@ -81,43 +86,76 @@ void main() {
 	}
 
 	// Apply contouring
-	// Sample normals and ids
-	vec4 left	= texture2DRect(normals, vec2(r0.x - 1.0, r0.y));
-	vec4 right	= texture2DRect(normals, vec2(r0.x + 1.0, r0.y));
-	vec4 top	= texture2DRect(normals, vec2(r0.x, r0.y - 1.0));
-	vec4 bottom	= texture2DRect(normals, vec2(r0.x, r0.y + 1.0));
-	// Detect id contours
-	bool contourL = id != int(left.a) - 1;
-	bool contourR = id != int(right.a) - 1;
-	bool contourT = id != int(top.a) - 1;
-	bool contourB = id != int(bottom.a) - 1;
-	if (contourL || contourT || contourR || contourB) {
-		color = vec4(vec3(0.0), 1.0);
-	} else {
-		// Test for occlusion edges (depth difference)
+	const int NB_SIZE = 4;
+	vec2 nb[NB_SIZE];
+	nb[0] = vec2(r0.x - 1.0, r0.y);
+	nb[1] = vec2(r0.x + 1.0, r0.y);
+	nb[2] = vec2(r0.x, r0.y - 1.0);
+	nb[3] = vec2(r0.x, r0.y + 1.0);
+	// Collect samples
+	int nbIds[NB_SIZE];
+	vec3 nbNormals[NB_SIZE];
+	vec3 nbPos[NB_SIZE];
+	for (int i = 0; i < NB_SIZE; ++i) {
+		vec4 normalid = texture2DRect(normals, nb[i]);
+		nbIds[i] = int(normalid.a) - 1;
+		nbNormals[i] = normalid.rgb;
+		nbPos[i] = texture2DRect(infoCurrent, nb[i]).rgb;
+	}
+	// Detect silhouettes
+	bool silhouette = false;
+	bool ignoreSilhouette = true;
+	vec3 viewDir = normalize(infoAfter.rgb - cameraPos);
+	for (int i = 0; i < NB_SIZE; ++i) {
 		// TODO: these positions are not refined surface hits!
-		float leftDepth = length(
-			texture2DRect(infoCurrent, vec2(r0.x - 1.0, r0.y)).rgb - 
-			infoAfter.rgb);
-		float rightDepth = length(
-			texture2DRect(infoCurrent, vec2(r0.x + 1.0, r0.y)).rgb - 
-			infoAfter.rgb);
-		float topDepth = length(
-			texture2DRect(infoCurrent, vec2(r0.x, r0.y - 1.0)).rgb - 
-			infoAfter.rgb);
-		float bottomDepth = length(
-			texture2DRect(infoCurrent, vec2(r0.x, r0.y + 1.0)).rgb - 
-			infoAfter.rgb);
-		if ((abs(leftDepth - rightDepth) > occlusionEdgeThreshold) || 
-			(abs(topDepth - bottomDepth) > occlusionEdgeThreshold)) {
-			// Occlusion edge
-			color = vec4(0.0, 0.0, 0.3, 1.0);
-		} else if ((abs(dot(normalize(left.rgb), normal)) < cornerEdgeThreshold) || 
-			(abs(dot(normalize(right.rgb), normal)) < cornerEdgeThreshold) || 
-			(abs(dot(normalize(top.rgb), normal)) < cornerEdgeThreshold) || 
-			(abs(dot(normalize(bottom.rgb), normal)) < cornerEdgeThreshold)) {
-			// Corner edge
-			color = vec4(0.0, 0.3, 0.0, 1.0);
+		vec3 posdiff = nbPos[i] - infoAfter.rgb;
+		// Background contains 0 positions and needs special care
+		bool bgsil = id < 0 ^^ nbIds[i] < 0;
+		if (length(posdiff) > occlusionEdgeThreshold || bgsil) {
+			silhouette = true;
+			// Determine frontmost
+			// Note that id and nbIds[i] can't both be background
+			int frontmost;
+			if ((!bgsil && dot(viewDir, posdiff) > 0) || (bgsil && id >= 0)) {
+				frontmost = id;
+			} else {
+				frontmost = nbIds[i];
+			}
+			// Ignore silhouette if all frontmost objects are ignored
+			ignoreSilhouette = ignoreSilhouette && ignoreObject(frontmost);
+		}
+	}
+	if (silhouette) {
+		if (!ignoreSilhouette) color = vec4(0.0, 0.0, 0.0, 1.0);
+	} else {
+		bool intersection = false;
+		bool ignoreIntersection = true;
+		for (int i = 0; i < NB_SIZE; ++i) {
+			if (nbIds[i] != id) {
+				intersection = true;
+				// Ignore intersection if the object is ignored
+				ignoreIntersection = ignoreIntersection && ignoreObject(nbIds[i]);
+			}
+		}
+		// Also ignore intersections if the current object is ignored
+		ignoreIntersection = ignoreIntersection || ignoreObject(id);
+		if (intersection) {
+			if (!ignoreIntersection) color = vec4(0.0, 0.0, 0.3, 1.0);
+		} else {
+			// All ids are the same, only draw corners if the object is not ignored
+			if (!ignoreObject(id)) {
+				// Detect corners
+				bool corner = false;
+				for (int i = 0; i < NB_SIZE; ++i) {
+					if (abs(dot(normalize(nbNormals[i]), normal)) < 
+						cornerEdgeThreshold) {
+						corner = true;
+					}
+				}
+				if (corner) {
+					color = vec4(0.0, 0.3, 0.0, 1.0);
+				}
+			}
 		}
 	}
 
