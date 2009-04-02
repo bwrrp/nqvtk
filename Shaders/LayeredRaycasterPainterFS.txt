@@ -46,7 +46,7 @@ float stripeTexture(vec2 c) {
 }
 
 bool ignoreObject(int id) {
-	return id == 1;
+	return id < NQVTK_RAYCASTER_VOLUMECOUNT;
 }
 
 void main() {
