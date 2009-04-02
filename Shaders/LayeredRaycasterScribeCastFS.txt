@@ -167,8 +167,9 @@ void main() {
 		}
 		// Update infobuffers based on this hit
 		// The refined position can be on either side of the surface, but
-		// pos is definitely on the other side, so we continue from there
-		info = vec4(pos, setBit(infoBefore.a, 
+		// pos is definitely on the other side, but we store refined + step 
+		// instead so we have "accurate" positions in the painter stage
+		info = vec4(refined[nearestV] + step, setBit(infoBefore.a, 
 			nearestV + NQVTK_RAYCASTER_VOLUMECOUNT, 
 			!insideAtStart[nearestV]));
 		color = vec4(vec3(1.0), isoOpacity);
