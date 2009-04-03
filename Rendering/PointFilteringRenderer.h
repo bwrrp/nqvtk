@@ -3,7 +3,8 @@
 #include "GLBlaat/GL.h"
 
 #include "Renderer.h"
-#include "PolyData.h"
+
+#include "Renderables/PolyData.h"
 
 #include "Math/Vector3.h"
 

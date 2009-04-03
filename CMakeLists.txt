@@ -86,6 +86,8 @@ SET( ${ProjectName}_Libraries
 SET( ${ProjectName}_Modules
 	Math
 	Rendering
+	Renderables
+	ParamSets
 	Styles
 	Widgets
 	Interactors
@@ -95,7 +97,9 @@ SET( ${ProjectName}_Modules
 SET( ${ProjectName}_ModuleNames
 	"Math"
 	"Rendering"
-	"Render Styles"
+	"Renderables"
+	"Object parameter sets"
+	"Render styles"
 	"Widgets"
 	"Interactors"
 )
@@ -109,13 +113,6 @@ SET( ${ProjectName}_Math_Classes
 )
 
 SET( ${ProjectName}_Rendering_Classes
-	Renderable
-	AttributePointers
-	AttributeSet
-	VBOMesh
-	PolyData
-	PointCloud
-	PCAPointCorrespondenceGlyphs
 	ImageDataTexture3D
 	Camera
 	OrbitCamera
@@ -131,6 +128,19 @@ SET( ${ProjectName}_Rendering_Classes
 	OverlayRenderer
 	CrossEyedStereoRenderer
 	ShadowMappingRenderer
+)
+
+SET( ${ProjectName}_Renderables_Classes
+	AttributePointers
+	AttributeSet
+	Renderable
+	VBOMesh
+	PolyData
+	PointCloud
+	PCAPointCorrespondenceGlyphs
+)
+
+SET( ${ProjectName}_ParamSets_Classes
 	ParamSet
 	DistanceFieldParamSet
 	PCAParamSet

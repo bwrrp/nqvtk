@@ -13,12 +13,14 @@
 
 #include "NQVTKWidget.h"
 
-#include "Rendering/DistanceFieldParamSet.h"
 #include "Rendering/ImageDataTexture3D.h"
-#include "Rendering/PCAParamSet.h"
-#include "Rendering/PolyData.h"
 #include "Rendering/SimpleRenderer.h"
-#include "Rendering/TransferFunctionParamSet.h"
+
+#include "Renderables/PolyData.h"
+
+#include "ParamSets/DistanceFieldParamSet.h"
+#include "ParamSets/PCAParamSet.h"
+#include "ParamSets/TransferFunctionParamSet.h"
 
 #include "Math/Vector3.h"
 

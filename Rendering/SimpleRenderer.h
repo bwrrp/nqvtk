@@ -2,6 +2,8 @@
 
 #include "Renderer.h"
 
+#include "Renderables/VBOMesh.h"
+
 #include "GLBlaat/GLUtility.h"
 #include "GLBlaat/GLProgram.h"
 

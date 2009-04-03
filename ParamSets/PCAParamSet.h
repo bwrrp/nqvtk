@@ -2,7 +2,7 @@
 
 #include "ParamSet.h"
 
-#include "Rendering/VBOMesh.h"
+#include "Renderables/VBOMesh.h"
 
 #include <vector>
 #include <string>

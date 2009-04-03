@@ -5,7 +5,7 @@
 
 #include "Math/Vector3.h"
 
-#include "ParamSet.h"
+#include "ParamSets/ParamSet.h"
 
 #include <string>
 #include <map>

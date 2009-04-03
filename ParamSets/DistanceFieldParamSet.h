@@ -2,7 +2,7 @@
 
 #include "ParamSet.h"
 
-#include "ImageDataTexture3D.h"
+#include "Rendering/ImageDataTexture3D.h"
 
 namespace NQVTK
 {

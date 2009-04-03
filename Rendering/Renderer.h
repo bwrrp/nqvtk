@@ -3,7 +3,7 @@
 #include "GLBlaat/GL.h"
 
 #include "Camera.h"
-#include "Renderable.h"
+#include "Renderables/Renderable.h"
 
 #include <vector>
 

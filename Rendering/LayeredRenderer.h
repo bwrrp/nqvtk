@@ -3,7 +3,8 @@
 #include "GLBlaat/GL.h"
 
 #include "Renderer.h"
-#include "VBOMesh.h"
+
+#include "Renderables/VBOMesh.h"
 
 #include "Styles/RenderStyle.h"
 

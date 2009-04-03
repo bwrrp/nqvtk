@@ -23,9 +23,9 @@
 #include "Rendering/OverlayRenderer.h"
 
 #include "Rendering/PointFilteringRenderer.h"
-#include "Rendering/PointCloud.h"
+#include "Renderables/PointCloud.h"
 
-#include "Rendering/PCAPointCorrespondenceGlyphs.h"
+#include "Renderables/PCAPointCorrespondenceGlyphs.h"
 
 #include "Styles/DepthPeeling.h"
 #include "Styles/IBIS.h"
@@ -37,11 +37,12 @@
 #include "Rendering/ArcballCamera.h"
 #include "Rendering/OrbitCamera.h"
 
-#include "Rendering/PolyData.h"
+#include "Renderables/PolyData.h"
+
 #include "Rendering/ImageDataTexture3D.h"
 
-#include "Rendering/DistanceFieldParamSet.h"
-#include "Rendering/PCAParamSet.h"
+#include "ParamSets/DistanceFieldParamSet.h"
+#include "ParamSets/PCAParamSet.h"
 
 #include "Interactors/MainViewInteractor.h"
 #include "Interactors/BrushingInteractor.h"

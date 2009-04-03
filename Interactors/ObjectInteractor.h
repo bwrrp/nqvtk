@@ -2,7 +2,7 @@
 
 #include "Interactor.h"
 
-#include "Rendering/Renderable.h"
+#include "Renderables/Renderable.h"
 
 namespace NQVTK
 {

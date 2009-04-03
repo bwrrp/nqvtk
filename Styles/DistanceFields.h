@@ -10,7 +10,7 @@
 
 #include "Shaders.h"
 
-#include "Rendering/DistanceFieldParamSet.h"
+#include "ParamSets/DistanceFieldParamSet.h"
 
 #include <sstream>
 

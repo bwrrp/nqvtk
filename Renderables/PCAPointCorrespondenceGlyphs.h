@@ -2,8 +2,8 @@
 
 #include "VBOMesh.h"
 
-#include "PCAParamSet.h"
-#include "PCACorrespondenceParamSet.h"
+#include "ParamSets/PCAParamSet.h"
+#include "ParamSets/PCACorrespondenceParamSet.h"
 
 #include "GLBlaat/GLBuffer.h"
 

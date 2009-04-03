@@ -2,7 +2,7 @@
 
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLResource.h"
-#include "Renderable.h"
+#include "Renderables/Renderable.h"
 #include "Math/Vector3.h"
 
 #include <algorithm>

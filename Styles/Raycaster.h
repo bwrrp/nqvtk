@@ -7,7 +7,7 @@
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLUtility.h"
 
-#include "Rendering/DistanceFieldParamSet.h"
+#include "ParamSets/DistanceFieldParamSet.h"
 
 #include "Shaders.h"
 
