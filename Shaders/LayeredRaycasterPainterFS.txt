@@ -116,7 +116,7 @@ void main() {
 			// Determine frontmost
 			// Note that id and nbIds[i] can't both be background
 			int frontmost;
-			if ((!bgsil && dot(viewDir, posdiff) > 0) || (bgsil && id >= 0)) {
+			if ((!bgsil && dot(viewDir, posdiff) > 0.0) || (bgsil && id >= 0)) {
 				frontmost = id;
 			} else {
 				frontmost = nbIds[i];
