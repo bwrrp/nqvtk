@@ -21,7 +21,6 @@ INCLUDE( ${VTK_USE_FILE} )
 SET( VTK_lib
 	vtkFiltering
 	vtkImaging
-	vtkIO
 	vtkGraphics
 )
 
