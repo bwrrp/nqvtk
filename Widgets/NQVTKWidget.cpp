@@ -131,6 +131,40 @@ void NQVTKWidget::paintGL()
 }
 
 // ----------------------------------------------------------------------------
+NQVTK::MouseEvent NQVTKWidget::translateMouseEvent(QMouseEvent *event)
+{
+	NQVTK::MouseEvent ev;
+	// Translate button
+	int button = 0;
+	switch (event->button())
+	{
+	case Qt::LeftButton:
+		button = NQVTK::MouseEvent::LeftButton;
+		break;
+	case Qt::RightButton:
+		button = NQVTK::MouseEvent::RightButton;
+		break;
+	case Qt::MidButton:
+		button = NQVTK::MouseEvent::MiddleButton;
+		break;
+	}
+	// Translate buttons state
+	int buttons = 0;
+	if (event->buttons() & Qt::LeftButton) buttons |= NQVTK::MouseEvent::LeftButton;
+	if (event->buttons() & Qt::RightButton) buttons |= NQVTK::MouseEvent::RightButton;
+	if (event->buttons() & Qt::MidButton) buttons |= NQVTK::MouseEvent::MiddleButton;
+	// Build event
+	ev.button = button;
+	ev.buttons = buttons;
+	ev.x = event->x();
+	ev.y = event->y();
+	ev.control = event->modifiers() & Qt::ControlModifier;
+	ev.shift = event->modifiers() & Qt::ShiftModifier;
+	ev.alt = event->modifiers() & Qt::AltModifier;
+	return ev;
+}
+
+// ----------------------------------------------------------------------------
 void NQVTKWidget::timerEvent(QTimerEvent *event)
 {
 	if (event->timerId() == fpsTimerId)
@@ -152,7 +186,7 @@ void NQVTKWidget::mouseMoveEvent(QMouseEvent *event)
 	// Pass the event to the interactor
 	if (interactor)
 	{
-		if (interactor->MouseMoveEvent(event))
+		if (interactor->MouseMoveEvent(translateMouseEvent(event)))
 		{
 			// TODO: this should probably not be emitted for each mouse event
 			emit cameraUpdated(GetRenderer()->GetCamera());
@@ -177,7 +211,7 @@ void NQVTKWidget::mousePressEvent(QMouseEvent *event)
 	// Pass the event to the interactor
 	if (interactor)
 	{
-		if (interactor->MousePressEvent(event))
+		if (interactor->MousePressEvent(translateMouseEvent(event)))
 		{
 			event->accept();
 			updateGL();
@@ -195,7 +229,7 @@ void NQVTKWidget::mouseReleaseEvent(QMouseEvent *event)
 	// Pass the event to the interactor
 	if (interactor)
 	{
-		if (interactor->MouseReleaseEvent(event))
+		if (interactor->MouseReleaseEvent(translateMouseEvent(event)))
 		{
 			event->accept();
 			updateGL();

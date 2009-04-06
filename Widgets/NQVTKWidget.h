@@ -67,6 +67,8 @@ protected:
 	void resizeGL(int w, int h);
 	void paintGL();
 
+	NQVTK::MouseEvent translateMouseEvent(QMouseEvent *event);
+
 private:
 	void timerEvent(QTimerEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);

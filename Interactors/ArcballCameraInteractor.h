@@ -24,24 +24,24 @@ namespace NQVTK
 			lastX = lastY = 0;
 		}
 
-		virtual bool MouseMoveEvent(QMouseEvent *event)
+		virtual bool MouseMoveEvent(MouseEvent event)
 		{
 			ArcballCamera *camera = dynamic_cast<ArcballCamera*>(this->camera);
 			assert(camera);
 
 			bool handled = false;
 
-			if (event->buttons() & Qt::LeftButton)
+			if (event.buttons & MouseEvent::LeftButton)
 			{
 				// Update arcball rotation
-				Vector3 newPos = GetBallPoint(event->x(), event->y());
+				Vector3 newPos = GetBallPoint(event.x, event.y);
 				camera->SetRotation(newPos);
 				handled = true;
 			}
-			else if (event->buttons() & Qt::RightButton)
+			else if (event.buttons & MouseEvent::RightButton)
 			{
 				// Zoom
-				double zoom = 1.0 + (event->y() - lastY) * 0.005f;
+				double zoom = 1.0 + (event.y - lastY) * 0.005f;
 				if (zoom < 0.01) zoom = 0.01;
 				Vector3 focusToPos = camera->position - camera->focus;
 				focusToPos *= zoom;
@@ -49,22 +49,22 @@ namespace NQVTK
 				handled = true;
 			}
 
-			lastX = event->x();
-			lastY = event->y();
+			lastX = event.x;
+			lastY = event.y;
 
 			if (!handled) return Superclass::MouseMoveEvent(event);
 			return true;
 		}
 
-		virtual bool MousePressEvent(QMouseEvent *event)
+		virtual bool MousePressEvent(MouseEvent event)
 		{
 			ArcballCamera *camera = dynamic_cast<ArcballCamera*>(this->camera);
 			assert(camera);
 			
-			if (event->button() == Qt::LeftButton)
+			if (event.button == MouseEvent::LeftButton)
 			{
 				// Start the arcball
-				Vector3 startPos = GetBallPoint(event->x(), event->y());
+				Vector3 startPos = GetBallPoint(event.x, event.y);
 				camera->StartArcball(startPos);
 				return true;
 			}
@@ -72,12 +72,12 @@ namespace NQVTK
 			return Superclass::MousePressEvent(event);
 		}
 
-		virtual bool MouseReleaseEvent(QMouseEvent *event)
+		virtual bool MouseReleaseEvent(MouseEvent event)
 		{
 			ArcballCamera *camera = dynamic_cast<ArcballCamera*>(this->camera);
 			assert(camera);
 
-			if (event->button() == Qt::LeftButton)
+			if (event.button == MouseEvent::LeftButton)
 			{
 				// Stop the arcball
 				camera->StopArcball();

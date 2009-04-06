@@ -60,21 +60,21 @@ namespace NQVTK
 		}
 
 		// TODO: we might want to make this independent of Qt some day
-		virtual bool MouseMoveEvent(QMouseEvent *event)
+		virtual bool MouseMoveEvent(MouseEvent event)
 		{
 			if (oren) oren->updateBase = true;
 
-			if (event->modifiers() & Qt::ControlModifier && objectInt)
+			if (event.control && objectInt)
 			{
 				// Control controls renderable 0
 				return objectInt->MouseMoveEvent(event);
 			}
-			else if (event->modifiers() & Qt::AltModifier && clipperInt)
+			else if (event.alt && clipperInt)
 			{
 				// Alt controls the clipper (renderable 2)
 				return clipperInt->MouseMoveEvent(event);
 			}
-			else if (event->modifiers() & Qt::ShiftModifier && brushInt)
+			else if (event.shift && brushInt)
 			{
 				// HACK: Shift controls brushing
 				if (oren) oren->updateBase = false;
@@ -91,14 +91,14 @@ namespace NQVTK
 			}
 		}
 
-		virtual bool MousePressEvent(QMouseEvent *event)
+		virtual bool MousePressEvent(MouseEvent event)
 		{
 			// Only the camera interactor uses this for now
 			if (cameraInt) return cameraInt->MousePressEvent(event);
 			return Superclass::MousePressEvent(event);
 		}
 
-		virtual bool MouseReleaseEvent(QMouseEvent *event)
+		virtual bool MouseReleaseEvent(MouseEvent event)
 		{
 			// Only the camera interactor uses this for now
 			if (cameraInt) return cameraInt->MouseReleaseEvent(event);

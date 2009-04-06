@@ -20,7 +20,7 @@ namespace NQVTK
 			lastX = lastY = 0;
 		}
 
-		virtual bool MouseMoveEvent(QMouseEvent *event)
+		virtual bool MouseMoveEvent(MouseEvent event)
 		{
 			bool handled = false;
 
@@ -28,20 +28,20 @@ namespace NQVTK
 			assert(camera);
 
 			// Mouse controls camera
-			if (event->buttons() & Qt::LeftButton)
+			if (event.buttons & MouseEvent::LeftButton)
 			{
 				// Rotate
-				camera->rotateY += event->x() - lastX;
-				camera->rotateX -= event->y() - lastY;
+				camera->rotateY += event.x - lastX;
+				camera->rotateX -= event.y - lastY;
 				if (camera->rotateX > 80.0) camera->rotateX = 80.0;
 				if (camera->rotateX < -80.0) camera->rotateX = -80.0;
 				handled = true;
 			}
 
-			if (event->buttons() & Qt::RightButton)
+			if (event.buttons & MouseEvent::RightButton)
 			{
 				// Zoom
-				camera->zoom += (event->y() - lastY) * 0.01f;
+				camera->zoom += (event.y - lastY) * 0.01f;
 				if (camera->zoom < 0.05) camera->zoom = 0.05;
 				if (camera->zoom > 20.0) camera->zoom = 20.0;
 				handled = true;
@@ -49,8 +49,8 @@ namespace NQVTK
 
 			if (handled) camera->Update();
 
-			lastX = event->x();
-			lastY = event->y();
+			lastX = event.x;
+			lastY = event.y;
 
 			if (!handled) return Superclass::MouseMoveEvent(event);
 			return handled;

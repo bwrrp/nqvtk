@@ -18,15 +18,15 @@ namespace NQVTK
 			lastX = lastY = 0;
 		}
 
-		virtual bool MouseMoveEvent(QMouseEvent *event)
+		virtual bool MouseMoveEvent(MouseEvent event)
 		{
 			bool handled = false;
 
-			if (event->buttons() & Qt::LeftButton)
+			if (event.buttons & MouseEvent::LeftButton)
 			{
 				// Rotate
-				renderable->rotateY += event->x() - lastX;
-				renderable->rotateX -= event->y() - lastY;
+				renderable->rotateY += event.x - lastX;
+				renderable->rotateX -= event.y - lastY;
 
 				if (renderable->rotateX > 80.0) 
 				{
@@ -40,7 +40,7 @@ namespace NQVTK
 				handled = true;
 			}
 
-			if (event->buttons() & Qt::MidButton)
+			if (event.buttons & MouseEvent::MiddleButton)
 			{
 				// TODO: make translation relative to window
 				NQVTK::Vector3 right = NQVTK::Vector3(1.0, 0.0, 0.0);
@@ -48,14 +48,14 @@ namespace NQVTK
 				double factor = 0.6;
 				// Translate
 				renderable->position += 
-					(lastX - event->x()) * factor * right +
-					(lastY - event->y()) * factor * up;
+					(lastX - event.x) * factor * right +
+					(lastY - event.y) * factor * up;
 
 				handled = true;
 			}
 
-			lastX = event->x();
-			lastY = event->y();
+			lastX = event.x;
+			lastY = event.y;
 
 			return handled;
 		}
