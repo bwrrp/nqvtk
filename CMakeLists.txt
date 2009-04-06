@@ -25,19 +25,6 @@ SET( VTK_lib
 	vtkGraphics
 )
 
-# We need Qt
-FIND_PACKAGE( Qt4 REQUIRED )
-SET( QT_USE_QTMAIN TRUE )
-SET( QT_USE_QTNETWORK TRUE )
-SET( QT_USE_QTOPENGL TRUE )
-INCLUDE( ${QT_USE_FILE} )
-# Required Qt modules
-SET( QT_lib
-	${QT_LIBRARIES}
-	${QT_QTMAIN_LIBRARIES}
-	${QT_QTOPENGL_LIBRARIES}
-)
-
 # OpenGL and GLU
 FIND_PACKAGE( OpenGL REQUIRED )
 INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIR} )
@@ -74,7 +61,6 @@ SET( GLBlaat_lib
 # The complete set of libraries required by the project
 SET( ${ProjectName}_Libraries
 	${VTK_lib}
-	${QT_lib}
 	${OpenGL_lib}
 	${GLEW_lib}
 	${GLBlaat_lib}
@@ -168,8 +154,6 @@ SET( ${ProjectName}_Interactors_Classes
 	BrushingInteractor
 )
 
-# Widgets has its own sources.cmake (for moc / uic)
-
 # --------------------------------------------------
 # Text resources to process using TextToHeader
 
@@ -202,7 +186,6 @@ SET( ${ProjectName}_Shaders_Text
 # --------------------------------------------------
 # Extra source files (e.g. program main)
 SET( ${ProjectName}_ExtraSource
-	main.cpp
 )
 
 # ==================================================
@@ -360,9 +343,9 @@ SOURCE_GROUP( "Generated files"
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 # --------------------------------------------------
-# Executable target
+# Library target
 
-ADD_EXECUTABLE( 
+ADD_LIBRARY( 
 	${ProjectName}
 	${${ProjectName}_Source}
 )
