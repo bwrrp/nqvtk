@@ -58,7 +58,7 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void Renderer::Resize()
+	void Renderer::Resize(int w, int h)
 	{
 		this->viewportWidth = w;
 		this->viewportHeight = h;

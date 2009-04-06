@@ -4,6 +4,7 @@
 
 #include "Renderables/VBOMesh.h"
 
+#include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLUtility.h"
 #include "GLBlaat/GLProgram.h"
 
