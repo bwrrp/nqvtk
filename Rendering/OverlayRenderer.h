@@ -6,9 +6,8 @@
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
 
-#include <QObject> // for qDebug
 #include <cassert>
-
+#include <iostream>
 
 namespace NQVTK
 {
@@ -63,13 +62,19 @@ namespace NQVTK
 					assert(baseFbo);
 					baseFbo->CreateColorTexture();
 					baseFbo->CreateDepthBuffer();
-					if (!baseFbo->IsOk()) qDebug("WARNING! baseFbo not ok!");
+					if (!baseFbo->IsOk()) 
+					{
+						std::cerr << "WARNING! baseFbo not ok!" << std::endl;
+					}
 					baseFbo->Unbind();
 					baseRenderer->SetTarget(baseFbo);
 				}
 				else
 				{
-					if (!baseFbo->Resize(w, h)) qDebug("WARNING! baseFbo resize failed!");
+					if (!baseFbo->Resize(w, h))
+					{
+						std::cerr << "WARNING! baseFbo resize failed!" << std::endl;
+					}
 				}
 			}
 
@@ -81,13 +86,19 @@ namespace NQVTK
 					assert(overlayFbo);
 					overlayFbo->CreateColorTexture();
 					overlayFbo->CreateDepthBuffer();
-					if (!overlayFbo->IsOk()) qDebug("WARNING! overlayFbo not ok!");
+					if (!overlayFbo->IsOk()) 
+					{
+						std::cerr << "WARNING! overlayFbo not ok!" << std::endl;
+					}
 					overlayFbo->Unbind();
 					overlayRenderer->SetTarget(overlayFbo);
 				}
 				else
 				{
-					if (!overlayFbo->Resize(w, h)) qDebug("WARNING! overlayFbo resize failed!");
+					if (!overlayFbo->Resize(w, h))
+					{
+						std::cerr << "WARNING! overlayFbo resize failed!" << std::endl;
+					}
 				}
 			}
 		}

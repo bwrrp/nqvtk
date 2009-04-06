@@ -5,6 +5,7 @@
 #include "GLBlaat/GLTexture3D.h"
 
 #include <cstdlib>
+#include <iostream>
 
 namespace NQVTK
 {
@@ -64,7 +65,7 @@ namespace NQVTK
 				if (res) res = painter->AddFragmentShader(
 					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = painter->Link();
-				qDebug(painter->GetInfoLogs().c_str());
+				std::cout << painter->GetInfoLogs() << std::endl;
 				if (!res) 
 				{
 					delete painter;

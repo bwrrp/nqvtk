@@ -8,6 +8,9 @@
 #include <vtkCellArray.h>
 #include <vtkDataArray.h>
 
+#include <cassert>
+#include <iostream>
+
 #define NQVTK_USE_NV_PRIMITIVE_RESTART
 
 namespace NQVTK
@@ -37,16 +40,18 @@ namespace NQVTK
 		PolyData(vtkPolyData *data)
 		: vertIndices(0), lineIndices(0), polyIndices(0), stripIndices(0)
 		{
-			qDebug("Loading PolyData object...");
+			std::cout << "Loading PolyData object..." << std::endl;
 
 			// Store bounds
 			data->GetBounds(bounds);
-			qDebug("Bounds: %f - %f, %f - %f, %f - %f", 
-				bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]);
+			std::cout << "Bounds: " << 
+				bounds[0] << " - " << bounds[1] << ", " <<
+				bounds[2] << " - " << bounds[3] << ", " <<
+				bounds[4] << " - " << bounds[5] << std::endl;
 
 			// Get points
 			numPoints = data->GetNumberOfPoints();
-			qDebug("# points: %d", numPoints);
+			std::cout << "# points: " << numPoints << std::endl;
 			vtkPoints *points = data->GetPoints();
 			// TODO: can vtk points have #comps other than 3?
 			AttributeSet *pointsSet = new NQVTK::AttributeSet(
@@ -59,7 +64,7 @@ namespace NQVTK
 			// TODO: add support for cell normals if point normals are not available
 			vtkDataArray *normals = data->GetPointData()->GetNormals();
 			hasNormals = (normals != 0);
-			qDebug("Has normals: %s", (hasNormals ? "yes" : "no"));
+			std::cout << "Has normals: " << (hasNormals ? "yes" : "no") << std::endl;
 			if (hasNormals)
 			{
 				AttributeSet *normalsSet = new NQVTK::AttributeSet(
@@ -77,7 +82,7 @@ namespace NQVTK
 			// Do we have texture coordinates?
 			vtkDataArray *tcoords = data->GetPointData()->GetTCoords();
 			hasTCoords = (tcoords != 0);
-			qDebug("Has tcoords: %s", (hasNormals ? "yes" : "no"));
+			std::cout << "Has tcoords: " << (hasNormals ? "yes" : "no") << std::endl;
 			int tcoordsSize = 0;
 			int tcoordsType = GL_NONE;
 			if (hasTCoords)
@@ -96,9 +101,11 @@ namespace NQVTK
 			for (int arId = 0; arId < numArrays; ++arId)
 			{
 				vtkDataArray *ar = data->GetPointData()->GetArray(arId);
-				qDebug("Found array '%s': %d tuples of %d type %d components", 
-					ar->GetName(), ar->GetNumberOfTuples(), 
-					ar->GetNumberOfComponents(), ar->GetDataType());
+				std::cout << "Found array '" <<
+					ar->GetName() << "': " <<
+					ar->GetNumberOfTuples() << " tuples of " <<
+					ar->GetNumberOfComponents() << " type " <<
+					ar->GetDataType() << " components" << std::endl;
 
 				// TODO: only load the data if this is a "wanted" array
 
@@ -117,20 +124,20 @@ namespace NQVTK
 
 			// Primitive types in the polydata
 			numVerts = data->GetNumberOfVerts();
-			qDebug("# verts: %d", numVerts);
+			std::cout << "# verts: " << numVerts << std::endl;
 			numLines = data->GetNumberOfLines();
-			qDebug("# lines: %d", numLines);
+			std::cout << "# lines: " << numLines << std::endl;
 			numPolys = data->GetNumberOfPolys();
-			qDebug("# polys: %d", numPolys);
+			std::cout << "# polys: " << numPolys << std::endl;
 			numStrips = data->GetNumberOfStrips();
-			qDebug("# strips: %d", numStrips);
+			std::cout << "# strips: " << numStrips << std::endl;
 			// Not sure about this
-			qDebug("# pieces: %d", data->GetNumberOfPieces());
+			std::cout << "# pieces: " << data->GetNumberOfPieces() << std::endl;
 
 			// Vertices
 			if (numVerts > 0)
 			{
-				qDebug("Processing vertices...");
+				std::cout << "Processing vertices..." << std::endl;
 				vtkCellArray *verts = data->GetVerts();
 				vtkIdType *pIds = verts->GetPointer();
 				vtkIdType *pEnd = pIds + verts->GetNumberOfConnectivityEntries();
@@ -163,7 +170,7 @@ namespace NQVTK
 			// Lines
 			if (numLines > 0)
 			{
-				qDebug("Processing lines...");
+				std::cout << "Processing lines..." << std::endl;
 				// For now, we split up polylines into separate segments
 				vtkCellArray *lines = data->GetLines();
 				int numPolyLines = numLines;
@@ -212,7 +219,7 @@ namespace NQVTK
 			// Polygons
 			if (numPolys > 0)
 			{
-				qDebug("Processing polygons...");
+				std::cout << "Processing polygons..." << std::endl;
 				vtkCellArray *polys = data->GetPolys();
 				vtkIdType *pIds = polys->GetPointer();
 				vtkIdType *pEnd = pIds + polys->GetNumberOfConnectivityEntries();
@@ -251,7 +258,7 @@ namespace NQVTK
 			// Strips
 			if (numStrips > 0)
 			{
-				qDebug("Processing strips...");
+				std::cout << "Processing strips..." << std::endl;
 				vtkCellArray *strips = data->GetStrips();
 #ifdef NQVTK_USE_NV_PRIMITIVE_RESTART
 				// Use the NV_primitive_restart extension to define an index to restart strips
@@ -463,7 +470,8 @@ namespace NQVTK
 			case VTK_DOUBLE:
 				return GL_DOUBLE;
 			default:
-				qDebug("Error! Unsupported VTK data type: %d", vtkType);
+				std::cerr << "Error! Unsupported VTK data type: " 
+					<< vtkType << std::endl;
 				return GL_NONE;
 			}
 		}

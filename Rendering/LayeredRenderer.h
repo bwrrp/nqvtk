@@ -13,8 +13,8 @@
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLOcclusionQuery.h"
 
-#include <QObject> // for qDebug
 #include <cassert>
+#include <iostream>
 
 namespace NQVTK 
 {
@@ -50,7 +50,7 @@ namespace NQVTK
 
 			if (!style) 
 			{
-				qDebug("No style set! Can not initialize renderer!");
+				std::cerr << "No style set! Can not initialize renderer!" << std::endl;
 				return false;
 			}
 			style->Initialize(tm);
@@ -68,7 +68,7 @@ namespace NQVTK
 			scribe = style->CreateScribe();
 			if (!scribe)
 			{
-				qDebug("Failed to build Scribe!");
+				std::cerr << "Failed to build Scribe!" << std::endl;
 				return false;
 			}
 			scribeAttribs = scribe->GetActiveAttributes();
@@ -76,14 +76,15 @@ namespace NQVTK
 			for (std::vector<GLAttributeInfo>::const_iterator it = scribeAttribs.begin();
 				it != scribeAttribs.end(); ++it)
 			{
-				qDebug("Scribe uses attribute '%s' (%d)", it->name.c_str(), it->index);
+				std::cout << "Scribe uses attribute '" <<
+					it->name << "' (" << it->index << ")" << std::endl;
 			}
 #endif
 			// - Painter (shading pass)
 			painter = style->CreatePainter();
 			if (!painter) 
 			{
-				qDebug("Failed to build Painter!");
+				std::cerr << "Failed to build Painter!" << std::endl;
 				return false;
 			}
 
@@ -103,7 +104,10 @@ namespace NQVTK
 			}
 			else
 			{
-				if (!fbo1->Resize(w, h)) qDebug("WARNING! fbo1 resize failed!");
+				if (!fbo1->Resize(w, h))
+				{
+					std::cerr << "WARNING! fbo1 resize failed!" << std::endl;
+				}
 			}
 
 			if (!fbo2) 
@@ -112,7 +116,10 @@ namespace NQVTK
 			}
 			else
 			{
-				if (!fbo2->Resize(w, h)) qDebug("WARNING! fbo2 resize failed!");
+				if (!fbo2->Resize(w, h))
+				{
+					std::cerr << "WARNING! fbo2 resize failed!" << std::endl;
+				}
 			}
 		}
 
@@ -278,7 +285,13 @@ namespace NQVTK
 				unsigned int numfragments = query->GetResultui();
 				++layer;
 				done = (layer >= maxLayers || numfragments == 0);
-				//if (done) qDebug("Layers: %d (%d fragments left)", layer, numfragments);
+				/* Printing layer counts slows down rendering, so disabled by default
+				if (done) 
+				{
+					std::cout << "Layers: " << layer << 
+						" (" << numfragments << " fragments left)" << std::endl;
+				}
+				//*/
 
 				SwapFramebuffers();
 				if (!done) 

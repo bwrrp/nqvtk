@@ -4,6 +4,9 @@
 
 #include "Styles/LayeredRaycaster.h"
 
+#include <cassert>
+#include <iostream>
+
 namespace NQVTK
 {
 	class LayeredRaycastingRenderer : public NQVTK::LayeredRenderer
@@ -39,7 +42,7 @@ namespace NQVTK
 				raycaster = style->CreateRaycaster();
 				if (!raycaster)
 				{
-					qDebug("Failed to build Raycaster!");
+					std::cerr << "Failed to build Raycaster!" << std::endl;
 					// We can't really expect the style to work without its raycaster
 					// Otherwise we could just set layeredRaycasting to false...
 					return false;
@@ -76,7 +79,10 @@ namespace NQVTK
 				}
 				else
 				{
-					if (!fboG->Resize(w, h)) qDebug("WARNING! fboG resize failed!");
+					if (!fboG->Resize(w, h)) 
+					{
+						std::cerr << "WARNING! fboG resize failed!" << std::endl;
+					}
 				}
 			}
 		}

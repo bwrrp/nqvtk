@@ -11,6 +11,7 @@
 #include "Shaders.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace NQVTK
 {
@@ -39,7 +40,10 @@ namespace NQVTK
 						fbo->GetTexture2D(bufs[i]));
 				}
 				glDrawBuffers(nBufs, bufs);
-				if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
+				if (!fbo->IsOk()) 
+				{
+					std::cerr << "WARNING! fbo not ok!" << std::endl;
+				}
 				fbo->Unbind();
 
 				return fbo;
@@ -51,7 +55,7 @@ namespace NQVTK
 				bool res = scribe->AddFragmentShader(
 					Shaders::DepthPeelingScribeFS);
 				if (res) res = scribe->Link();
-				qDebug(scribe->GetInfoLogs().c_str());
+				std::cout << scribe->GetInfoLogs() << std::endl;
 				if (!res)
 				{
 					delete scribe;
@@ -68,7 +72,7 @@ namespace NQVTK
 				if (res) res = painter->AddFragmentShader(
 					Shaders::DepthPeelingPainterFS);
 				if (res) res = painter->Link();
-				qDebug(painter->GetInfoLogs().c_str());
+				std::cout << painter->GetInfoLogs() << std::endl;
 				if (!res) 
 				{
 					delete painter;

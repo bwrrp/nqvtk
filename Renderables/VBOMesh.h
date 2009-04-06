@@ -7,12 +7,11 @@
 #include "GLBlaat/GLBuffer.h"
 #include "GLBlaat/GLProgram.h"
 
-#include <QObject> // for qDebug
-
 #include <vector>
 #include <map>
 #include <string>
 #include <cassert>
+#include <iostream>
 
 namespace NQVTK
 {
@@ -72,9 +71,6 @@ namespace NQVTK
 					}
 					else
 					{
-						//qDebug("Warning! Required attribute '%s' not available!", 
-						//	it->name.c_str());
-
 						// Set a default value for the attribute
 						// It seems we can ignore the size, as array elements are listed 
 						// separately in requiredAttribs.
@@ -119,8 +115,8 @@ namespace NQVTK
 								break;
 
 							default:
-								qDebug("Error! Attribute %s has unsupported type %d.", 
-									it->name.c_str(), it->type);
+								std::cerr << "Error! Attribute " << it->name << 
+									" has unsupported type " << it->type << std::endl;
 						}
 					}
 				}

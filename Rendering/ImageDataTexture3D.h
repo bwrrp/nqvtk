@@ -4,8 +4,6 @@
 
 #include "Math/Vector3.h"
 
-#include <QObject>
-
 #include <vtkDataArray.h>
 #include <vtkImageData.h>
 #include <vtkImageShiftScale.h>
@@ -25,10 +23,10 @@ namespace NQVTK
 		{
 			if (!data) return 0;
 
-			qDebug("Converting imagedata...");
+			std::cout << "Converting imagedata..." << std::endl;
 
 			int numComps = data->GetNumberOfScalarComponents();
-			qDebug("Found %d components", numComps);
+			std::cout << "Found " << numComps << " components" << std::endl;
 
 			// Get the scalar range of the image
 			double range[2];
@@ -42,11 +40,13 @@ namespace NQVTK
 				range[0] = std::min(range[0], compRange[0]);
 				range[1] = std::max(range[1], compRange[1]);
 			}
-			qDebug("Range before conversion: %g..%g", range[0], range[1]);
+			std::cout << "Range before conversion: " <<
+				range[0] << ".." << range[1] << std::endl;
 
 			double shift = range[0];
 			double scale = range[1] - range[0];
-			qDebug("Shift: %g, scale: %g", shift, scale);
+			std::cout << "Shift: " << shift <<
+				", scale: " << scale << std::endl;
 
 			// Convert to texture format
 			vtkSmartPointer<vtkImageShiftScale> convert = 
@@ -66,13 +66,14 @@ namespace NQVTK
 				double compRange[2];
 				vtkDataArray *s = vol->GetPointData()->GetScalars();
 				s->GetRange(compRange, i);
-				qDebug("Component %d range after conversion: %g..%g", 
-					i, compRange[0] / 255.0, compRange[1] / 255.0);
+				std::cout << "Component " << i << 
+					" range after conversion: " << compRange[0] / 255.0 << 
+					".." << compRange[1] / 255.0 << std::endl;
 				range[0] = std::min(range[0], compRange[0]);
 				range[1] = std::max(range[1], compRange[1]);
 			}
-			qDebug("Combined range after conversion: %g..%g", 
-				range[0] / 255.0, range[1] / 255.0);
+			std::cout << "Combined range after conversion: " << 
+				range[0] / 255.0 << ".." << range[1] / 255.0 << std::endl;
 
 			double bounds[6];
 			data->GetBounds(bounds);
@@ -81,15 +82,18 @@ namespace NQVTK
 				bounds[1] - bounds[0], 
 				bounds[3] - bounds[2], 
 				bounds[5] - bounds[4]);
-			qDebug("Origin: (%g, %g, %g), size: (%g, %g, %g)", 
-				origin.x, origin.y, origin.z, 
-				size.x, size.y, size.z);
+			std::cout << "Origin: (" << //%g, %g, %g), size: (%g, %g, %g)", 
+				origin.x << ", " << origin.y << ", " << origin.z << "), size: (" <<
+				size.x << ", " << size.y << ", " << size.z << ")" << std::endl;
 
 			// Get image dimensions
 			int dim[3];
 			vol->GetDimensions(dim);
 			int totalSize = dim[0] * dim[1] * dim[2];
-			qDebug("Dimensions: %d x %d x %d", dim[0], dim[1], dim[2]);
+			std::cout << "Dimensions: " << 
+				dim[0] << " x " << 
+				dim[1] << " x " << 
+				dim[2] << std::endl;
 
 			// TODO: check for NPOTS extension if needed
 
@@ -111,7 +115,7 @@ namespace NQVTK
 				format = GL_RGBA;
 				break;
 			default:
-				qDebug("Volume has unsupported number of components!");
+				std::cerr << "Volume has unsupported number of components!" << std::endl;
 				return 0;
 			};
 

@@ -2,6 +2,9 @@
 
 #include "Raycaster.h"
 
+#include <cassert>
+#include <iostream>
+
 namespace NQVTK
 {
 	namespace Styles
@@ -39,7 +42,10 @@ namespace NQVTK
 						fbo->GetTexture2D(bufs[i]));
 				}
 				glDrawBuffers(nBufs, bufs);
-				if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
+				if (!fbo->IsOk()) 
+				{
+					std::cerr << "WARNING! fbo not ok!" << std::endl;
+				}
 				fbo->Unbind();
 
 				return fbo;
@@ -58,7 +64,7 @@ namespace NQVTK
 				if (res) res = scribe->AddFragmentShader(
 					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = scribe->Link();
-				qDebug(scribe->GetInfoLogs().c_str());
+				std::cout << scribe->GetInfoLogs() << std::endl;
 				if (!res)
 				{
 					delete scribe;
@@ -80,7 +86,7 @@ namespace NQVTK
 				if (res) res = raycaster->AddFragmentShader(
 					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = raycaster->Link();
-				qDebug(raycaster->GetInfoLogs().c_str());
+				std::cout << raycaster->GetInfoLogs() << std::endl;
 				if (!res) 
 				{
 					delete raycaster;
@@ -102,7 +108,7 @@ namespace NQVTK
 				if (res) res = painter->AddFragmentShader(
 					AddShaderDefines(Shaders::LibUtility));
 				if (res) res = painter->Link();
-				qDebug(painter->GetInfoLogs().c_str());
+				std::cout << painter->GetInfoLogs() << std::endl;
 				if (!res) 
 				{
 					delete painter;

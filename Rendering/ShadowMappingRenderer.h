@@ -63,7 +63,10 @@ namespace NQVTK
 			}
 			else
 			{
-				//if (!shadowBuffer->Resize(w, h)) qDebug("WARNING! shadowBuffer resize failed!");
+				//if (!shadowBuffer->Resize(w, h))
+				//{
+				//	std::cerr << "WARNING! shadowBuffer resize failed!" << std::endl;
+				//}
 			}
 		}
 

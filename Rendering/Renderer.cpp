@@ -9,8 +9,8 @@
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLUtility.h"
 
-#include <QObject> // for qDebug
 #include <cassert>
+#include <iostream>
 #include <limits>
 
 namespace NQVTK
@@ -47,8 +47,8 @@ namespace NQVTK
 			tm = GLTextureManager::New();
 			if (!tm)
 			{
-				qDebug("Failed to create texture manager! "
-					"Check hardware requirements...");
+				std::cerr << "Failed to create texture manager! " <<
+					"Check hardware requirements..." << std::endl;
 				return false;
 			}
 		}
@@ -70,7 +70,7 @@ namespace NQVTK
 		{
 			if (!fboTarget->Resize(w, h)) 
 			{
-				qDebug("WARNING! fboTarget resize failed!");
+				std::cerr << "WARNING! fboTarget resize failed!" << std::endl;
 			}
 		}
 	}
@@ -127,7 +127,11 @@ namespace NQVTK
 
 		// Update OpenGL light direction
 		Vector3 lightDir = (lightPos - camera->focus).normalized();
-		float ldir[] = {lightDir.x, lightDir.y, lightDir.z, 0.0};
+		float ldir[] = {
+			static_cast<float>(lightDir.x), 
+			static_cast<float>(lightDir.y), 
+			static_cast<float>(lightDir.z), 
+			0.0f};
 		glLightfv(GL_LIGHT0, GL_POSITION, ldir);
 	}
 

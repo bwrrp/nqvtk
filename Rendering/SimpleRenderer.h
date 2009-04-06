@@ -8,7 +8,6 @@
 #include "GLBlaat/GLUtility.h"
 #include "GLBlaat/GLProgram.h"
 
-#include <QObject> // for qDebug
 #include <cassert>
 #include <vector>
 

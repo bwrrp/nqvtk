@@ -15,8 +15,8 @@
 
 #include "Shaders.h"
 
-#include <QObject> // for qDebug
 #include <cassert>
+#include <iostream>
 
 namespace NQVTK 
 {
@@ -55,7 +55,7 @@ namespace NQVTK
 			if (!res)
 			{
 				delete pointFilter;
-				qDebug("Error creating PointFilter program!");
+				std::cerr << "Error creating PointFilter program!" << std::endl;
 				return false;
 			}
 
@@ -125,11 +125,11 @@ namespace NQVTK
 				}
 			}
 
-			qDebug("Extracted %d points:", pointIds.size());
+			std::cout << "Extracted " << pointIds.size() << " points:" << std::endl;
 			for (std::vector<unsigned int>::iterator it = pointIds.begin();
 				it != pointIds.end(); ++it)
 			{
-				qDebug("%d", *it);
+				std::cout << *it << std::endl;
 			}
 
 			delete [] buffer;

@@ -8,9 +8,7 @@
 
 #include <queue>
 
-#include <QObject> // for qDebug
 #include <cassert>
-
 
 namespace NQVTK
 {

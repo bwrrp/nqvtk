@@ -6,8 +6,6 @@
 
 #include "Styles/RenderStyle.h"
 
-#include <QObject> // for qDebug
-
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLTextureManager.h"

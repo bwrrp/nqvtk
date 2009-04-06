@@ -43,7 +43,10 @@ namespace NQVTK
 						fbo->GetTexture2D(bufs[i]));
 				}
 				glDrawBuffers(nBufs, bufs);
-				if (!fbo->IsOk()) qDebug("WARNING! fbo not ok!");
+				if (!fbo->IsOk()) 
+				{
+					std::cerr << "WARNING! fbo not ok!" << std::endl;
+				}
 				fbo->Unbind();
 
 				return fbo;
@@ -64,7 +67,10 @@ namespace NQVTK
 				glTexParameteri(tex->GetTextureTarget(), 
 					GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				tex->UnbindCurrent();
-				if (!fbo->IsOk()) qDebug("WARNING! shadow buffer fbo not ok!");
+				if (!fbo->IsOk()) 
+				{
+					std::cerr << "WARNING! shadow buffer fbo not ok!" << std::endl;
+				}
 				fbo->Unbind();
 
 				return fbo;
