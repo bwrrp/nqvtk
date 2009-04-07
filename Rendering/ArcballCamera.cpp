@@ -7,11 +7,13 @@
 
 namespace NQVTK
 {
+	// ------------------------------------------------------------------------
 	ArcballCamera::ArcballCamera()
 	{
 		active = false;
 	}
 
+	// ------------------------------------------------------------------------
 	void ArcballCamera::StartArcball(Vector3 from)
 	{
 		// Store initial camera frame
@@ -29,6 +31,7 @@ namespace NQVTK
 		active = true;
 	}
 
+	// ------------------------------------------------------------------------
 	void ArcballCamera::StopArcball()
 	{
 		// Update final position and orientation
@@ -36,6 +39,7 @@ namespace NQVTK
 		active = false;
 	}
 
+	// ------------------------------------------------------------------------
 	void ArcballCamera::SetRotation(Vector3 dragTo)
 	{
 		Vector3 to = initialFrame * dragTo.normalized();
@@ -58,6 +62,7 @@ namespace NQVTK
 		rotation = Matrix3x3(rotationMatrix);
 	}
 
+	// ------------------------------------------------------------------------
 	void ArcballCamera::Update()
 	{
 		if (active)
@@ -68,6 +73,7 @@ namespace NQVTK
 		}
 	}
 
+	// ------------------------------------------------------------------------
 	void ArcballCamera::Draw()
 	{
 		Update();

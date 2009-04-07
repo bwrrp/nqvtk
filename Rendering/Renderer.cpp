@@ -99,8 +99,11 @@ namespace NQVTK
 				renderable->GetBounds(rbounds);
 				for (int i = 0; i < 3; ++i)
 				{
-					if (rbounds[i*2] < bounds[i*2]) bounds[i*2] = rbounds[i*2];
-					if (rbounds[i*2+1] > bounds[i*2+1]) bounds[i*2+1] = rbounds[i*2+1];
+					if (rbounds[i*2] < bounds[i*2]) 
+						bounds[i*2] = rbounds[i*2];
+
+					if (rbounds[i*2+1] > bounds[i*2+1]) 
+						bounds[i*2+1] = rbounds[i*2+1];
 				}
 			}
 		}
@@ -121,7 +124,8 @@ namespace NQVTK
 			Vector3 viewDir = (camera->focus - camera->position);
 			Vector3 sideDir = viewDir.cross(camera->up).normalized();
 			Vector3 upDir = sideDir.cross(viewDir).normalized();
-			Vector3 offset = -sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
+			Vector3 offset = 
+				-sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
 				cos(lightOffsetDirection * DEGREES_TO_RADIANS) * upDir;
 			offset *= viewDir.length() / 2.0;
 			lightPos = camera->position + offset;

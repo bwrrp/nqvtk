@@ -13,8 +13,12 @@
 
 namespace NQVTK 
 {
-	Camera::Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0) { };
+	// ------------------------------------------------------------------------
+	Camera::Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0) 
+	{
+	}
 
+	// ------------------------------------------------------------------------
 	void Camera::SetZPlanes(double *bounds)
 	{
 		// Project each of the bounding box corners on the view vector
@@ -28,7 +32,8 @@ namespace NQVTK
 			{
 				for (int z = 0; z < 2; ++z)
 				{
-					Vector3 p = Vector3(bounds[x], bounds[y+2], bounds[z+4]) - position;
+					Vector3 p = Vector3(bounds[x], bounds[y+2], 
+						bounds[z+4]) - position;
 					double depth = p.dot(viewvec);
 					if (depth < minDepth) minDepth = depth;
 					if (depth > maxDepth) maxDepth = depth;
@@ -43,6 +48,7 @@ namespace NQVTK
 		farZ = std::min(maxDepth, std::numeric_limits<double>::max());
 	}
 
+	// ------------------------------------------------------------------------
 	void Camera::FocusOn(const Renderable *obj)
 	{
 		// TODO: add a way to set the initial position
@@ -50,6 +56,7 @@ namespace NQVTK
 		focus = obj->GetCenter();
 	}
 
+	// ------------------------------------------------------------------------
 	void Camera::Draw()
 	{
 		glMatrixMode(GL_PROJECTION);

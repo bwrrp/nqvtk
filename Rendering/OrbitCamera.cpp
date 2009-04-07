@@ -9,6 +9,7 @@
 
 namespace NQVTK 
 {
+	// ------------------------------------------------------------------------
 	OrbitCamera::OrbitCamera()
 	{
 		rotateX = rotateY = 0.0;
@@ -17,6 +18,7 @@ namespace NQVTK
 		radius = 1.0;
 	}
 
+	// ------------------------------------------------------------------------
 	void OrbitCamera::FocusOn(const Renderable *obj)
 	{
 		// Set focus
@@ -38,6 +40,7 @@ namespace NQVTK
 		Update();
 	}
 
+	// ------------------------------------------------------------------------
 	void OrbitCamera::Update()
 	{
 		const double DEGREES_TO_RADIANS = 0.0174532925199433;
@@ -58,6 +61,7 @@ namespace NQVTK
 		position = focus + focusToPos;
 	}
 
+	// ------------------------------------------------------------------------
 	void OrbitCamera::Draw()
 	{
 		Update();

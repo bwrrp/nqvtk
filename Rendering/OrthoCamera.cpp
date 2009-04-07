@@ -11,12 +11,14 @@
 
 namespace NQVTK 
 {
+	// ------------------------------------------------------------------------
 	OrthoCamera::OrthoCamera()
 	{
 		width = height = 100.0;
 		preserveAspect = false;
 	}
 
+	// ------------------------------------------------------------------------
 	void OrthoCamera::FocusOn(const Renderable *obj)
 	{
 		// Set focus
@@ -41,11 +43,14 @@ namespace NQVTK
 		if (preserveAspect) width *= aspect;
 	}
 
+	// ------------------------------------------------------------------------
 	void OrthoCamera::Draw()
 	{
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(-width / 2.0, width / 2.0, -height / 2.0, height / 2.0, nearZ, farZ);
+		glOrtho(-width / 2.0, width / 2.0, 
+			-height / 2.0, height / 2.0, 
+			nearZ, farZ);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		gluLookAt(
