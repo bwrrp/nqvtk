@@ -107,7 +107,6 @@ SET( ${ProjectName}_Rendering_Classes
 	SimpleRenderer
 	LayeredRenderer
 	LayeredRaycastingRenderer
-	PointExtractingRenderer
 	PointFilteringRenderer
 	BrushingRenderer
 	OverlayRenderer
