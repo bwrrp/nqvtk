@@ -13,7 +13,8 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	ArcballCameraInteractor::ArcballCameraInteractor(NQVTK::ArcballCamera *arcballCam) 
+	ArcballCameraInteractor::ArcballCameraInteractor(
+		NQVTK::ArcballCamera *arcballCam) 
 		: CameraInteractor(arcballCam)
 	{
 		assert(arcballCam);
@@ -91,7 +92,8 @@ namespace NQVTK
 	{
 		// Assume the ball is centered on the screen and has a 
 		// screen-space diameter of 60% of the smallest viewport edge
-		Vector3 center = Vector3(viewportWidth / 2.0, viewportHeight / 2.0, 0.0);
+		Vector3 center = Vector3(viewportWidth / 2.0, 
+			viewportHeight / 2.0, 0.0);
 		double radius = 0.4 * std::min(viewportWidth, viewportHeight);
 
 		// First assume z == 0
