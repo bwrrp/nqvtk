@@ -15,8 +15,8 @@ namespace NQVTK
 
 		static ImageDataTexture3D *New(vtkImageData *data);
 
-		float GetDataShift() const { return dataShift; }
-		float GetDataScale() const { return dataScale; }
+		double GetDataShift() const { return dataShift; }
+		double GetDataScale() const { return dataScale; }
 		Vector3 GetOriginalSize() const { return originalSize; }
 		Vector3 GetOrigin() const { return origin; }
 

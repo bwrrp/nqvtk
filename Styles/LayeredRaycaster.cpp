@@ -23,10 +23,10 @@ namespace NQVTK
 		// --------------------------------------------------------------------
 		LayeredRaycaster::LayeredRaycaster()
 		{
-			testParam = 0.0;
-			isoOpacity = 0.6;
-			occlusionEdgeThreshold = 0.1;
-			cornerEdgeThreshold = 0.0;
+			testParam = 0.0f;
+			isoOpacity = 0.6f;
+			occlusionEdgeThreshold = 0.1f;
+			cornerEdgeThreshold = 0.0f;
 		}
 
 		// --------------------------------------------------------------------
@@ -168,7 +168,8 @@ namespace NQVTK
 				}
 			}
 			painter->SetUniform1f("occlusionEdgeThreshold", 
-				occlusionEdgeThreshold * maxRayLength / 10.0);
+				occlusionEdgeThreshold * 
+				static_cast<float>(maxRayLength / 10.0));
 		}
 	}
 }
