@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GLBlaat/GL.h"
+
 #define BUFFER_OFFSET(i) ((char *)0 + (i))
 
 namespace NQVTK

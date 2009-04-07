@@ -1,101 +1,34 @@
 #pragma once
 
-#include "GLBlaat/GLBuffer.h"
-
-#include "AttributePointers.h"
+class GLBuffer;
 
 namespace NQVTK
 {
+	namespace AttributePointers { class AttributePointer; }
+
 	class AttributeSet
 	{
 	public:
-		AttributeSet(GLenum valueType, int numComponents)
-		{
-			assert(valueType != GL_NONE);
-			this->valueType = valueType;
-			this->numComponents = numComponents;
-			buffer = GLBuffer::New();
-			// TODO: pointer
-			pointer = 0;
-		}
+		AttributeSet(unsigned int valueType, int numComponents);
+		virtual ~AttributeSet();
 
-		virtual ~AttributeSet()
-		{
-			delete buffer;
-			delete pointer;
-		}
+		// Set the buffer data and usage hint
+		// (default usage is GL_STATIC_DRAW)
+		void SetData(int numTuples, void *data, unsigned int usage = 0x88E4);
 
-		void SetData(int numTuples, void *data, GLenum usage = GL_STATIC_DRAW)
-		{
-			buffer->BindAsVertexData();
-			this->numTuples = numTuples;
-			int size = numTuples * numComponents * GetValueSize();
-			buffer->SetData(size, data, usage);
-			buffer->Unbind();
-		}
+		void Bind();
+		void Unbind();
 
-		void Bind()
-		{
-			if (pointer)
-			{
-				buffer->BindAsVertexData();
-				pointer->Set();
-			}
-		}
-
-		void Unbind()
-		{
-			if (pointer)
-			{
-				pointer->Unset();
-				buffer->Unbind();
-			}
-		}
-
-		void UseAsVertices()
-		{
-			if (pointer) delete pointer;
-			pointer = new NQVTK::AttributePointers::VertexPointer(
-				numComponents, valueType, 0, 0);
-		}
-
-		void UseAsNormals()
-		{
-			if (pointer) delete pointer;
-			pointer = new NQVTK::AttributePointers::NormalPointer(
-				valueType, 0, 0);
-		}
-
-		void UseAsColors()
-		{
-			if (pointer) delete pointer;
-			pointer = new NQVTK::AttributePointers::ColorPointer(
-				numComponents, valueType, 0, 0);
-		}
-
-		void UseAsTexCoords(int index)
-		{
-			if (pointer) delete pointer;
-			pointer = new NQVTK::AttributePointers::TexCoordPointer(
-				index, numComponents, valueType, 0, 0);
-		}
-
-		void UseAsVertexAttrib(int index, bool normalized = false)
-		{
-			if (pointer) delete pointer;
-			pointer = new NQVTK::AttributePointers::VertexAttribPointer(
-				index, numComponents, valueType, normalized, 0, 0);
-		}
-
-		void DontUse()
-		{
-			if (pointer) delete pointer;
-			pointer = 0;
-		}
+		void UseAsVertices();
+		void UseAsNormals();
+		void UseAsColors();
+		void UseAsTexCoords(int index);
+		void UseAsVertexAttrib(int index, bool normalized = false);
+		void DontUse();
 
 		int GetNumberOfTuples() { return numTuples; }
 		int GetNumberOfComponents() { return numComponents; }
-		GLenum GetValueType() { return valueType; }
+		unsigned int GetValueType() { return valueType; }
 
 		// Advanced use only...
 		GLBuffer *GetBuffer() { return buffer; }
@@ -104,23 +37,11 @@ namespace NQVTK
 		GLBuffer *buffer;
 		AttributePointers::AttributePointer *pointer;
 
-		GLenum valueType;
+		unsigned int valueType;
 		int numComponents;
 		int numTuples;
 
-		int GetValueSize()
-		{
-			// NOTE: templates are not useful here, we still need the enum for OpenGL
-			switch (valueType)
-			{
-			case GL_FLOAT:
-				return sizeof(GLfloat);
-			case GL_DOUBLE:
-				return sizeof(GLdouble);
-			default:
-				return 0;
-			}
-		}
+		int GetValueSize();
 
 	private:
 		// Not implemented

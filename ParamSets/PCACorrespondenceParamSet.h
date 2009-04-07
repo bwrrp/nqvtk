@@ -6,6 +6,8 @@
 
 #include "GLBlaat/GLProgram.h"
 
+#include <cassert>
+
 namespace NQVTK
 {
 	class PCACorrespondenceParamSet : public ParamSet
