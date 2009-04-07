@@ -1,12 +1,11 @@
 #pragma once
 
-#include "GLBlaat/GLFramebuffer.h"
-#include "GLBlaat/GLProgram.h"
-#include "GLBlaat/GLTextureManager.h"
-
 #include <map>
 #include <string>
-#include <sstream>
+
+class GLTextureManager;
+class GLFramebuffer;
+class GLProgram;
 
 namespace NQVTK
 {
@@ -15,16 +14,10 @@ namespace NQVTK
 	class RenderStyle
 	{
 	public:
-		RenderStyle() 
-		{ 
-			tm = 0;
-		}
-		virtual ~RenderStyle() { }
+		RenderStyle();
+		virtual ~RenderStyle();
 
-		void Initialize(GLTextureManager *tm)
-		{
-			this->tm = tm;
-		}
+		void Initialize(GLTextureManager *tm);
 
 		virtual GLFramebuffer *CreateFBO(int w, int h) = 0;
 
@@ -32,74 +25,31 @@ namespace NQVTK
 		virtual GLProgram *CreatePainter() = 0;
 
 		virtual void PrepareForObject(GLProgram *scribe, 
-			int objectId, Renderable *renderable) 
-		{
-			scribe->SetUniform1i("objectId", objectId);
-			// Apply all ParamSets
-			renderable->ApplyParamSets(scribe);
-		}
+			int objectId, Renderable *renderable);
 
-		virtual void RegisterScribeTextures(GLFramebuffer *previous) { }
-		virtual void UnregisterScribeTextures() { }
-		virtual void UpdateScribeParameters(GLProgram *scribe) { }
+		virtual void RegisterScribeTextures(GLFramebuffer *previous);
+		virtual void UnregisterScribeTextures();
+		virtual void UpdateScribeParameters(GLProgram *scribe);
 
 		virtual void RegisterPainterTextures(GLFramebuffer *current, 
-			GLFramebuffer *previous) { }
-		virtual void UnregisterPainterTextures() { }
-		virtual void UpdatePainterParameters(GLProgram *painter) { }
+			GLFramebuffer *previous);
+		virtual void UnregisterPainterTextures();
+		virtual void UpdatePainterParameters(GLProgram *painter);
 
-		virtual void DrawBackground()
-		{
-			glDisable(GL_LIGHTING);
-			glEnable(GL_BLEND);
-
-			glBegin(GL_QUADS);
-			glColor4d(0.2, 0.2, 0.25, 0.0);
-			glVertex3d(-1.0, -1.0, 0.0);
-			glVertex3d(1.0, -1.0, 0.0);
-			glColor4d(0.6, 0.6, 0.65, 0.0);
-			glVertex3d(1.0, 1.0, 0.0);
-			glVertex3d(-1.0, 1.0, 0.0);
-			glEnd();
-
-			glDisable(GL_BLEND);
-		}
+		virtual void DrawBackground();
 
 		// NOTE: caller should re-create scribe and painter after changing options
 		virtual void SetOption(const std::string &option, 
-			const std::string &value = "1")
-		{
-			defines[option] = value;
-		}
-
-		virtual bool HasOption(const std::string &option)
-		{
-			std::map<std::string, std::string>::iterator it = 
-				defines.find(option);
-			return (it != defines.end());
-		}
-
-		virtual void UnsetOption(const std::string &option)
-		{
-			defines.erase(option);
-		}
+			const std::string &value = "1");
+		virtual bool HasOption(const std::string &option);
+		virtual void UnsetOption(const std::string &option);
 
 	protected:
 		GLTextureManager *tm;
 
 		std::map<std::string, std::string> defines;
 
-		std::string AddShaderDefines(std::string shader)
-		{
-			std::ostringstream res;
-			for (std::map<std::string, std::string>::const_iterator it = defines.begin();
-				it != defines.end(); ++it)
-			{
-				res << "#define " << it->first << " " << it->second << "\n";
-			}
-			res << shader;
-			return res.str();
-		}
+		std::string AddShaderDefines(std::string shader);
 
 	private:
 		// Not implemented

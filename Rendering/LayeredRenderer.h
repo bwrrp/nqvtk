@@ -10,6 +10,7 @@
 
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTexture.h"
+#include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLOcclusionQuery.h"
 
