@@ -4,6 +4,7 @@
 
 #include "OrthoCamera.h"
 
+#include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLUtility.h"
 
 #include <queue>

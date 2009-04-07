@@ -1,7 +1,5 @@
 #pragma once
 
-#include <QMouseEvent>
-
 namespace NQVTK
 {
 	class MouseEvent
@@ -29,28 +27,12 @@ namespace NQVTK
 	class Interactor
 	{
 	public:
-		Interactor() { }
+		Interactor();
 
-		virtual bool MouseMoveEvent(MouseEvent event)
-		{
-			return false;
-		}
-
-		virtual bool MousePressEvent(MouseEvent event)
-		{
-			return false;
-		}
-
-		virtual bool MouseReleaseEvent(MouseEvent event)
-		{
-			return false;
-		}
-
-		virtual void ResizeEvent(int width, int height) 
-		{
-			viewportWidth = width;
-			viewportHeight = height;
-		}
+		virtual bool MouseMoveEvent(MouseEvent event);
+		virtual bool MousePressEvent(MouseEvent event);
+		virtual bool MouseReleaseEvent(MouseEvent event);
+		virtual void ResizeEvent(int width, int height);
 
 	protected:
 		int viewportWidth;

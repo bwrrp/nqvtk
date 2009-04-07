@@ -2,30 +2,18 @@
 
 #include "Interactor.h"
 
-#include "Rendering/BrushingRenderer.h"
-
 namespace NQVTK
 {
-	class BrushingInteractor : public NQVTK::Interactor
+	class BrushingRenderer;
+
+	class BrushingInteractor : public Interactor
 	{
 	public:
 		typedef Interactor Superclass;
 
-		BrushingInteractor(NQVTK::BrushingRenderer *renderer) : Interactor()
-		{
-			assert(renderer);
-			this->renderer = renderer;
-		}
+		BrushingInteractor(NQVTK::BrushingRenderer *renderer);
 
-		virtual bool MouseMoveEvent(MouseEvent event)
-		{
-			int pen = 0;
-			if (event.buttons & MouseEvent::LeftButton) pen = 1;
-			if (event.buttons & MouseEvent::RightButton) pen = 2;
-			renderer->LineTo(event.x, renderer->GetHeight() - event.y, pen);
-
-			return true;
-		}
+		virtual bool MouseMoveEvent(MouseEvent event);
 
 	protected:
 		NQVTK::BrushingRenderer *renderer;

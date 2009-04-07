@@ -146,6 +146,7 @@ SET( ${ProjectName}_Styles_Classes
 
 SET( ${ProjectName}_Interactors_Classes
 	Interactor
+	CameraInteractor
 	OrbitCameraInteractor
 	ArcballCameraInteractor
 	ObjectInteractor

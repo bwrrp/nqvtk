@@ -2,16 +2,16 @@
 
 #include "Interactor.h"
 
-#include "Rendering/Camera.h"
-
 namespace NQVTK
 {
+	class Camera;
+
 	class CameraInteractor : public Interactor
 	{
 	public:
 		typedef Interactor Superclass;
 
-		CameraInteractor(Camera *camera) : camera(camera) { }
+		CameraInteractor(Camera *camera);
 
 	protected:
 		Camera *camera;
