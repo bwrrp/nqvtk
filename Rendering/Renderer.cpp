@@ -2,8 +2,10 @@
 
 #include "Renderer.h"
 
-#include "GLBlaat/GL.h"
+#include "Camera.h"
+#include "Math/Vector3.h"
 
+#include "GLBlaat/GL.h"
 #include "GLBlaat/GLTexture.h"
 #include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLFramebuffer.h"
