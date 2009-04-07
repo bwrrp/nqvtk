@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Camera.h"
-#include "Renderables/Renderable.h"
+#include "Math/Vector3.h"
 
 #include <vector>
 
@@ -11,6 +10,9 @@ class GLTextureManager;
 
 namespace NQVTK
 {
+	class Camera;
+	class Renderable;
+
 	class Renderer
 	{
 	public:
@@ -31,7 +33,8 @@ namespace NQVTK
 		virtual void Draw() = 0;
 
 		// Hook for per-renderable processing
-		virtual void PrepareForRenderable(int objectId, NQVTK::Renderable *renderable) { }
+		virtual void PrepareForRenderable(int objectId, 
+			Renderable *renderable);
 
 		// Loop over and draw all renderables
 		virtual void DrawRenderables();

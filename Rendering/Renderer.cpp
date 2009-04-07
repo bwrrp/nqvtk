@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Renderer.h"
-
 #include "Camera.h"
+#include "Renderables/Renderable.h"
 #include "Math/Vector3.h"
 
 #include "GLBlaat/GL.h"
@@ -139,6 +139,11 @@ namespace NQVTK
 			static_cast<float>(lightDir.z), 
 			0.0f};
 		glLightfv(GL_LIGHT0, GL_POSITION, ldir);
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::PrepareForRenderable(int objectId, Renderable *renderable)
+	{
 	}
 
 	// ------------------------------------------------------------------------
