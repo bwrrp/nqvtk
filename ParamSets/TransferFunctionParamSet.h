@@ -7,23 +7,10 @@ namespace NQVTK
 	class TransferFunctionParamSet : public ParamSet
 	{
 	public:
-		TransferFunctionParamSet()
-		{
-			tfStart = 0.0;
-			tfEnd = 1.0;
-			// TODO: use transfer function texture (optional?)
-		}
+		TransferFunctionParamSet();
+		virtual ~TransferFunctionParamSet();
 
-		virtual ~TransferFunctionParamSet()
-		{
-		}
-
-		virtual void SetupProgramArrays(GLProgram *program, int objectId)
-		{
-			program->SetUniform1f(GetArrayName("tfStart", objectId), tfStart);
-			program->SetUniform1f(GetArrayName("tfEnd", objectId), tfEnd);
-			// TODO: set transfer function texture if available
-		}
+		virtual void SetupProgramArrays(GLProgram *program, int objectId);
 
 		float tfStart;
 		float tfEnd;

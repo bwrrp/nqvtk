@@ -1,27 +1,21 @@
 #pragma once
 
-#include "GLBlaat/GLProgram.h"
-
-#include <sstream>
 #include <string>
+
+class GLProgram;
 
 namespace NQVTK
 {
 	class ParamSet
 	{
 	public:
-		ParamSet() { };
+		ParamSet();
 
-		virtual void SetupProgram(GLProgram *program) { }
-		virtual void SetupProgramArrays(GLProgram *program, int objectId) { }
+		virtual void SetupProgram(GLProgram *program);
+		virtual void SetupProgramArrays(GLProgram *program, int objectId);
 
 	protected:
-		std::string GetArrayName(const std::string &baseName, int index)
-		{
-			std::ostringstream name;
-			name << baseName << "[" << index << "]";
-			return name.str();
-		}
+		std::string GetArrayName(const std::string &baseName, int index);
 
 	private:
 		// Not implemented
