@@ -200,11 +200,11 @@ namespace NQVTK
 					// Compute spacings and update unitSize if any are smaller
 					NQVTK::Vector3 size = 
 						dfps->distanceField->GetOriginalSize();
-					float spX = size.x / static_cast<double>(
+					double spX = size.x / static_cast<double>(
 						dfps->distanceField->GetWidth() - 1);
-					float spY = size.y / static_cast<double>(
+					double spY = size.y / static_cast<double>(
 						dfps->distanceField->GetHeight() - 1);
-					float spZ = size.z / static_cast<double>(
+					double spZ = size.z / static_cast<double>(
 						dfps->distanceField->GetDepth() - 1);
 					if (spX < unitSize) unitSize = spX;
 					if (spY < unitSize) unitSize = spY;
@@ -222,8 +222,10 @@ namespace NQVTK
 		{
 			// Volume parameters are set by the distance field paramsets
 			// Set other parameters
-			painter->SetUniform1f("stepSize", stepSize * unitSize);
-			painter->SetUniform1f("kernelSize", kernelSize * unitSize);
+			painter->SetUniform1f("stepSize", 
+				static_cast<float>(stepSize * unitSize));
+			painter->SetUniform1f("kernelSize", 
+				static_cast<float>(kernelSize * unitSize));
 		}
 
 		// --------------------------------------------------------------------

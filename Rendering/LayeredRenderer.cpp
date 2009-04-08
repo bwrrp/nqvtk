@@ -145,7 +145,7 @@ namespace NQVTK
 		glEnable(GL_COLOR_MATERIAL);
 
 		// Depth clamping "avoids" clipping problems
-		// TODO: it's better to fill holes by first drawing the near clipping plane
+		// TODO: fill holes by first drawing the near clipping plane
 		if (GLEW_NV_depth_clamp)
 		{
 			glEnable(GL_DEPTH_CLAMP_NV);
@@ -154,8 +154,8 @@ namespace NQVTK
 		// Start Scribe program
 		scribe->Start();
 		scribe->SetUniform1i("layer", layer);
-		scribe->SetUniform1f("farPlane", camera->farZ);
-		scribe->SetUniform1f("nearPlane", camera->nearZ);
+		scribe->SetUniform1f("farPlane", static_cast<float>(camera->farZ));
+		scribe->SetUniform1f("nearPlane", static_cast<float>(camera->nearZ));
 		style->UpdateScribeParameters(scribe);
 
 		// Set up textures used by the scribe
@@ -194,11 +194,14 @@ namespace NQVTK
 		// Start painter program
 		painter->Start();
 		painter->SetUniform1i("layer", layer);
-		painter->SetUniform1f("farPlane", camera->farZ);
-		painter->SetUniform1f("nearPlane", camera->nearZ);
+		painter->SetUniform1f("farPlane", static_cast<float>(camera->farZ));
+		painter->SetUniform1f("nearPlane", static_cast<float>(camera->nearZ));
 		painter->SetUniform1f("viewportX", static_cast<float>(viewportX));
 		painter->SetUniform1f("viewportY", static_cast<float>(viewportY));
-		painter->SetUniform3f("cameraPos", camera->position.x, camera->position.y, camera->position.z);
+		painter->SetUniform3f("cameraPos", 
+			static_cast<float>(camera->position.x), 
+			static_cast<float>(camera->position.y), 
+			static_cast<float>(camera->position.z));
 		ApplyParamSetsArrays(painter);
 		style->UpdatePainterParameters(painter);
 

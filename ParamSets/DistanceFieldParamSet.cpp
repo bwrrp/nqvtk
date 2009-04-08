@@ -28,15 +28,19 @@ namespace NQVTK
 		{
 			program->SetUniform1i("hasDistanceField", 1);
 			program->SetUniform1f("distanceFieldDataShift", 
-				distanceField->GetDataShift());
+				static_cast<float>(distanceField->GetDataShift()));
 			program->SetUniform1f("distanceFieldDataScale", 
-				distanceField->GetDataScale());
+				static_cast<float>(distanceField->GetDataScale()));
 			Vector3 origin = distanceField->GetOrigin();
 			program->SetUniform3f("distanceFieldOrigin", 
-				origin.x, origin.y, origin.z);
+				static_cast<float>(origin.x), 
+				static_cast<float>(origin.y), 
+				static_cast<float>(origin.z));
 			Vector3 size = distanceField->GetOriginalSize();
 			program->SetUniform3f("distanceFieldSize", 
-				size.x, size.y, size.z);
+				static_cast<float>(size.x), 
+				static_cast<float>(size.y), 
+				static_cast<float>(size.z));
 		}
 		else
 		{
@@ -51,22 +55,29 @@ namespace NQVTK
 		// TODO: maybe we should just rename this class...
 		program->SetUniform1f(
 			GetArrayName("volumeDataShift", objectId), 
-			distanceField->GetDataShift());
+			static_cast<float>(distanceField->GetDataShift()));
 		program->SetUniform1f(
 			GetArrayName("volumeDataScale", objectId), 
-			distanceField->GetDataScale());
+			static_cast<float>(distanceField->GetDataScale()));
 		NQVTK::Vector3 origin = distanceField->GetOrigin();
 		program->SetUniform3f(
 			GetArrayName("volumeOrigin", objectId), 
-			origin.x, origin.y, origin.z);
+			static_cast<float>(origin.x), 
+			static_cast<float>(origin.y), 
+			static_cast<float>(origin.z));
 		NQVTK::Vector3 size = distanceField->GetOriginalSize();
 		program->SetUniform3f(
 			GetArrayName("volumeSize", objectId), 
-			size.x, size.y, size.z);
+			static_cast<float>(size.x), 
+			static_cast<float>(size.y), 
+			static_cast<float>(size.z));
 		program->SetUniform3f(
 			GetArrayName("volumeSpacing", objectId), 
-			size.x / static_cast<double>(distanceField->GetWidth() - 1), 
-			size.y / static_cast<double>(distanceField->GetHeight() - 1), 
-			size.z / static_cast<double>(distanceField->GetDepth() - 1));
+			static_cast<float>(
+				size.x / static_cast<double>(distanceField->GetWidth() - 1)), 
+			static_cast<float>(
+				size.y / static_cast<double>(distanceField->GetHeight() - 1)), 
+			static_cast<float>(
+				size.z / static_cast<double>(distanceField->GetDepth() - 1)));
 	}
 }

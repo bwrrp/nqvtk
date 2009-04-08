@@ -119,8 +119,10 @@ namespace NQVTK
 
 		// Get the modelview and projection matrices for the light's camera
 		shadowRenderer->DrawCamera();
-		float shadowNear = shadowRenderer->GetCamera()->nearZ;
-		float shadowFar = shadowRenderer->GetCamera()->farZ;
+		float shadowNear = static_cast<float>(
+			shadowRenderer->GetCamera()->nearZ);
+		float shadowFar = static_cast<float>(
+			shadowRenderer->GetCamera()->farZ);
 		float lmvm[16];
 		float lpm[16];
 		glGetFloatv(GL_MODELVIEW_MATRIX, lmvm);

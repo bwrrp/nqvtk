@@ -40,7 +40,7 @@ namespace NQVTK
 			std::string GetVarName(const std::string &baseName, int index);
 
 			// Unit used for stepSize and kernelSize
-			float unitSize;
+			double unitSize;
 
 		private:
 			// Not implemented
