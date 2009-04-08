@@ -34,6 +34,7 @@ namespace NQVTK
 			// Update arcball rotation
 			Vector3 newPos = GetBallPoint(event.x, event.y);
 			camera->SetRotation(newPos);
+			camera->Update();
 			handled = true;
 		}
 		else if (event.buttons & MouseEvent::RightButton)
