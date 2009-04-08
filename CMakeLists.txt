@@ -109,6 +109,7 @@ SET( ${ProjectName}_Rendering_Classes
 	LayeredRaycastingRenderer
 	PointFilteringRenderer
 	BrushingRenderer
+	NestedRenderer
 	OverlayRenderer
 	CrossEyedStereoRenderer
 	ShadowMappingRenderer
