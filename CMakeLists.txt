@@ -340,6 +340,7 @@ SOURCE_GROUP( "Generated files"
 )
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
 # --------------------------------------------------
 # Library target
