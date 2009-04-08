@@ -21,23 +21,16 @@ namespace NQVTK
 
 		virtual bool Initialize();
 
-		virtual void Resize(int w, int h);
+		void Move(int x, int y);
+		void Resize(int w, int h);
+		virtual void SetViewport(int x, int y, int w, int h);
 
 		virtual void Clear();
-
-		virtual void DrawCamera();
-
-		virtual void UpdateLighting();
 
 		// To be implemented in derived classes
 		virtual void Draw() = 0;
 
-		// Hook for per-renderable processing
-		virtual void PrepareForRenderable(int objectId, 
-			Renderable *renderable);
-
-		// Loop over and draw all renderables
-		virtual void DrawRenderables();
+		virtual void DrawCamera();
 
 		int AddRenderable(Renderable *obj);
 		Renderable *GetRenderable(unsigned int i);
@@ -82,6 +75,15 @@ namespace NQVTK
 		GLTextureManager *tm;
 
 		GLFramebuffer *fboTarget;
+
+		virtual void UpdateLighting();
+
+		// Hook for per-renderable processing
+		virtual void PrepareForRenderable(int objectId, 
+			Renderable *renderable);
+
+		// Loop over and draw all renderables
+		virtual void DrawRenderables();
 
 		void TestDrawTexture(GLTexture *tex, 
 			double xmin, double xmax, 

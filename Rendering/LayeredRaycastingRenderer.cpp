@@ -63,9 +63,9 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void LayeredRaycastingRenderer::Resize(int w, int h)
+	void LayeredRaycastingRenderer::SetViewport(int x, int y, int w, int h)
 	{
-		Superclass::Resize(w, h);
+		Superclass::SetViewport(x, y, w, h);
 
 		if (layeredRaycasting)
 		{

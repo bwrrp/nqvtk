@@ -40,6 +40,12 @@ namespace NQVTK
 				}
 			}
 		}
+		// If the boundaries are invalid, use sane default values
+		if (minDepth > maxDepth)
+		{
+			minDepth = 1.0;
+			maxDepth = 10.0;
+		}
 		// Slightly increase the boundaries to prevent accuracy issues
 		minDepth *= 0.9;
 		maxDepth *= 1.1;

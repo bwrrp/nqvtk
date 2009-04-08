@@ -7,73 +7,89 @@
 
 #include "GLBlaat/GLFramebuffer.h"
 
+#include <cassert>
+
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	CrossEyedStereoRenderer::CrossEyedStereoRenderer()
+	CrossEyedStereoRenderer::CrossEyedStereoRenderer(Renderer *baseRenderer)
+		: NestedRenderer(baseRenderer)
 	{
-		leftEye = true;
+		assert(baseRenderer);
 		eyeSpacing = 0.1;
 	}
 
 	// ------------------------------------------------------------------------
 	CrossEyedStereoRenderer::~CrossEyedStereoRenderer()
 	{
+		delete baseRenderer;
 	}
 
 	// ------------------------------------------------------------------------
-	void CrossEyedStereoRenderer::Resize(int w, int h)
+	bool CrossEyedStereoRenderer::Initialize()
+	{
+		return baseRenderer->Initialize();
+	}
+
+	// ------------------------------------------------------------------------
+	void CrossEyedStereoRenderer::SetViewport(int x, int y, int w, int h)
 	{
 		// We render at half width
-		Superclass::Resize(w / 2, h);
+		baseRenderer->SetViewport(x, y, w / 2, h);
+		Superclass::SetViewport(x, y, w, h);
 	}
 
 	// ------------------------------------------------------------------------
 	void CrossEyedStereoRenderer::Clear()
 	{
-		// Only clear for the left eye and when rendering to FBO
-		if (leftEye || fbo1->IsBound()) Superclass::Clear();
-	}
-
-	// ------------------------------------------------------------------------
-	void CrossEyedStereoRenderer::DrawCamera()
-	{
-		Vector3 offset = Vector3(0.0, 0.0, 1.0);
-		if (leftEye)
-		{
-			offset.x = -eyeSpacing / 2.0;
-		}
-		else
-		{
-			offset.x = eyeSpacing / 2.0;
-		}
-
-		// TODO: fix me for new camera
-		Renderable *renderable = renderables[0];
-		camera->position = renderable->GetCenter() - offset;
-		camera->FocusOn(renderable);
-
-		// Set up the camera (matrices)
-		camera->Draw();
+		baseRenderer->Clear();
 	}
 
 	// ------------------------------------------------------------------------
 	void CrossEyedStereoRenderer::Draw()
 	{
+		if (fboTarget)
+		{
+			fboTarget->Bind();
+		}
+
+		// Sync camera
+		UpdateCamera();
+
+		Vector3 forward = camera->focus - camera->position;
+		Vector3 right = forward.cross(camera->up);
+		Vector3 offset = 0.5 * eyeSpacing * right.normalized();
+
 		// Draw left eye (on the right)
-		leftEye = true;
+
 		// Offset viewport
-		viewportX = viewportWidth;
-		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+		baseRenderer->SetViewport(viewportX + viewportWidth / 2, viewportY, 
+			viewportWidth / 2, viewportHeight);
+
+		// Offset camera
+		baseRenderer->GetCamera()->position = camera->position - offset;
+
 		// Draw
-		Superclass::Draw();
+		baseRenderer->Draw();
 
 		// Draw right eye
-		leftEye = false;
+
 		// Offset viewport
-		viewportX = 0;
-		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+		baseRenderer->SetViewport(viewportX, viewportY, 
+			viewportWidth / 2, viewportHeight);
+
+		// Offset camera
+		baseRenderer->GetCamera()->position = camera->position + offset;
+
 		// Draw
-		Superclass::Draw();
+		baseRenderer->Draw();
+
+		if (fboTarget)
+		{
+			fboTarget->Unbind();
+		}
+
+		// Restore viewport
+		SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 	}
 }

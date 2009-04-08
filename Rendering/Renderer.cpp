@@ -60,12 +60,26 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	void Renderer::Move(int x, int y)
+	{
+		SetViewport(x, y, viewportWidth, viewportHeight);
+	}
+
+	// ------------------------------------------------------------------------
 	void Renderer::Resize(int w, int h)
 	{
-		this->viewportWidth = w;
-		this->viewportHeight = h;
+		SetViewport(viewportX, viewportY, w, h);
+	}
 
-		glViewport(viewportX, viewportY, w, h);
+	// ------------------------------------------------------------------------
+	void Renderer::SetViewport(int x, int y, int w, int h)
+	{
+		viewportX = x;
+		viewportY = y;
+		viewportWidth = w;
+		viewportHeight = h;
+
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		camera->aspect = static_cast<double>(w) / static_cast<double>(h);
 
 		if (fboTarget)
@@ -81,90 +95,6 @@ namespace NQVTK
 	void Renderer::Clear()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::DrawCamera()
-	{
-		// Get bounds for all renderables
-		const double inf = std::numeric_limits<double>::infinity();
-		double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
-		unsigned int numRenderables = GetNumberOfRenderables();
-		for (unsigned int i = 0; i < numRenderables; ++i)
-		{
-			Renderable *renderable = GetRenderable(i);
-			if (renderable)
-			{
-				double rbounds[6];
-				renderable->GetBounds(rbounds);
-				for (int i = 0; i < 3; ++i)
-				{
-					if (rbounds[i*2] < bounds[i*2]) 
-						bounds[i*2] = rbounds[i*2];
-
-					if (rbounds[i*2+1] > bounds[i*2+1]) 
-						bounds[i*2+1] = rbounds[i*2+1];
-				}
-			}
-		}
-
-		camera->SetZPlanes(bounds);
-
-		// Set up the camera (matrices)
-		camera->Draw();
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::UpdateLighting()
-	{
-		if (lightRelativeToCamera)
-		{
-			camera->Update();
-			const double DEGREES_TO_RADIANS = 0.0174532925199433;
-			Vector3 viewDir = (camera->focus - camera->position);
-			Vector3 sideDir = viewDir.cross(camera->up).normalized();
-			Vector3 upDir = sideDir.cross(viewDir).normalized();
-			Vector3 offset = 
-				-sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
-				cos(lightOffsetDirection * DEGREES_TO_RADIANS) * upDir;
-			offset *= viewDir.length() / 2.0;
-			lightPos = camera->position + offset;
-		}
-
-		// Update OpenGL light direction
-		Vector3 lightDir = (lightPos - camera->focus).normalized();
-		float ldir[] = {
-			static_cast<float>(lightDir.x), 
-			static_cast<float>(lightDir.y), 
-			static_cast<float>(lightDir.z), 
-			0.0f};
-		glLightfv(GL_LIGHT0, GL_POSITION, ldir);
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::PrepareForRenderable(int objectId, Renderable *renderable)
-	{
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::DrawRenderables()
-	{
-		int objectId = 0;
-		// Iterate over all renderables and draw them
-		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
-			it != renderables.end(); ++it)
-		{
-			Renderable *renderable = *it;
-			if (renderable)
-			{
-				if (renderable->visible)
-				{
-					PrepareForRenderable(objectId, renderable);
-					renderable->Draw();
-				}
-			}
-			++objectId;
-		}
 	}
 
 	// ------------------------------------------------------------------------
@@ -262,6 +192,90 @@ namespace NQVTK
 			assert(ok);
 		}
 		return oldTarget;
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::DrawCamera()
+	{
+		// Get bounds for all renderables
+		const double inf = std::numeric_limits<double>::infinity();
+		double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
+		unsigned int numRenderables = GetNumberOfRenderables();
+		for (unsigned int i = 0; i < numRenderables; ++i)
+		{
+			Renderable *renderable = GetRenderable(i);
+			if (renderable)
+			{
+				double rbounds[6];
+				renderable->GetBounds(rbounds);
+				for (int i = 0; i < 3; ++i)
+				{
+					if (rbounds[i*2] < bounds[i*2]) 
+						bounds[i*2] = rbounds[i*2];
+
+					if (rbounds[i*2+1] > bounds[i*2+1]) 
+						bounds[i*2+1] = rbounds[i*2+1];
+				}
+			}
+		}
+
+		camera->SetZPlanes(bounds);
+
+		// Set up the camera (matrices)
+		camera->Draw();
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::UpdateLighting()
+	{
+		if (lightRelativeToCamera)
+		{
+			camera->Update();
+			const double DEGREES_TO_RADIANS = 0.0174532925199433;
+			Vector3 viewDir = (camera->focus - camera->position);
+			Vector3 sideDir = viewDir.cross(camera->up).normalized();
+			Vector3 upDir = sideDir.cross(viewDir).normalized();
+			Vector3 offset = 
+				-sin(lightOffsetDirection * DEGREES_TO_RADIANS) * sideDir - 
+				cos(lightOffsetDirection * DEGREES_TO_RADIANS) * upDir;
+			offset *= viewDir.length() / 2.0;
+			lightPos = camera->position + offset;
+		}
+
+		// Update OpenGL light direction
+		Vector3 lightDir = (lightPos - camera->focus).normalized();
+		float ldir[] = {
+			static_cast<float>(lightDir.x), 
+			static_cast<float>(lightDir.y), 
+			static_cast<float>(lightDir.z), 
+			0.0f};
+		glLightfv(GL_LIGHT0, GL_POSITION, ldir);
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::PrepareForRenderable(int objectId, Renderable *renderable)
+	{
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::DrawRenderables()
+	{
+		int objectId = 0;
+		// Iterate over all renderables and draw them
+		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
+			it != renderables.end(); ++it)
+		{
+			Renderable *renderable = *it;
+			if (renderable)
+			{
+				if (renderable->visible)
+				{
+					PrepareForRenderable(objectId, renderable);
+					renderable->Draw();
+				}
+			}
+			++objectId;
+		}
 	}
 
 	// ------------------------------------------------------------------------

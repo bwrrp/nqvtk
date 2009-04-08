@@ -93,11 +93,11 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void LayeredRenderer::Resize(int w, int h)
+	void LayeredRenderer::SetViewport(int x, int y, int w, int h)
 	{
-		Superclass::Resize(w, h);
+		Superclass::SetViewport(x, y, w, h);
 
-		if (!fbo1) 
+		if (!fbo1)
 		{
 			fbo1 = style->CreateFBO(w, h);
 		}
@@ -405,9 +405,6 @@ namespace NQVTK
 		if (query && style) 
 		{
 			bool ok = Initialize();
-			// TODO: subclasses might need this call
-			// problems occur if a subclass modifies the size, so we call this
-			//LayeredRenderer::Resize(viewportWidth, viewportHeight);
 			Resize(viewportWidth, viewportHeight);
 			return ok;
 		}

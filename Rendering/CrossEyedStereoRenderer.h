@@ -1,28 +1,30 @@
 #pragma once
 
-#include "LayeredRenderer.h"
+#include "NestedRenderer.h"
 
 namespace NQVTK
 {
-	class CrossEyedStereoRenderer : public LayeredRenderer
+	class CrossEyedStereoRenderer : public NestedRenderer
 	{
 	public:
-		typedef LayeredRenderer Superclass;
+		typedef Renderer Superclass;
 
-		CrossEyedStereoRenderer();
+		CrossEyedStereoRenderer(Renderer *baseRenderer);
 		virtual ~CrossEyedStereoRenderer();
 
-		virtual void Resize(int w, int h);
+		virtual bool Initialize();
+
+		virtual void SetViewport(int x, int y, int w, int h);
 
 		virtual void Clear();
-
-		virtual void DrawCamera();
 
 		virtual void Draw();
 
 		double eyeSpacing;
 
-	protected:
-		bool leftEye;
+	private:
+		// Not implemented
+		CrossEyedStereoRenderer(const CrossEyedStereoRenderer&);
+		void operator=(const CrossEyedStereoRenderer&);
 	};
 }

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Renderer.h"
+#include "NestedRenderer.h"
 
 class GLTexture;
 class GLFramebuffer;
 
 namespace NQVTK
 {
-	class OverlayRenderer : public Renderer
+	class OverlayRenderer : public NestedRenderer
 	{
 	public:
 		typedef Renderer Superclass;
@@ -17,13 +17,13 @@ namespace NQVTK
 
 		virtual bool Initialize();
 
-		virtual void Resize(int w, int h);
+		virtual void SetViewport(int x, int y, int w, int h);
 
 		void DrawTexture(GLTexture *tex);
 
 		virtual void Draw();
 
-		Renderer *GetBaseRenderer() { return baseRenderer; }
+		// GetBaseRenderer is provided by NestedRenderer
 		Renderer *GetOverlayRenderer() { return overlayRenderer; }
 
 		GLTexture *GetBaseImage();
@@ -33,7 +33,6 @@ namespace NQVTK
 		bool updateOverlay;
 
 	protected:
-		Renderer *baseRenderer;
 		Renderer *overlayRenderer;
 
 		GLFramebuffer *baseFbo;

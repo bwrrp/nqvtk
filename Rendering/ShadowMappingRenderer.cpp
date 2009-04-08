@@ -74,12 +74,13 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void ShadowMappingRenderer::Resize(int w, int h)
+	void ShadowMappingRenderer::SetViewport(int x, int y, int w, int h)
 	{
 		// Resize buffers managed by the parent class
-		Superclass::Resize(w, h);
+		Superclass::SetViewport(x, y, w, h);
 
 		// Resize the shadow renderer
+		// NOTE: this is currently fixed
 		shadowRenderer->Resize(1024, 1024);
 
 		// Resize or recreate shadow buffer

@@ -18,7 +18,7 @@ namespace NQVTK
 
 		virtual bool Initialize();
 
-		virtual void Resize(int w, int h);
+		virtual void SetViewport(int x, int y, int w, int h);
 
 		virtual void Draw();
 

@@ -13,8 +13,8 @@ namespace NQVTK
 {
 	// ------------------------------------------------------------------------
 	OverlayRenderer::OverlayRenderer(Renderer *base, Renderer *overlay)
+		: NestedRenderer(base)
 	{
-		baseRenderer = base;
 		overlayRenderer = overlay;
 
 		baseFbo = overlayFbo = 0;
@@ -46,11 +46,11 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void OverlayRenderer::Resize(int w, int h)
+	void OverlayRenderer::SetViewport(int x, int y, int w, int h)
 	{
-		Superclass::Resize(w, h);
-		if (baseRenderer) baseRenderer->Resize(w, h);
-		if (overlayRenderer) overlayRenderer->Resize(w, h);
+		Superclass::SetViewport(x, y, w, h);
+		if (baseRenderer) baseRenderer->SetViewport(x, y, w, h);
+		if (overlayRenderer) overlayRenderer->SetViewport(x, y, w, h);
 
 		// Create (and assign) or resize FBOs
 		if (baseRenderer)
@@ -142,10 +142,12 @@ namespace NQVTK
 	void OverlayRenderer::Draw()
 	{
 		// Draw baseRenderer to fbo
-		if (baseRenderer && updateBase) baseRenderer->Draw();
+		if (baseRenderer && updateBase) 
+			baseRenderer->Draw();
 		
 		// Draw overlayRenderer to fbo
-		if (overlayRenderer && updateOverlay) overlayRenderer->Draw();
+		if (overlayRenderer && updateOverlay) 
+			overlayRenderer->Draw();
 
 		// Prepare for rendering
 		if (fboTarget)
@@ -169,6 +171,7 @@ namespace NQVTK
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		Clear();
 		if (baseFbo)
 		{
 			glDisable(GL_BLEND);
