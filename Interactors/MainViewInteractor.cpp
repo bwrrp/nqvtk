@@ -21,18 +21,6 @@ namespace NQVTK
 	MainViewInteractor::MainViewInteractor(Renderer *ren) 
 		: Interactor(), cameraInt(0), objectInt(0), clipperInt(0), brushInt(0)
 	{
-		// Is it an overlay renderer?
-		oren = dynamic_cast<OverlayRenderer*>(ren);
-		if (oren)
-		{
-			// TODO: simply switch the interactor for brushing
-			// This is a bit of a hack to test everything
-			NQVTK::BrushingRenderer *bren = 
-				dynamic_cast<BrushingRenderer*>(oren->GetOverlayRenderer());
-			if (bren) brushInt = new BrushingInteractor(bren);
-			ren = oren->GetBaseRenderer();
-		}
-
 		// Create the proper camera interactor
 		OrbitCamera *ocam = dynamic_cast<OrbitCamera*>(
 			ren->GetCamera());
@@ -45,6 +33,17 @@ namespace NQVTK
 			NQVTK::ArcballCamera *acam = dynamic_cast<ArcballCamera*>(
 				ren->GetCamera());
 			if (acam) cameraInt = new ArcballCameraInteractor(acam);
+		}
+		// Is it an overlay renderer?
+		oren = dynamic_cast<OverlayRenderer*>(ren);
+		if (oren)
+		{
+			// TODO: simply switch the interactor for brushing
+			// This is a bit of a hack to test everything
+			NQVTK::BrushingRenderer *bren = 
+				dynamic_cast<BrushingRenderer*>(oren->GetOverlayRenderer());
+			if (bren) brushInt = new BrushingInteractor(bren);
+			ren = oren->GetBaseRenderer();
 		}
 		// Create object interactors
 		NQVTK::Renderable *renderable = ren->GetRenderable(0);

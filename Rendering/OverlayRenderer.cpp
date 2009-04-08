@@ -141,6 +141,8 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void OverlayRenderer::Draw()
 	{
+		UpdateCamera();
+
 		// Draw baseRenderer to fbo
 		if (baseRenderer && updateBase) 
 			baseRenderer->Draw();
