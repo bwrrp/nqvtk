@@ -2,6 +2,11 @@
 
 #include "CrossEyedStereoRenderer.h"
 
+#include "Camera.h"
+#include "Renderables/Renderable.h"
+
+#include "GLBlaat/GLFramebuffer.h"
+
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------

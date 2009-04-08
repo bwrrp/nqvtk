@@ -2,8 +2,12 @@
 
 #include "ShadowMappingRenderer.h"
 
+#include "Camera.h"
 #include "Styles/ShadowMap.h"
 #include "Styles/DistanceFields.h"
+
+#include "GLBlaat/GLFramebuffer.h"
+#include "GLBlaat/GLTextureManager.h"
 
 namespace NQVTK
 {
