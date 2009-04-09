@@ -23,7 +23,7 @@ namespace NQVTK
 		// --------------------------------------------------------------------
 		LayeredRaycaster::LayeredRaycaster()
 		{
-			testParam = 0.0f;
+			testParam = 0.5f;
 			isoOpacity = 0.6f;
 			occlusionEdgeThreshold = 0.1f;
 			cornerEdgeThreshold = 0.0f;
