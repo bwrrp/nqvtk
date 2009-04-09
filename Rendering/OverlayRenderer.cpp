@@ -156,10 +156,7 @@ namespace NQVTK
 		{
 			fboTarget->Bind();
 		}
-		else
-		{
-			glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-		}
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
 		// Composite results
 		glPushAttrib(GL_ALL_ATTRIB_BITS);

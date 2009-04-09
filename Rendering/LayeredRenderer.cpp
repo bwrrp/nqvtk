@@ -240,10 +240,7 @@ namespace NQVTK
 		{
 			fboTarget->Bind();
 		}
-		else
-		{
-			glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-		}
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
 		// For front-to-back blending, we clear the target with alpha = 1.0
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -281,6 +278,7 @@ namespace NQVTK
 			{
 				fboTarget->Bind();
 			}
+			glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
 			if (layer >= skipLayers) 
 			{

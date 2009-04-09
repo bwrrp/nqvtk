@@ -167,6 +167,7 @@ namespace NQVTK
 		/*
 		// DEBUG: show shadow buffer
 		if (fboTarget) fboTarget->Bind();
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		TestDrawTexture(shadowMap, 0.0, 1.0, 0.0, 1.0);
 		if (fboTarget) fboTarget->Unbind();
 		//*/

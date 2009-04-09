@@ -66,10 +66,7 @@ namespace NQVTK
 		{
 			fboTarget->Bind();
 		}
-		else
-		{
-			glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-		}
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
 		// TODO: update shader params, attrib bindings etc.
 		if (shader) shader->Start();

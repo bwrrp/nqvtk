@@ -145,8 +145,10 @@ namespace NQVTK
 		raycaster->SetUniform1i("layer", layer);
 		raycaster->SetUniform1f("farPlane", static_cast<float>(camera->farZ));
 		raycaster->SetUniform1f("nearPlane", static_cast<float>(camera->nearZ));
-		raycaster->SetUniform1f("viewportX", static_cast<float>(viewportX));
-		raycaster->SetUniform1f("viewportY", static_cast<float>(viewportY));
+		// The raycast pass is drawn to a separate framebuffer, so the 
+		// viewport starts at (0, 0) for this pass
+		raycaster->SetUniform1f("viewportX", 0.0f);
+		raycaster->SetUniform1f("viewportY", 0.0f);
 		raycaster->SetUniform3f("cameraPos", 
 			static_cast<float>(camera->position.x), 
 			static_cast<float>(camera->position.y), 

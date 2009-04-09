@@ -52,6 +52,7 @@ namespace NQVTK
 		{
 			fboTarget->Bind();
 		}
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
 		// Sync camera
 		UpdateCamera();

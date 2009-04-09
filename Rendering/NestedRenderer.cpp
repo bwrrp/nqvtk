@@ -19,6 +19,15 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	void NestedRenderer::SetViewport(int x, int y, int w, int h)
+	{
+		Superclass::SetViewport(x, y, w, h);
+		UpdateCamera();
+		// NOTE: Setting baseRenderer's viewport is up to the subclass
+		// because it may not be the same as for the outer renderer
+	}
+
+	// ------------------------------------------------------------------------
 	void NestedRenderer::DrawCamera()
 	{
 		UpdateCamera();

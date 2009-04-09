@@ -22,6 +22,8 @@ namespace NQVTK
 	{
 		viewportX = 0;
 		viewportY = 0;
+		viewportWidth = 1;
+		viewportHeight = 1;
 
 		lightOffsetDirection = 270.0;
 		lightRelativeToCamera = true;
@@ -80,15 +82,10 @@ namespace NQVTK
 		viewportHeight = h;
 
 		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-		camera->aspect = static_cast<double>(w) / static_cast<double>(h);
+		GetCamera()->aspect = static_cast<double>(w) / static_cast<double>(h);
 
-		if (fboTarget)
-		{
-			if (!fboTarget->Resize(w, h)) 
-			{
-				std::cerr << "WARNING! fboTarget resize failed!" << std::endl;
-			}
-		}
+		// NOTE: The target is never resized by the renderer it's assigned to, 
+		// it should be managed by its owner!
 	}
 
 	// ------------------------------------------------------------------------
