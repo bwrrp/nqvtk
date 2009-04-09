@@ -85,9 +85,9 @@ namespace NQVTK
 		// Loop over and draw all renderables
 		virtual void DrawRenderables();
 
-		void TestDrawTexture(GLTexture *tex, 
-			double xmin, double xmax, 
-			double ymin, double ymax);
+		void DrawTexture(GLTexture *tex, 
+			double xmin = -1.0, double xmax = 1.0, 
+			double ymin = -1.0, double ymax = 1.0);
 
 	private:
 		// Not implemented

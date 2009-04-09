@@ -2,7 +2,6 @@
 
 #include "NestedRenderer.h"
 
-class GLTexture;
 class GLFramebuffer;
 
 namespace NQVTK
@@ -18,8 +17,6 @@ namespace NQVTK
 		virtual bool Initialize();
 
 		virtual void SetViewport(int x, int y, int w, int h);
-
-		void DrawTexture(GLTexture *tex);
 
 		virtual void Draw();
 

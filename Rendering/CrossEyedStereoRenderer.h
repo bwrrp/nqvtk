@@ -2,6 +2,8 @@
 
 #include "NestedRenderer.h"
 
+class GLFrameBuffer;
+
 namespace NQVTK
 {
 	class CrossEyedStereoRenderer : public NestedRenderer
@@ -21,6 +23,9 @@ namespace NQVTK
 		virtual void Draw();
 
 		double eyeSpacing;
+
+	protected:
+		GLFramebuffer *fboEyeHelper;
 
 	private:
 		// Not implemented

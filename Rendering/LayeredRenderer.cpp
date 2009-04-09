@@ -321,16 +321,15 @@ namespace NQVTK
 		GLenum bottom = GL_COLOR_ATTACHMENT2_EXT;
 		//GLenum bottom = GL_DEPTH_ATTACHMENT_EXT;
 		// Test: display all textures
-		glDisable(GL_DEPTH_TEST);
-		TestDrawTexture(fbo1->GetTexture2D(top), 
+		glDisable(GL_BLEND);
+		DrawTexture(fbo1->GetTexture2D(top), 
 			-1.0, 0.0, 0.0, 1.0);
-		TestDrawTexture(fbo1->GetTexture2D(bottom), 
+		DrawTexture(fbo1->GetTexture2D(bottom), 
 			-1.0, 0.0, -1.0, 0.0);
-		TestDrawTexture(fbo2->GetTexture2D(top), 
+		DrawTexture(fbo2->GetTexture2D(top), 
 			0.0, 1.0, 0.0, 1.0);
-		TestDrawTexture(fbo2->GetTexture2D(bottom), 
+		DrawTexture(fbo2->GetTexture2D(bottom), 
 			0.0, 1.0, -1.0, 0.0);
-		glEnable(GL_DEPTH_TEST);
 		//*/
 
 		if (fboTarget)

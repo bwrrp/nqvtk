@@ -4,6 +4,8 @@
 
 #include "Camera.h"
 
+#include "GLBlaat/GLTexture.h"
+
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------

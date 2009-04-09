@@ -25,10 +25,9 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	OverlayRenderer::~OverlayRenderer()
 	{
-		if (baseRenderer) delete baseRenderer;
-		if (overlayRenderer) delete overlayRenderer;
-		if (baseFbo) delete baseFbo;
-		if (overlayFbo) delete overlayFbo;
+		delete overlayRenderer;
+		delete baseFbo;
+		delete overlayFbo;
 	}
 
 	// ------------------------------------------------------------------------
@@ -38,8 +37,8 @@ namespace NQVTK
 		if (ok && baseRenderer) ok = baseRenderer->Initialize();
 		if (ok && overlayRenderer) ok = overlayRenderer->Initialize();
 
-		if (baseFbo) delete baseFbo;
-		if (overlayFbo) delete overlayFbo;
+		delete baseFbo;
+		delete overlayFbo;
 		baseFbo = overlayFbo = 0;
 
 		return ok;
@@ -72,7 +71,8 @@ namespace NQVTK
 			{
 				if (!baseFbo->Resize(w, h))
 				{
-					std::cerr << "WARNING! baseFbo resize failed!" << std::endl;
+					std::cerr << "WARNING! baseFbo resize failed!" << 
+						std::endl;
 				}
 			}
 		}
@@ -96,46 +96,11 @@ namespace NQVTK
 			{
 				if (!overlayFbo->Resize(w, h))
 				{
-					std::cerr << "WARNING! overlayFbo resize failed!" << std::endl;
+					std::cerr << "WARNING! overlayFbo resize failed!" << 
+						std::endl;
 				}
 			}
 		}
-	}
-
-	// ------------------------------------------------------------------------
-	void OverlayRenderer::DrawTexture(GLTexture *tex)
-	{
-		if (!tex) return;
-		tex->BindToCurrent();
-		glEnable(tex->GetTextureTarget());
-		if (tex->GetTextureTarget() == GL_TEXTURE_RECTANGLE_ARB)
-		{
-			glBegin(GL_QUADS);
-			glTexCoord2d(0.0, 0.0);
-			glVertex3d(-1.0, -1.0, 0.0);
-			glTexCoord2d(tex->GetWidth(), 0.0);
-			glVertex3d(1.0, -1.0, 0.0);
-			glTexCoord2d(tex->GetWidth(), tex->GetHeight());
-			glVertex3d(1.0, 1.0, 0.0);
-			glTexCoord2d(0.0, tex->GetHeight());
-			glVertex3d(-1.0, 1.0, 0.0);
-			glEnd();
-		}
-		else 
-		{
-			glBegin(GL_QUADS);
-			glTexCoord2d(0.0, 0.0);
-			glVertex3d(-1.0, -1.0, 0.0);
-			glTexCoord2d(1.0, 0.0);
-			glVertex3d(1.0, -1.0, 0.0);
-			glTexCoord2d(1.0, 1.0);
-			glVertex3d(1.0, 1.0, 0.0);
-			glTexCoord2d(0.0, 1.0);
-			glVertex3d(-1.0, 1.0, 0.0);
-			glEnd();
-		}
-		glDisable(tex->GetTextureTarget());
-		tex->UnbindCurrent();
 	}
 
 	// ------------------------------------------------------------------------
@@ -162,12 +127,8 @@ namespace NQVTK
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glColor3d(1.0, 1.0, 1.0);
-		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		Clear();
