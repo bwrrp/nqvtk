@@ -32,10 +32,57 @@ vec3 phongShading(vec3 matColor, vec3 normal);
 bool getBit(float byte, int bit);
 float setBit(float byte, int bit, bool on);
 
-float getValue(int v, vec3 pos) {
+// Get vector from volume
+vec3 getVector(int v, vec3 pos) {
 	vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
-	return texture3D(volume[v], p).x;
+	return vec3(volumeDataShift[v]) + volumeDataScale[v] * texture3D(volume[v], p).xyz;
+}
+
+// Linear Jacobian
+mat3 jacobian(int v, vec3 pos, float delta, vec3 val) {
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+	vec3 dx = (getVector(v, pos + vec3(0.5 * delta, 0.0, 0.0)) - 
+		getVector(v, pos - vec3(0.5 * delta, 0.0, 0.0))) / delta;
+	vec3 dy = (getVector(v, pos + vec3(0.0, 0.5 * delta, 0.0)) - 
+		getVector(v, pos - vec3(0.0, 0.5 * delta, 0.0))) / delta;
+	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, 0.5 * delta)) - 
+		getVector(v, pos - vec3(0.0, 0.0, 0.5 * delta))) / delta;
+#else
+	vec3 dx = (getVector(v, pos + vec3(delta, 0.0, 0.0)) - val) / delta;
+	vec3 dy = (getVector(v, pos + vec3(0.0, delta, 0.0)) - val) / delta;
+	vec3 dz = (getVector(v, pos + vec3(0.0, 0.0, delta)) - val) / delta;
+#endif
+	// Add identity (because we should have used pos + vec instead of vec)
+	return mat3(dx, dy, dz) + mat3(1.0);
+}
+
+// Compute determinant of matrix
+float determinant(mat3 m) {
+	return m[0][0] * m[1][1] * m[2][2] 
+		+ m[0][1] * m[1][2] * m[2][0] 
+		+ m[0][2] * m[1][0] * m[2][1] 
+		- m[0][2] * m[1][1] * m[2][0] 
+		- m[0][1] * m[1][0] * m[2][2] 
+		- m[0][0] * m[1][2] * m[2][1];
+}
+
+float getValue(int v, vec3 pos) {
+	//vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
+	//vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
+	//return texture3D(volume[v], p).x;
+#ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
+	vec3 val = vec3(0.0);
+#else
+	vec3 val = getVector(v, pos);
+#endif
+	float detJ = abs(determinant(jacobian(v, pos, kernelSize, val)));
+	float g = 0.0;
+	if (detJ > 1.0) 
+		g = 1.0 - (1.0 / detJ);
+	else
+		g = detJ - 1.0;
+	return g + 0.5;
 }
 
 // Compute gradient of the volume
