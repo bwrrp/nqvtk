@@ -2,7 +2,7 @@
 
 #include "NestedRenderer.h"
 
-class GLFrameBuffer;
+class GLFramebuffer;
 
 namespace NQVTK
 {
