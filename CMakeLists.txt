@@ -76,6 +76,7 @@ SET( ${ProjectName}_Modules
 	Styles
 	Widgets
 	Interactors
+	GPGPU
 )
 
 # Friendly names for the modules
@@ -87,6 +88,7 @@ SET( ${ProjectName}_ModuleNames
 	"Render styles"
 	"Widgets"
 	"Interactors"
+	"GPGPU"
 )
 
 # --------------------------------------------------
@@ -154,16 +156,24 @@ SET( ${ProjectName}_Interactors_Classes
 	BrushingInteractor
 )
 
+SET( ${ProjectName}_GPGPU_Classes
+	VolumeToVolumeFilter
+)
+
 # --------------------------------------------------
 # Text resources to process using TextToHeader
+# TODO: separate these per style to optimize compilation times
 
 SET( ${ProjectName}_TextHeaders
 	Shaders
 )
 
 SET( ${ProjectName}_Shaders_Text
+	# Libraries
 	LibUtility.txt
 	LibCSG.txt
+	
+	# Render styles
 	SimplePCAVS.txt
 	GenericPainterVS.txt
 	DepthPeelingScribeFS.txt
@@ -181,6 +191,9 @@ SET( ${ProjectName}_Shaders_Text
 	LayeredRaycasterScribePeelFS.txt
 	LayeredRaycasterScribeCastFS.txt
 	LayeredRaycasterPainterFS.txt
+	
+	# GPGPU
+	ConvolutionFilter.txt
 )
 
 # --------------------------------------------------
