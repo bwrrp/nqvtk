@@ -123,9 +123,9 @@ namespace NQVTK
 			depthBuffer->UnbindCurrent();
 			tm->AddTexture("depthBuffer", depthBuffer, false);
 
-			// HACK: register the distance field texture
+			// HACK: register the volume texture
 			// TODO: make other styles handle the textures used for shadow mapping
-			tm->AddTexture("distanceField", 0, false);
+			tm->AddTexture("volume", 0, false);
 		}
 
 		// --------------------------------------------------------------------

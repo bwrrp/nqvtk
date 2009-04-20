@@ -2,7 +2,7 @@
 
 #include "LayeredRaycaster.h"
 
-#include "ParamSets/DistanceFieldParamSet.h"
+#include "ParamSets/VolumeParamSet.h"
 #include "Rendering/ImageDataTexture3D.h"
 
 #include "GLBlaat/GL.h"
@@ -157,12 +157,12 @@ namespace NQVTK
 			double maxRayLength = 0.0;
 			for (unsigned int i = 0; i < volumes.size(); ++i)
 			{
-				NQVTK::DistanceFieldParamSet *dfps = volumes[i];
-				if (dfps)
+				NQVTK::VolumeParamSet *vps = volumes[i];
+				if (vps)
 				{
-					double w = dfps->distanceField->GetWidth();
-					double h = dfps->distanceField->GetHeight();
-					double d = dfps->distanceField->GetDepth();
+					double w = vps->volume->GetWidth();
+					double h = vps->volume->GetHeight();
+					double d = vps->volume->GetDepth();
 					double diameter = sqrt(w * w + h * h + d * d);
 					if (diameter > maxRayLength) maxRayLength = diameter;
 				}

@@ -368,7 +368,7 @@ namespace NQVTK
 	{
 		int objectId = 0;
 		// Load object transforms
-		// HACK: should be handled elsewhere, but we also need the distfield transform
+		// HACK: should be handled elsewhere, but we also need the volume transform
 		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
 			it != renderables.end(); ++it)
 		{

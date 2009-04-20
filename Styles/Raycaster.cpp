@@ -8,7 +8,7 @@
 #include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLUtility.h"
 
-#include "ParamSets/DistanceFieldParamSet.h"
+#include "ParamSets/VolumeParamSet.h"
 #include "Renderables/Renderable.h"
 #include "Rendering/ImageDataTexture3D.h"
 
@@ -47,15 +47,14 @@ namespace NQVTK
 		void Raycaster::PrepareForObject(GLProgram *scribe, 
 			int objectId, NQVTK::Renderable *renderable)
 		{
-			// We re-use the DistanceFieldParamSet for describing volume data
-			scribe->SetUniform1i("hasDistanceField", 0);
+			scribe->SetUniform1i("hasVolume", 0);
 			Superclass::PrepareForObject(scribe, objectId, renderable);
 
-			DistanceFieldParamSet *dfps = dynamic_cast<DistanceFieldParamSet*>(
-				renderable->GetParamSet("distancefield"));
-			if (dfps)
+			VolumeParamSet *vps = dynamic_cast<VolumeParamSet*>(
+				renderable->GetParamSet("volume"));
+			if (vps)
 			{
-				ImageDataTexture3D *volume = dfps->distanceField;
+				ImageDataTexture3D *volume = vps->volume;
 				if (volume)
 				{
 					// Make sure we have enough room
@@ -64,11 +63,11 @@ namespace NQVTK
 						volumes.resize(objectId + 1, 0);
 					}
 					// Store the paramset
-					volumes[objectId] = dfps;
+					volumes[objectId] = vps;
 				}
 				else
 				{
-					scribe->SetUniform1i("hasDistanceField", 0);
+					scribe->SetUniform1i("hasVolume", 0);
 				}
 			}
 		}
@@ -192,20 +191,20 @@ namespace NQVTK
 			unitSize = 1000000.0;
 			for (unsigned int i = 0; i < volumes.size(); ++i)
 			{
-				NQVTK::DistanceFieldParamSet *dfps = volumes[i];
-				if (dfps)
+				NQVTK::VolumeParamSet *vps = volumes[i];
+				if (vps)
 				{
 					tm->AddTexture(GetVarName("volume", i), 
-						dfps->distanceField, false);
+						vps->volume, false);
 					// Compute spacings and update unitSize if any are smaller
 					NQVTK::Vector3 size = 
-						dfps->distanceField->GetOriginalSize();
+						vps->volume->GetOriginalSize();
 					double spX = size.x / static_cast<double>(
-						dfps->distanceField->GetWidth() - 1);
+						vps->volume->GetWidth() - 1);
 					double spY = size.y / static_cast<double>(
-						dfps->distanceField->GetHeight() - 1);
+						vps->volume->GetHeight() - 1);
 					double spZ = size.z / static_cast<double>(
-						dfps->distanceField->GetDepth() - 1);
+						vps->volume->GetDepth() - 1);
 					if (spX < unitSize) unitSize = spX;
 					if (spY < unitSize) unitSize = spY;
 					if (spZ < unitSize) unitSize = spZ;
@@ -220,7 +219,7 @@ namespace NQVTK
 		// --------------------------------------------------------------------
 		void Raycaster::UpdatePainterParameters(GLProgram *painter)
 		{
-			// Volume parameters are set by the distance field paramsets
+			// Volume parameters are set by the VolumeParamSet
 			// Set other parameters
 			painter->SetUniform1f("stepSize", 
 				static_cast<float>(stepSize * unitSize));

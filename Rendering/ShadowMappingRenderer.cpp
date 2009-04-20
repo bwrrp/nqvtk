@@ -80,7 +80,7 @@ namespace NQVTK
 		Superclass::SetViewport(x, y, w, h);
 
 		// Resize the shadow renderer
-		// NOTE: this is currently fixed
+		// NOTE: shadow map size is currently fixed
 		shadowRenderer->Resize(1024, 1024);
 
 		// Resize or recreate shadow buffer

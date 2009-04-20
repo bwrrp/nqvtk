@@ -13,16 +13,13 @@ uniform bool useGridTexture;
 uniform bool useGlyphTexture;
 
 #ifdef NQVTK_USE_DISTANCEFIELDS
-uniform sampler3D distanceField;
-uniform bool hasDistanceField;
-uniform float distanceFieldDataShift;
-uniform float distanceFieldDataScale;
-uniform vec3 distanceFieldOrigin;
-uniform vec3 distanceFieldSize;
+uniform sampler3D volume;
+uniform bool hasVolume;
+uniform float volumeDataShift;
+uniform float volumeDataScale;
+uniform vec3 volumeOrigin;
+uniform vec3 volumeSize;
 uniform bool useDistanceColorMap;
-#endif
-
-#ifdef NQVTK_USE_DISTANCEFIELDS
 uniform float distanceThreshold;
 #endif
 
@@ -85,15 +82,15 @@ void main() {
 
 #ifdef NQVTK_USE_DISTANCEFIELDS
 	// Distance field thresholding
-	if (hasDistanceField) {
+	if (hasVolume) {
 		vec3 p = vertex.xyz / vertex.w;
 		// HACK: Beware! Hack! Distance field alignment is wrong!
 		//p = p + vec3(-3.5, -4.0, 9.0); // msdata
 		//p = p + vec3(-28.0, 57.0, 13.0); // cartilage
 		//p = p + vec3(98.0, 98.0, 100.0); // test
-		p = (p - distanceFieldOrigin) / distanceFieldSize;
-		float dist = texture3D(distanceField, p).x;
-		dist = abs(dist * distanceFieldDataScale + distanceFieldDataShift);
+		p = (p - volumeOrigin) / volumeSize;
+		float dist = texture3D(volume, p).x;
+		dist = abs(dist * volumeDataScale + volumeDataShift);
 
 		if (dist < distanceThreshold) {
 			classification = 0.0;
@@ -111,7 +108,7 @@ void main() {
 #endif
 
 	/* TEST: texcoord-less xy grid
-	if (useGridTexture && (col.a < 1.0 || !hasDistanceField)) {
+	if (useGridTexture && (col.a < 1.0 || !hasVolume)) {
 		vec2 tc = fract(abs(0.03 * vertex.xy / vertex.w));
 		float grid = abs(2.0 * mod(tc.x * 3.0, 1.0) - 1.0);
 		grid = 1.0 - min(grid, abs(2.0 * mod(tc.y * 5.0, 1.0) - 1.0));

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DistanceFieldParamSet.h"
+#include "VolumeParamSet.h"
 
 #include "Rendering/ImageDataTexture3D.h"
 
@@ -9,63 +9,62 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	DistanceFieldParamSet::DistanceFieldParamSet(
-		ImageDataTexture3D *distanceField)
+	VolumeParamSet::VolumeParamSet(
+		ImageDataTexture3D *volume)
 	{
-		this->distanceField = distanceField;
+		this->volume = volume;
 	}
 
 	// ------------------------------------------------------------------------
-	DistanceFieldParamSet::~DistanceFieldParamSet()
+	VolumeParamSet::~VolumeParamSet()
 	{
-		delete distanceField;
+		delete volume;
 	}
 
 	// ------------------------------------------------------------------------
-	void DistanceFieldParamSet::SetupProgram(GLProgram *program)
+	void VolumeParamSet::SetupProgram(GLProgram *program)
 	{
-		if (distanceField)
+		if (volume)
 		{
-			program->SetUniform1i("hasDistanceField", 1);
-			program->SetUniform1f("distanceFieldDataShift", 
-				static_cast<float>(distanceField->GetDataShift()));
-			program->SetUniform1f("distanceFieldDataScale", 
-				static_cast<float>(distanceField->GetDataScale()));
-			Vector3 origin = distanceField->GetOrigin();
-			program->SetUniform3f("distanceFieldOrigin", 
+			program->SetUniform1i("hasVolume", 1);
+			program->SetUniform1f("volumeDataShift", 
+				static_cast<float>(volume->GetDataShift()));
+			program->SetUniform1f("volumeDataScale", 
+				static_cast<float>(volume->GetDataScale()));
+			Vector3 origin = volume->GetOrigin();
+			program->SetUniform3f("volumeOrigin", 
 				static_cast<float>(origin.x), 
 				static_cast<float>(origin.y), 
 				static_cast<float>(origin.z));
-			Vector3 size = distanceField->GetOriginalSize();
-			program->SetUniform3f("distanceFieldSize", 
+			Vector3 size = volume->GetOriginalSize();
+			program->SetUniform3f("volumeSize", 
 				static_cast<float>(size.x), 
 				static_cast<float>(size.y), 
 				static_cast<float>(size.z));
 		}
 		else
 		{
-			program->SetUniform1i("hasDistanceField", 0);
+			program->SetUniform1i("hasVolume", 0);
 		}
 	}
 
 	// ------------------------------------------------------------------------
-	void DistanceFieldParamSet::SetupProgramArrays(
+	void VolumeParamSet::SetupProgramArrays(
 		GLProgram *program, int objectId)
 	{
-		// TODO: maybe we should just rename this class...
 		program->SetUniform1f(
 			GetArrayName("volumeDataShift", objectId), 
-			static_cast<float>(distanceField->GetDataShift()));
+			static_cast<float>(volume->GetDataShift()));
 		program->SetUniform1f(
 			GetArrayName("volumeDataScale", objectId), 
-			static_cast<float>(distanceField->GetDataScale()));
-		NQVTK::Vector3 origin = distanceField->GetOrigin();
+			static_cast<float>(volume->GetDataScale()));
+		NQVTK::Vector3 origin = volume->GetOrigin();
 		program->SetUniform3f(
 			GetArrayName("volumeOrigin", objectId), 
 			static_cast<float>(origin.x), 
 			static_cast<float>(origin.y), 
 			static_cast<float>(origin.z));
-		NQVTK::Vector3 size = distanceField->GetOriginalSize();
+		NQVTK::Vector3 size = volume->GetOriginalSize();
 		program->SetUniform3f(
 			GetArrayName("volumeSize", objectId), 
 			static_cast<float>(size.x), 
@@ -74,10 +73,10 @@ namespace NQVTK
 		program->SetUniform3f(
 			GetArrayName("volumeSpacing", objectId), 
 			static_cast<float>(
-				size.x / static_cast<double>(distanceField->GetWidth() - 1)), 
+				size.x / static_cast<double>(volume->GetWidth() - 1)), 
 			static_cast<float>(
-				size.y / static_cast<double>(distanceField->GetHeight() - 1)), 
+				size.y / static_cast<double>(volume->GetHeight() - 1)), 
 			static_cast<float>(
-				size.z / static_cast<double>(distanceField->GetDepth() - 1)));
+				size.z / static_cast<double>(volume->GetDepth() - 1)));
 	}
 }

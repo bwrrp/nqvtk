@@ -7,7 +7,7 @@
 
 namespace NQVTK
 {
-	class DistanceFieldParamSet;
+	class VolumeParamSet;
 
 	namespace Styles
 	{
@@ -35,7 +35,7 @@ namespace NQVTK
 			float kernelSize;
 
 		protected:
-			std::vector<NQVTK::DistanceFieldParamSet*> volumes;
+			std::vector<NQVTK::VolumeParamSet*> volumes;
 
 			std::string GetVarName(const std::string &baseName, int index);
 

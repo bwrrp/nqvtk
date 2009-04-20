@@ -11,7 +11,7 @@
 
 #include "Shaders.h"
 
-#include "ParamSets/DistanceFieldParamSet.h"
+#include "ParamSets/VolumeParamSet.h"
 #include "Renderables/Renderable.h"
 #include "Rendering/ImageDataTexture3D.h"
 
@@ -42,14 +42,14 @@ namespace NQVTK
 		void DistanceFields::PrepareForObject(GLProgram *scribe, 
 			int objectId, NQVTK::Renderable *renderable)
 		{
-			scribe->SetUniform1i("hasDistanceField", 0);
+			scribe->SetUniform1i("hasVolume", 0);
 			Superclass::PrepareForObject(scribe, objectId, renderable);
 
-			DistanceFieldParamSet *dfps = dynamic_cast<DistanceFieldParamSet*>(
-				renderable->GetParamSet("distancefield"));
-			if (dfps)
+			VolumeParamSet *vps = dynamic_cast<VolumeParamSet*>(
+				renderable->GetParamSet("volume"));
+			if (vps)
 			{
-				ImageDataTexture3D *distanceField = dfps->distanceField;
+				ImageDataTexture3D *distanceField = vps->volume;
 				// HACK: the second condition is a hack for shadow map creation
 				if (distanceField && distanceFieldId != 
 					GLTextureManager::BAD_SAMPLER_ID)
@@ -59,7 +59,7 @@ namespace NQVTK
 				}
 				else
 				{
-					scribe->SetUniform1i("hasDistanceField", 0);
+					scribe->SetUniform1i("hasVolume", 0);
 				}
 			}
 			tm->Bind();
@@ -74,7 +74,7 @@ namespace NQVTK
 			{
 				// Register distance field sampler
 				// This is set to different textures in PrepareForObject
-				distanceFieldId = tm->AddTexture("distanceField", 0, false);
+				distanceFieldId = tm->AddTexture("volume", 0, false);
 			}
 		}
 

@@ -9,7 +9,7 @@ uniform sampler2DRect infoBuffer;
 uniform int layer;
 uniform int objectId;
 
-uniform bool hasDistanceField;
+uniform bool hasVolume;
 
 varying vec4 pos;
 
@@ -22,7 +22,7 @@ void main() {
 	vec4 r0 = gl_FragCoord;
 
 	// For now, discard objects without a volume
-	if (!hasDistanceField) discard;
+	if (!hasVolume) discard;
 
 	// Depth peeling
 	if (layer > 0) {

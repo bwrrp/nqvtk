@@ -6,22 +6,22 @@ namespace NQVTK
 {
 	class ImageDataTexture3D;
 
-	class DistanceFieldParamSet : public ParamSet
+	class VolumeParamSet : public ParamSet
 	{
 	public:
 		typedef ParamSet Superclass;
 
-		DistanceFieldParamSet(ImageDataTexture3D *distanceField = 0);
-		virtual ~DistanceFieldParamSet();
+		VolumeParamSet(ImageDataTexture3D *volume = 0);
+		virtual ~VolumeParamSet();
 
 		virtual void SetupProgram(GLProgram *program);
 		virtual void SetupProgramArrays(GLProgram *program, int objectId);
 
-		ImageDataTexture3D *distanceField;
+		ImageDataTexture3D *volume;
 
 	private:
 		// Not implemented
-		DistanceFieldParamSet(const DistanceFieldParamSet&);
-		void operator=(const DistanceFieldParamSet&);
+		VolumeParamSet(const VolumeParamSet&);
+		void operator=(const VolumeParamSet&);
 	};
 }
