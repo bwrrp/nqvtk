@@ -54,6 +54,7 @@ vec2 packFloat2(float depth);
 void main() {
 	vec4 r0 = gl_FragCoord;
 	vec4 col = color;
+	vec3 n = normal;
 
 	// Depth peeling
 	if (layer > 0) {
@@ -169,7 +170,7 @@ void main() {
 #ifndef NQVTK_GENERATE_SHADOWMAP
 	// Two-sided lighting
 	if (!gl_FrontFacing) {
-		normal = -normal;
+		n = -n;
 		// Desaturate color
 		float intensity = length(col.rgb);
 		vec3 gray = vec3(sqrt(intensity * intensity / 3.0));
@@ -178,10 +179,10 @@ void main() {
 	// Encode depth
 	vec2 depthVec = packFloat2(depthInCamera);
 	// Encode normal
-	vec3 n = (normalize(normal) + vec3(1.0)) / 2.0;
+	vec3 n2 = (normalize(n) + vec3(1.0)) / 2.0;
 	// Store data
 	gl_FragData[0] = col;
-	gl_FragData[1] = vec4(n, 1.0);
+	gl_FragData[1] = vec4(n2, 1.0);
 	gl_FragData[2] = vec4(inOutMask, classification, depthVec);
 #else
 	// For drawing the shadow map, there is only one (float-type) info buffer

@@ -101,7 +101,7 @@ void main() {
 	//* Smearing
 	int n = 0;
 	float f = 0.0;
-	for (int i = 0; i < 100.0 * testParam; ++i) {
+	for (int i = 0; i < int(100.0 * testParam); ++i) {
 		vec2 tc = r0.xy + float(i - 25) * d;
 		f += dotTexture(tc);
 		++n;

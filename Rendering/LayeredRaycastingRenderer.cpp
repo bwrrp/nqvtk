@@ -42,6 +42,7 @@ namespace NQVTK
 			dynamic_cast<NQVTK::Styles::LayeredRaycaster*>(this->style);
 		if (style)
 		{
+			std::cout << "Creating Raycaster..." << std::endl;
 			raycaster = style->CreateRaycaster();
 			if (!raycaster)
 			{

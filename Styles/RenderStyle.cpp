@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 namespace NQVTK
 {
@@ -29,6 +30,8 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void RenderStyle::Initialize(GLTextureManager *tm)
 	{
+		std::cout << "Initializing style with " << 
+			defines.size() << " options set..." << std::endl;
 		this->tm = tm;
 	}
 

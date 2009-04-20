@@ -63,6 +63,7 @@ namespace NQVTK
 		delete painter;
 		scribe = painter = 0;
 		// - Scribe (info pass)
+		std::cout << "Creating Scribe..." << std::endl;
 		scribe = style->CreateScribe();
 		if (!scribe)
 		{
@@ -79,6 +80,7 @@ namespace NQVTK
 		}
 #endif
 		// - Painter (shading pass)
+		std::cout << "Creating Painter..." << std::endl;
 		painter = style->CreatePainter();
 		if (!painter) 
 		{
