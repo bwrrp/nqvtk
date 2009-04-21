@@ -100,11 +100,13 @@ SET( ${ProjectName}_Math_Classes
 )
 
 SET( ${ProjectName}_Rendering_Classes
-	ImageDataTexture3D
+	# Cameras
 	Camera
 	OrbitCamera
 	OrthoCamera
 	ArcballCamera
+
+	# Renderers
 	Renderer
 	SimpleRenderer
 	LayeredRenderer
@@ -115,6 +117,10 @@ SET( ${ProjectName}_Rendering_Classes
 	OverlayRenderer
 	CrossEyedStereoRenderer
 	ShadowMappingRenderer
+
+	# 3D Images
+	Volume
+	ImageDataVolume
 )
 
 SET( ${ProjectName}_Renderables_Classes

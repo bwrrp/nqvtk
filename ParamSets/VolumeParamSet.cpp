@@ -2,15 +2,14 @@
 
 #include "VolumeParamSet.h"
 
-#include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/Volume.h"
 
 #include "GLBlaat/GLProgram.h"
 
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	VolumeParamSet::VolumeParamSet(
-		ImageDataTexture3D *volume)
+	VolumeParamSet::VolumeParamSet(Volume *volume)
 	{
 		this->volume = volume;
 	}

@@ -4,16 +4,14 @@
 
 #include "Math/Vector3.h"
 
-class vtkImageData;
-
 namespace NQVTK
 {
-	class ImageDataTexture3D : public GLTexture3D
+	class Volume : public GLTexture3D
 	{
 	public:
 		typedef GLTexture3D Superclass;
 
-		static ImageDataTexture3D *New(vtkImageData *data);
+		static Volume *New();
 
 		double GetDataShift() const { return dataShift; }
 		double GetDataScale() const { return dataScale; }
@@ -21,13 +19,12 @@ namespace NQVTK
 		Vector3 GetOrigin() const { return origin; }
 
 	protected:
-		ImageDataTexture3D(int width, int height, int depth, 
-			int internalformat);
-
-	private:
 		double dataShift;
 		double dataScale;
 		Vector3 origin;
 		Vector3 originalSize;
+
+		Volume(int width, int height, int depth, 
+			int internalformat);
 	};
 }

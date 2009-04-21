@@ -4,20 +4,20 @@
 
 namespace NQVTK
 {
-	class ImageDataTexture3D;
+	class Volume;
 
 	class VolumeParamSet : public ParamSet
 	{
 	public:
 		typedef ParamSet Superclass;
 
-		VolumeParamSet(ImageDataTexture3D *volume = 0);
+		VolumeParamSet(Volume *volume = 0);
 		virtual ~VolumeParamSet();
 
 		virtual void SetupProgram(GLProgram *program);
 		virtual void SetupProgramArrays(GLProgram *program, int objectId);
 
-		ImageDataTexture3D *volume;
+		Volume *volume;
 
 	private:
 		// Not implemented

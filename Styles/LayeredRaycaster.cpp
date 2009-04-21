@@ -3,7 +3,7 @@
 #include "LayeredRaycaster.h"
 
 #include "ParamSets/VolumeParamSet.h"
-#include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/Volume.h"
 
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLFramebuffer.h"

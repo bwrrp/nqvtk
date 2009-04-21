@@ -10,7 +10,7 @@
 
 #include "ParamSets/VolumeParamSet.h"
 #include "Renderables/Renderable.h"
-#include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/Volume.h"
 
 #include "Shaders.h"
 
@@ -54,7 +54,7 @@ namespace NQVTK
 				renderable->GetParamSet("volume"));
 			if (vps)
 			{
-				ImageDataTexture3D *volume = vps->volume;
+				Volume *volume = vps->volume;
 				if (volume)
 				{
 					// Make sure we have enough room
@@ -185,7 +185,7 @@ namespace NQVTK
 				tm->AddTexture(GetVarName("volume", i), 0, false);
 			}
 
-			// Add volumes to tm from stored paramsets
+			// Prepare volumes for the painter / raycasting stage
 			// TODO: per-object textures should be handled through paramsets
 			// This also recomputes the unit size
 			unitSize = 1000000.0;
@@ -194,8 +194,18 @@ namespace NQVTK
 				NQVTK::VolumeParamSet *vps = volumes[i];
 				if (vps)
 				{
+					// Use linear interpolation for sampling this volume
+					vps->volume->BindToCurrent();
+					glTexParameteri(vps->volume->GetTextureTarget(), 
+						GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(vps->volume->GetTextureTarget(), 
+						GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					vps->volume->UnbindCurrent();
+
+					// Add the volume
 					tm->AddTexture(GetVarName("volume", i), 
 						vps->volume, false);
+
 					// Compute spacings and update unitSize if any are smaller
 					NQVTK::Vector3 size = 
 						vps->volume->GetOriginalSize();

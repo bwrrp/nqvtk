@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImageDataTexture3D.h"
+#include "ImageDataVolume.h"
 
 #include "Math/Vector3.h"
 
@@ -16,7 +16,7 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	ImageDataTexture3D *ImageDataTexture3D::New(vtkImageData *data)
+	ImageDataVolume *ImageDataVolume::New(vtkImageData *data)
 	{
 		if (!data) return 0;
 
@@ -119,7 +119,7 @@ namespace NQVTK
 		// Finally, create the texture
 		unsigned char *dataPointer = 
 			static_cast<unsigned char*>(vol->GetScalarPointer());
-		ImageDataTexture3D *tex = new ImageDataTexture3D(
+		ImageDataVolume *tex = new ImageDataVolume(
 			dim[0], dim[1], dim[2], format);
 		tex->dataShift = shift;
 		tex->dataScale = scale;
@@ -135,7 +135,7 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	ImageDataTexture3D::ImageDataTexture3D(int width, int height, int depth, 
+	ImageDataVolume::ImageDataVolume(int width, int height, int depth, 
 		int internalformat) 
-		: GLTexture3D(width, height, depth, internalformat) { }
+		: Volume(width, height, depth, internalformat) { }
 }

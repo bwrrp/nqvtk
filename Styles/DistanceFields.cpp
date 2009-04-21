@@ -13,7 +13,7 @@
 
 #include "ParamSets/VolumeParamSet.h"
 #include "Renderables/Renderable.h"
-#include "Rendering/ImageDataTexture3D.h"
+#include "Rendering/Volume.h"
 
 #include <sstream>
 
@@ -49,7 +49,7 @@ namespace NQVTK
 				renderable->GetParamSet("volume"));
 			if (vps)
 			{
-				ImageDataTexture3D *distanceField = vps->volume;
+				Volume *distanceField = vps->volume;
 				// HACK: the second condition is a hack for shadow map creation
 				if (distanceField && distanceFieldId != 
 					GLTextureManager::BAD_SAMPLER_ID)
