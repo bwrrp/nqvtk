@@ -9,8 +9,48 @@ uniform int slice;
 // Parameters
 uniform float scale;
 
+float getSample(vec3 pos)
+{
+	// Compute the position in the input volume texture
+	vec3 p = pos.zxy / volumeDims;
+	return texture3D(volume, p);
+}
+
 // Main shader function
-void main() {
-	// TODO: do convolution for this slice
-	gl_FragColor = vec4(1.0);
+void main()
+{
+	vec3 pos = vec3(gl_FragCoord.xy, float(slice));
+	
+	// Do convolution along z (in the output volume, x in the input)
+	float result[4];
+	for (int i = 0; i < 4; ++i) result[i] = 0.0;
+	// Precomputation... the magic number here is sqrt(2 pi)
+	float f1 = 1.0 / (2.506628274631 * scale);
+	float f2 = -1.0 / (2.0 * scale * scale);
+	// Perform convolution for four slices simultaneously
+	// We assume that sampling is more expensive than computing the gaussian
+	// Therefore we run over all samples contributing to the four layers once
+	int halfksize = int(ceil(2.0 * scale));
+	for (int i = -halfksize; i <= 3 + halfksize; ++i)
+	{
+		// Corresponding voxel in the output volume
+		vec3 p = vec3(pos.xy, pos.z + float(i));
+		float sample = getSample(p);
+		for (int j = 0; j < 4; ++j)
+		{
+			// Only include samples halfksize around slice j
+			if (i >= j - halfksize && i <= j + halfksize)
+			{
+				float gz = float(i - j);
+				float gauss = f1 * exp(f2 * gz * gz);
+				result[j] += gauss * sample;
+			}
+		}
+	}
+	
+	// Write results
+	for (int j = 0; j < 4; ++j)
+	{
+		gl_FragData[j] = vec4(result[j]);
+	}
 }
