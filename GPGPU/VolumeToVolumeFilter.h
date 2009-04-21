@@ -6,6 +6,8 @@ class GLTextureManager;
 
 namespace NQVTK
 {
+	class Volume;
+
 	namespace GPGPU
 	{
 		class VolumeToVolumeFilter
@@ -13,14 +15,16 @@ namespace NQVTK
 		public:
 			VolumeToVolumeFilter();
 			
-			bool Setup(GLTexture3D *input);
+			bool Setup(Volume *input);
 
-			GLTexture3D *Execute();
+			Volume *Execute();
+
+			float scale;
 
 		protected:
 			GLTextureManager *tm;
 			GLProgram *program;
-			GLTexture3D *input;
+			Volume *input;
 
 			GLProgram *CreateProgram();
 			void ExecutePass(GLTexture3D *input, GLTexture3D *output);

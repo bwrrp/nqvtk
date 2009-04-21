@@ -2,6 +2,8 @@
 
 #include "VolumeToVolumeFilter.h"
 
+#include "Rendering/Volume.h"
+
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLTexture3D.h"
@@ -21,12 +23,12 @@ namespace NQVTK
 	{
 		// --------------------------------------------------------------------
 		VolumeToVolumeFilter::VolumeToVolumeFilter()
-			: tm(0)
+			: tm(0), scale(1.0)
 		{
 		}
 
 		// --------------------------------------------------------------------
-		bool VolumeToVolumeFilter::Setup(GLTexture3D *input)
+		bool VolumeToVolumeFilter::Setup(Volume *input)
 		{
             tm = GLTextureManager::New();
 
@@ -46,7 +48,7 @@ namespace NQVTK
 		}
 
 		// --------------------------------------------------------------------
-		GLTexture3D *VolumeToVolumeFilter::Execute()
+		Volume *VolumeToVolumeFilter::Execute()
 		{
 			// NOTE: hardcoded for seperable convolution for testing purposes
 			// TODO: use inheritance to implement more complicated filters
@@ -78,7 +80,7 @@ namespace NQVTK
 			}
 
 			// Create output texture
-			GLTexture3D *output = GLTexture3D::New(
+			Volume *output = Volume::New(
 				input->GetWidth(), input->GetHeight(), input->GetDepth(), 
 				input->GetInternalFormat(), 
 				input->GetDataFormat(), input->GetDataType(), 0);
@@ -88,6 +90,12 @@ namespace NQVTK
 				std::cerr << "Could not create output texture!" << std::endl;
 				return 0;
 			}
+
+			// Copy metadata from input
+			output->SetDataScale(input->GetDataScale());
+			output->SetDataShift(input->GetDataShift());
+			output->SetOrigin(input->GetOrigin());
+			output->SetOriginalSize(input->GetOriginalSize());
 
 			// Prepare GL state
 			glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -182,7 +190,7 @@ namespace NQVTK
 					static_cast<float>(output->GetHeight()), 
 					static_cast<float>(output->GetDepth()));
 				program->SetUniform1i("slice", slice);
-				program->SetUniform1f("scale", 1.0f);
+				program->SetUniform1f("scale", scale);
 				
 				tm->SetupProgram(program);
 				tm->Bind();
