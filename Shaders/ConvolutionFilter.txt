@@ -13,7 +13,7 @@ float getSample(vec3 pos)
 {
 	// Compute the position in the input volume texture
 	vec3 p = pos.zxy / volumeDims;
-	return texture3D(volume, p);
+	return texture3D(volume, p).x;
 }
 
 // Main shader function

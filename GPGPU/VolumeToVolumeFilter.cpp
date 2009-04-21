@@ -8,6 +8,7 @@
 #include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLRenderTexture3DLayer.h"
+#include "GLBlaat/GLUtility.h"
 
 #include "Shaders.h"
 
@@ -98,6 +99,9 @@ namespace NQVTK
 			ExecutePass(helperYZX, helperZXY);
 			ExecutePass(helperZXY, output);
 
+			// Clean up
+			delete helperYZX;
+			delete helperZXY;
 			glPopAttrib();
 
 			return output;
@@ -126,6 +130,11 @@ namespace NQVTK
 		void VolumeToVolumeFilter::ExecutePass(
 			GLTexture3D *input, GLTexture3D *output)
 		{
+			// Make sure the input uses nearest neighbor filtering
+			// TODO: use hw linear interpolation for faster convolution
+			GLUtility::SetDefaultColorTextureParameters(input);
+			input->UnbindCurrent();
+
 			// Set the input
 			tm->AddTexture("volume", input, false);
 
@@ -136,17 +145,25 @@ namespace NQVTK
 			// Run over the slices of the output
 			// We render 4 slices simultaneously
 			int numSlices = output->GetDepth();
+			GLenum bufs[] = {
+				GL_COLOR_ATTACHMENT0_EXT, 
+				GL_COLOR_ATTACHMENT1_EXT, 
+				GL_COLOR_ATTACHMENT2_EXT, 
+				GL_COLOR_ATTACHMENT3_EXT
+			};
 			for (int slice = 0; slice < numSlices; slice += 4)
 			{
 				// Attach the slices
-				for (int i = 0; i < 4; ++i)
+				int i;
+				for (i = 0; i < 4 && slice + i < numSlices; ++i)
 				{
 					GLRenderTexture3DLayer *rt = 
 						GLRenderTexture3DLayer::New(output, slice + i);
 					GLRendertarget *rtOld = fbo->AttachRendertarget(
-						GL_COLOR_ATTACHMENT0_EXT + i, rt);
+						bufs[i], rt);
 					delete rtOld;
 				}
+				glDrawBuffers(i, bufs);
 				// Check the FBO
 				if (!fbo->IsOk())
 				{
@@ -168,7 +185,7 @@ namespace NQVTK
 				program->SetUniform1f("scale", 1.0f);
 				
 				tm->SetupProgram(program);
-				tm->Unbind();
+				tm->Bind();
 
 				// Render a full screen quad to process the slices
 				glColor3d(1.0, 1.0, 1.0);
@@ -180,9 +197,10 @@ namespace NQVTK
 				glEnd();
 
 				program->Stop();
+				tm->Unbind();
 			}
 
-			// Clean up
+			// Deleting the fbo will unbind it
 			delete fbo;
 		}
 	}
