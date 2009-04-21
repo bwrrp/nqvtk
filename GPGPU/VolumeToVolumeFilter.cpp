@@ -186,9 +186,9 @@ namespace NQVTK
 				program->Start();
 				// TODO: pass volume metadata for spacing etc.
 				program->SetUniform3f("volumeDims", 
-					static_cast<float>(output->GetWidth()), 
-					static_cast<float>(output->GetHeight()), 
-					static_cast<float>(output->GetDepth()));
+					static_cast<float>(input->GetWidth()), 
+					static_cast<float>(input->GetHeight()), 
+					static_cast<float>(input->GetDepth()));
 				program->SetUniform1i("slice", slice);
 				program->SetUniform1f("scale", scale);
 				
