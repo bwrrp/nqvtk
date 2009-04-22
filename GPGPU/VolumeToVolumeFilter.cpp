@@ -61,8 +61,6 @@ namespace NQVTK
 			// TODO: use inheritance to implement more complicated filters
 			// such as convolution
 
-			// TODO: create non-imagedata volume with metadata (+ paramset)
-
 			// We use seperability of the kernel to perform convolution in 
 			// three passes. In order to keep the shader simple we rotate the 
 			// dimensions of the texture for each pass. This way, each pass 
@@ -70,6 +68,7 @@ namespace NQVTK
 			// y/z planes, which are actually the x/y planes for the next pass.
 
 			// We'll need a few helpers for this, with rotated dimensions.
+			// TODO: create these in Setup
 			Volume *helperYZX = Volume::New(
 				input->GetHeight(), input->GetDepth(), input->GetWidth(), 
 				input->GetInternalFormat(), 

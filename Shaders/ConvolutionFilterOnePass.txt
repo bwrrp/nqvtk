@@ -1,0 +1,64 @@
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler3D volume;
+uniform vec3 volumeDims;
+uniform vec3 volumeSpacing;
+uniform int slice;
+
+// Parameters
+uniform float scale;
+
+float getSample(vec3 pos)
+{
+	// Compute the position in the input volume texture
+	vec3 p = pos / volumeDims;
+	return texture3D(volume, p).x;
+}
+
+// Main shader function
+void main()
+{
+	vec3 pos = vec3(gl_FragCoord.xy, float(slice) + 0.5);
+	
+	// Do convolution in 3D
+	float result[4];
+	for (int i = 0; i < 4; ++i) result[i] = 0.0;
+	// Precomputation... the magic number here is sqrt(2 pi)
+	float f0 = (2.506628274631 * scale);
+	float f1 = 1.0 / (f0 * f0 * f0);
+	float f2 = -1.0 / (2.0 * scale * scale);
+	// Perform convolution for four slices simultaneously
+	// We assume that sampling is more expensive than computing the gaussian
+	// Therefore we run over all samples contributing to the four layers once
+	ivec3 halfksize = max(ivec3(1), ivec3(ceil(vec3(3.0 * scale) / volumeSpacing)));
+	for (int sz = -halfksize.z; sz <= 3 + halfksize.z; ++sz)
+	{
+		for (int sy = -halfksize.y; sy <= halfksize.y; ++sy)
+		{
+			for (int sx = -halfksize.x; sz <= halfksize.x; ++sx)
+			{
+				vec3 p = pos + vec3(ivec3(sx, sy, sz));
+				float sample = getSample(p);
+				for (int j = 0; j < 4; ++j)
+				{
+					// Only include samples halfksize.z around slice j
+					if (sz >= j - halfksize.z && sz <= j + halfksize.z)
+					{
+						vec3 gp = vec3(ivec3(sx, sy, sz - j));
+						float gauss = f1 * exp(f2 * dot(gp, gp));
+						if (gauss > 1.0) gauss = 1.0;
+						result[j] += gauss * sample;
+					}
+				}
+			}
+		}
+	}
+	
+	// Write results
+	for (int j = 0; j < 4; ++j)
+	{
+		gl_FragData[j] = vec4(result[j]);
+	}
+}
