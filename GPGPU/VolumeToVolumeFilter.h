@@ -1,7 +1,6 @@
 #pragma once
 
 class GLProgram;
-class GLTexture3D;
 class GLTextureManager;
 
 namespace NQVTK
@@ -14,6 +13,7 @@ namespace NQVTK
 		{
 		public:
 			VolumeToVolumeFilter();
+			~VolumeToVolumeFilter();
 			
 			bool Setup(Volume *input);
 
@@ -27,7 +27,7 @@ namespace NQVTK
 			Volume *input;
 
 			GLProgram *CreateProgram();
-			void ExecutePass(GLTexture3D *input, GLTexture3D *output);
+			void ExecutePass(Volume *input, Volume *output);
 		};
 	}
 }

@@ -4,6 +4,7 @@
 
 uniform sampler3D volume;
 uniform vec3 volumeDims;
+uniform vec3 volumeSpacing;
 uniform int slice;
 
 // Parameters
@@ -30,7 +31,7 @@ void main()
 	// Perform convolution for four slices simultaneously
 	// We assume that sampling is more expensive than computing the gaussian
 	// Therefore we run over all samples contributing to the four layers once
-	int halfksize = max(1, int(ceil(4.0 * scale)));
+	int halfksize = max(1, int(ceil(4.0 * scale / volumeSpacing.z)));
 	for (int i = -halfksize; i <= 3 + halfksize; ++i)
 	{
 		// Corresponding voxel in the output volume
@@ -43,6 +44,7 @@ void main()
 			{
 				float gz = float(i - j);
 				float gauss = f1 * exp(f2 * gz * gz);
+				if (gauss > 1.0) gauss = 1.0;
 				result[j] += gauss * sample;
 			}
 		}

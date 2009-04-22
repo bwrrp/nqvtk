@@ -23,8 +23,15 @@ namespace NQVTK
 	{
 		// --------------------------------------------------------------------
 		VolumeToVolumeFilter::VolumeToVolumeFilter()
-			: tm(0), scale(1.0)
+			: tm(0), program(0), input(0), scale(1.0)
 		{
+		}
+
+		// --------------------------------------------------------------------
+		VolumeToVolumeFilter::~VolumeToVolumeFilter()
+		{
+			delete tm;
+			delete program;
 		}
 
 		// --------------------------------------------------------------------
@@ -63,12 +70,12 @@ namespace NQVTK
 			// y/z planes, which are actually the x/y planes for the next pass.
 
 			// We'll need a few helpers for this, with rotated dimensions.
-			GLTexture3D *helperYZX = GLTexture3D::New(
+			Volume *helperYZX = Volume::New(
 				input->GetHeight(), input->GetDepth(), input->GetWidth(), 
 				input->GetInternalFormat(), 
 				input->GetDataFormat(), input->GetDataType(), 0);
 
-			GLTexture3D *helperZXY = GLTexture3D::New(
+			Volume *helperZXY = Volume::New(
 				input->GetDepth(), input->GetWidth(), input->GetHeight(), 
 				input->GetInternalFormat(), 
 				input->GetDataFormat(), input->GetDataType(), 0);
@@ -84,7 +91,6 @@ namespace NQVTK
 				input->GetWidth(), input->GetHeight(), input->GetDepth(), 
 				input->GetInternalFormat(), 
 				input->GetDataFormat(), input->GetDataType(), 0);
-
 			if (!output)
 			{
 				std::cerr << "Could not create output texture!" << std::endl;
@@ -92,6 +98,14 @@ namespace NQVTK
 			}
 
 			// Copy metadata from input
+			helperYZX->SetDataScale(input->GetDataScale());
+			helperYZX->SetDataShift(input->GetDataShift());
+			helperYZX->SetOriginalSize(input->GetOriginalSize().yzx());
+
+			helperZXY->SetDataScale(input->GetDataScale());
+			helperZXY->SetDataShift(input->GetDataShift());
+			helperZXY->SetOriginalSize(input->GetOriginalSize().zxy());
+
 			output->SetDataScale(input->GetDataScale());
 			output->SetDataShift(input->GetDataShift());
 			output->SetOrigin(input->GetOrigin());
@@ -135,8 +149,7 @@ namespace NQVTK
 		}
 
 		// --------------------------------------------------------------------------
-		void VolumeToVolumeFilter::ExecutePass(
-			GLTexture3D *input, GLTexture3D *output)
+		void VolumeToVolumeFilter::ExecutePass(Volume *input, Volume *output)
 		{
 			// Make sure the input uses nearest neighbor filtering
 			// TODO: use hw linear interpolation for faster convolution
@@ -185,10 +198,19 @@ namespace NQVTK
 				// Start the program
 				program->Start();
 				// TODO: pass volume metadata for spacing etc.
-				program->SetUniform3f("volumeDims", 
+				Vector3 dims(
 					static_cast<float>(input->GetWidth()), 
 					static_cast<float>(input->GetHeight()), 
 					static_cast<float>(input->GetDepth()));
+				program->SetUniform3f("volumeDims", 
+					static_cast<float>(dims.x), 
+					static_cast<float>(dims.y), 
+					static_cast<float>(dims.z));
+				Vector3 size = input->GetOriginalSize();
+				program->SetUniform3f("volumeSpacing", 
+					static_cast<float>(size.x / dims.x), 
+					static_cast<float>(size.y / dims.y), 
+					static_cast<float>(size.z / dims.z));
 				program->SetUniform1i("slice", slice);
 				program->SetUniform1f("scale", scale);
 				
