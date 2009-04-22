@@ -23,8 +23,9 @@ namespace NQVTK
 			double V[3];
 		};
 
-		Vector3() : x(0), y(0), z(0) { };
-		Vector3(double x, double y, double z) : x(x), y(y), z(z) { };
+		Vector3() : x(0), y(0), z(0) { }
+		Vector3(double v) : x(v), y(v), z(v) { }
+		Vector3(double x, double y, double z) : x(x), y(y), z(z) { }
 
 		double length() const
 		{
@@ -48,6 +49,31 @@ namespace NQVTK
 				y * v2.z - z * v2.y,
 				z * v2.x - x * v2.z,
 				x * v2.y - y * v2.x);
+		}
+
+		const Vector3 xzy() const
+		{
+			return Vector3(x, z, y);
+		}
+
+		const Vector3 yxz() const
+		{
+			return Vector3(y, x, z);
+		}
+
+		const Vector3 yzx() const
+		{
+			return Vector3(y, z, x);
+		}
+
+		const Vector3 zxy() const
+		{
+			return Vector3(z, x, y);
+		}
+
+		const Vector3 zyx() const
+		{
+			return Vector3(z, y, x);
 		}
 
 		Vector3 &operator+=(const Vector3 &v2)
