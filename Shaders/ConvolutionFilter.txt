@@ -5,16 +5,18 @@
 uniform sampler3D volume;
 uniform vec3 volumeDims;
 uniform vec3 volumeSpacing;
+uniform float volumeDataShift;
+uniform float volumeDataScale;
 uniform int slice;
 
 // Parameters
 uniform float scale;
 
-float getSample(vec3 pos)
+vec4 getSample(vec3 pos)
 {
 	// Compute the position in the input volume texture
 	vec3 p = pos.zxy / volumeDims;
-	return texture3D(volume, p).x;
+	return vec4(volumeDataShift) + volumeDataScale * texture3D(volume, p);
 }
 
 // Main shader function
@@ -23,8 +25,8 @@ void main()
 	vec3 pos = vec3(gl_FragCoord.xy, float(slice) + 0.5);
 	
 	// Do convolution along z (in the output volume, x in the input)
-	float result[4];
-	for (int i = 0; i < 4; ++i) result[i] = 0.0;
+	vec4 result[4];
+	for (int i = 0; i < 4; ++i) result[i] = vec4(0.0);
 	// Precomputation... the magic number here is sqrt(2 pi)
 	float f1 = 1.0 / (2.506628274631 * scale);
 	float f2 = -1.0 / (2.0 * scale * scale);
@@ -36,7 +38,7 @@ void main()
 	{
 		// Corresponding voxel in the output volume
 		vec3 p = vec3(pos.xy, pos.z + float(i));
-		float sample = getSample(p);
+		vec4 sample = getSample(p);
 		for (int j = 0; j < 4; ++j)
 		{
 			// Only include samples halfksize around slice j
@@ -53,6 +55,6 @@ void main()
 	// Write results
 	for (int j = 0; j < 4; ++j)
 	{
-		gl_FragData[j] = vec4(result[j]);
+		gl_FragData[j] = (result[j] - vec4(volumeDataShift)) / volumeDataScale;
 	}
 }

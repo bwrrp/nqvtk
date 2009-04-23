@@ -210,6 +210,10 @@ namespace NQVTK
 					static_cast<float>(size.x / dims.x), 
 					static_cast<float>(size.y / dims.y), 
 					static_cast<float>(size.z / dims.z));
+				program->SetUniform1f("volumeDataShift", 
+					static_cast<float>(input->GetDataShift()));
+				program->SetUniform1f("volumeDataScale", 
+					static_cast<float>(input->GetDataScale()));
 				program->SetUniform1i("slice", slice);
 				program->SetUniform1f("scale", scale);
 				
