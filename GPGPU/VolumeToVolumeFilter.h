@@ -13,11 +13,11 @@ namespace NQVTK
 		{
 		public:
 			VolumeToVolumeFilter();
-			~VolumeToVolumeFilter();
+			virtual ~VolumeToVolumeFilter();
 			
-			bool Setup(Volume *input);
+			virtual bool Setup(Volume *input);
 
-			Volume *Execute();
+			virtual Volume *Execute(Volume *outVol = 0);
 
 			float scale;
 
@@ -25,6 +25,8 @@ namespace NQVTK
 			GLTextureManager *tm;
 			GLProgram *program;
 			Volume *input;
+			Volume *helperYZX;
+			Volume *helperZXY;
 
 			GLProgram *CreateProgram();
 			void ExecutePass(Volume *input, Volume *output);
