@@ -136,6 +136,7 @@ SET( ${ProjectName}_Renderables_Classes
 SET( ${ProjectName}_ParamSets_Classes
 	ParamSet
 	VolumeParamSet
+	FilteredVolumeParamSet
 	PCAParamSet
 	PCACorrespondenceParamSet
 	TransferFunctionParamSet

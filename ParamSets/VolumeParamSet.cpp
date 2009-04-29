@@ -78,4 +78,14 @@ namespace NQVTK
 			static_cast<float>(
 				size.z / static_cast<double>(volume->GetDepth() - 1)));
 	}
+
+	// ------------------------------------------------------------------------
+	Volume *VolumeParamSet::SetVolume(Volume *volume)
+	{
+		if (this->volume == volume) return 0;
+
+		Volume *old = this->volume;
+		this->volume = volume;
+		return old;
+	}
 }

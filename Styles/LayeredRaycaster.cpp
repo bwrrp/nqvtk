@@ -160,9 +160,9 @@ namespace NQVTK
 				NQVTK::VolumeParamSet *vps = volumes[i];
 				if (vps)
 				{
-					double w = vps->volume->GetWidth();
-					double h = vps->volume->GetHeight();
-					double d = vps->volume->GetDepth();
+					double w = vps->GetVolume()->GetWidth();
+					double h = vps->GetVolume()->GetHeight();
+					double d = vps->GetVolume()->GetDepth();
 					double diameter = sqrt(w * w + h * h + d * d);
 					if (diameter > maxRayLength) maxRayLength = diameter;
 				}

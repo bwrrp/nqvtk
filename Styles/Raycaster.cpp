@@ -54,7 +54,7 @@ namespace NQVTK
 				renderable->GetParamSet("volume"));
 			if (vps)
 			{
-				Volume *volume = vps->volume;
+				Volume *volume = vps->GetVolume();
 				if (volume)
 				{
 					// Make sure we have enough room
@@ -194,27 +194,28 @@ namespace NQVTK
 				NQVTK::VolumeParamSet *vps = volumes[i];
 				if (vps)
 				{
+					Volume *volume = vps->GetVolume();
 					// Use linear interpolation for sampling this volume
-					vps->volume->BindToCurrent();
-					glTexParameteri(vps->volume->GetTextureTarget(), 
+					volume->BindToCurrent();
+					glTexParameteri(volume->GetTextureTarget(), 
 						GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(vps->volume->GetTextureTarget(), 
+					glTexParameteri(volume->GetTextureTarget(), 
 						GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					vps->volume->UnbindCurrent();
+					volume->UnbindCurrent();
 
 					// Add the volume
 					tm->AddTexture(GetVarName("volume", i), 
-						vps->volume, false);
+						volume, false);
 
 					// Compute spacings and update unitSize if any are smaller
 					NQVTK::Vector3 size = 
-						vps->volume->GetOriginalSize();
+						volume->GetOriginalSize();
 					double spX = size.x / static_cast<double>(
-						vps->volume->GetWidth() - 1);
+						volume->GetWidth() - 1);
 					double spY = size.y / static_cast<double>(
-						vps->volume->GetHeight() - 1);
+						volume->GetHeight() - 1);
 					double spZ = size.z / static_cast<double>(
-						vps->volume->GetDepth() - 1);
+						volume->GetDepth() - 1);
 					if (spX < unitSize) unitSize = spX;
 					if (spY < unitSize) unitSize = spY;
 					if (spZ < unitSize) unitSize = spZ;

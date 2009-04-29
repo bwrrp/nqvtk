@@ -17,6 +17,10 @@ namespace NQVTK
 		virtual void SetupProgram(GLProgram *program);
 		virtual void SetupProgramArrays(GLProgram *program, int objectId);
 
+		virtual Volume *SetVolume(Volume *volume);
+		Volume *GetVolume() { return volume; }
+
+	protected:
 		Volume *volume;
 
 	private:

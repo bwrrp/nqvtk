@@ -49,7 +49,7 @@ namespace NQVTK
 				renderable->GetParamSet("volume"));
 			if (vps)
 			{
-				Volume *distanceField = vps->volume;
+				Volume *distanceField = vps->GetVolume();
 				// HACK: the second condition is a hack for shadow map creation
 				if (distanceField && distanceFieldId != 
 					GLTextureManager::BAD_SAMPLER_ID)
