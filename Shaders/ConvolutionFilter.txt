@@ -26,7 +26,12 @@ void main()
 	
 	// Do convolution along z (in the output volume, x in the input)
 	vec4 result[4];
-	for (int i = 0; i < 4; ++i) result[i] = vec4(0.0);
+	float sumWeights[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		result[i] = vec4(0.0);
+		sumWeights[i] = 0.0;
+	}
 	// Precomputation... the magic number here is sqrt(2 pi)
 	float f1 = 1.0 / (2.506628274631 * scale);
 	float f2 = -1.0 / (2.0 * scale * scale);
@@ -48,6 +53,7 @@ void main()
 				float gauss = f1 * exp(f2 * gz * gz);
 				if (gauss > 1.0) gauss = 1.0;
 				result[j] += gauss * sample;
+				sumWeights[j] += gauss;
 			}
 		}
 	}
@@ -55,6 +61,10 @@ void main()
 	// Write results
 	for (int j = 0; j < 4; ++j)
 	{
-		gl_FragData[j] = (result[j] - vec4(volumeDataShift)) / volumeDataScale;
+		// Although the kernel should sum to 1, it is sampled at discrete 
+		// locations. Therefore we have to normalize the result.
+		if (sumWeights[j] == 0.0) sumWeights[j] = 0.0001;
+		vec4 res = result[j] / sumWeights[j];
+		gl_FragData[j] = (res - vec4(volumeDataShift)) / volumeDataScale;
 	}
 }
