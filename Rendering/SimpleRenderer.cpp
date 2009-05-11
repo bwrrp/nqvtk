@@ -50,10 +50,13 @@ namespace NQVTK
 	void SimpleRenderer::PrepareForRenderable(int objectId, 
 		Renderable *renderable)
 	{
-		if (shaderAttribs.size() > 0)
+		if (shader)
 		{
-			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
-			if (mesh) mesh->SetupAttributes(shaderAttribs);
+			if (shaderAttribs.size() > 0)
+			{
+				NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+				if (mesh) mesh->SetupAttributes(shaderAttribs);
+			}
 			renderable->ApplyParamSets(shader);
 		}
 	}
