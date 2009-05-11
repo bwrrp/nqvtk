@@ -109,6 +109,7 @@ SET( ${ProjectName}_Rendering_Classes
 	# Renderers
 	Renderer
 	SimpleRenderer
+	SliceRenderer
 	LayeredRenderer
 	LayeredRaycastingRenderer
 	PointFilteringRenderer
