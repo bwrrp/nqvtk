@@ -1,7 +1,5 @@
-#define NQVTK_USE_PCA 8
-
+// NQVTK_USE_PCA should be set to the number of eigenmodes
 #ifdef NQVTK_USE_PCA
-// Define NQVTK_USE_PCA to the number of eigenvectors
 attribute vec3 eigvecs[NQVTK_USE_PCA];
 uniform float weights[NQVTK_USE_PCA];
 #endif
