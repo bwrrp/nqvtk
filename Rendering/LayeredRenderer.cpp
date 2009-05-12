@@ -344,8 +344,14 @@ namespace NQVTK
 	void LayeredRenderer::PrepareForRenderable(int objectId, 
 		Renderable *renderable)
 	{
+		scribe->SetUniform1i("objectId", objectId);
+		// Setup attributes
 		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
 		if (mesh) mesh->SetupAttributes(scribeAttribs);
+		// Apply all ParamSets
+		renderable->ApplyParamSets(scribe);
+		// Prepare style
+		// TODO: remove PrepareForObject once textures are handled by paramsets
 		style->PrepareForObject(scribe, objectId, renderable);
 	}
 
@@ -370,7 +376,7 @@ namespace NQVTK
 	{
 		int objectId = 0;
 		// Load object transforms
-		// HACK: should be handled elsewhere, but we also need the volume transform
+		// HACK: should be handled elsewhere, but we need the volume transforms
 		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
 			it != renderables.end(); ++it)
 		{

@@ -39,9 +39,6 @@ namespace NQVTK
 	void RenderStyle::PrepareForObject(GLProgram *scribe, 
 		int objectId, Renderable *renderable) 
 	{
-		scribe->SetUniform1i("objectId", objectId);
-		// Apply all ParamSets
-		renderable->ApplyParamSets(scribe);
 	}
 
 	// ------------------------------------------------------------------------
