@@ -42,7 +42,6 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderable::PushTransforms() const
 	{
-		// TODO: handle local transformations (position, orientation)
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		Vector3 center = GetCenter();
