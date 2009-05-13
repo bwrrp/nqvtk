@@ -78,7 +78,7 @@ void main() {
 #endif
 #endif
 
-#ifdef NQVTK_USE_DISTANCEFIELD
+#ifdef NQVTK_USE_DISTANCEFIELDS
 	// Transform vertex to the other object's coordinate system
 	// HACK: find a better way to pass object to distfield transforms
 	vertex = gl_TextureMatrixInverse[1 - objectId] * gl_TextureMatrix[objectId] * vertex;
