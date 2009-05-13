@@ -204,10 +204,11 @@ namespace NQVTK
 			static_cast<float>(camera->position.x), 
 			static_cast<float>(camera->position.y), 
 			static_cast<float>(camera->position.z));
-		ApplyParamSetsArrays(painter);
+		
+		// Setup shader uniforms and textures
+		// TODO: find a good way to pass number of volumes to shader
 		style->UpdatePainterParameters(painter);
-
-		// Set up textures used by the painter
+		ApplyParamSetsArrays(painter);
 		style->RegisterPainterTextures(fbo1, fbo2);
 		tm->SetupProgram(painter);
 		tm->Bind();
@@ -345,14 +346,14 @@ namespace NQVTK
 		Renderable *renderable)
 	{
 		scribe->SetUniform1i("objectId", objectId);
+		// Prepare style
+		// TODO: remove PrepareForObject once textures are handled by paramsets
+		style->PrepareForObject(scribe, objectId, renderable);
 		// Setup attributes
 		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
 		if (mesh) mesh->SetupAttributes(scribeAttribs);
 		// Apply all ParamSets
 		renderable->ApplyParamSets(scribe, tm);
-		// Prepare style
-		// TODO: remove PrepareForObject once textures are handled by paramsets
-		style->PrepareForObject(scribe, objectId, renderable);
 		// Allow tm to bind updated textures
 		tm->Bind();
 	}

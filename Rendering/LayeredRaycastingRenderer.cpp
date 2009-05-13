@@ -106,7 +106,8 @@ namespace NQVTK
 		{
 			// Bind the geometry layer FBO
 			// We need to use the same depth buffer as fbo1 here
-			GLRendertarget *depthbuffer = fbo1->DetachRendertarget(GL_DEPTH_ATTACHMENT_EXT);
+			GLRendertarget *depthbuffer = fbo1->DetachRendertarget(
+				GL_DEPTH_ATTACHMENT_EXT);
 			fbo1->Unbind();
 			fboG->Bind();
 			fboG->AttachRendertarget(GL_DEPTH_ATTACHMENT_EXT, depthbuffer);
@@ -120,7 +121,8 @@ namespace NQVTK
 		if (layer > 0 && layeredRaycasting)
 		{
 			// Restore the normal scribe stage FBO
-			GLRendertarget *depthbuffer = fboG->DetachRendertarget(GL_DEPTH_ATTACHMENT_EXT);
+			GLRendertarget *depthbuffer = fboG->DetachRendertarget(
+				GL_DEPTH_ATTACHMENT_EXT);
 			fboG->Unbind();
 			fbo1->Bind();
 			fbo1->AttachRendertarget(GL_DEPTH_ATTACHMENT_EXT, depthbuffer);
@@ -154,11 +156,13 @@ namespace NQVTK
 			static_cast<float>(camera->position.x), 
 			static_cast<float>(camera->position.y), 
 			static_cast<float>(camera->position.z));
-		ApplyParamSetsArrays(raycaster);
+		
 		// TODO: figure out where to put the raycaster parameters
 		// For now, just apply both sets of parameters and see what fits
 		style->UpdateScribeParameters(raycaster);
 		style->UpdatePainterParameters(raycaster);
+
+		ApplyParamSetsArrays(raycaster);
 
 		// The raycaster uses the same input as the painter, except that the 
 		// "current" layer is the geometry layer from the peeling pass

@@ -35,12 +35,11 @@ namespace NQVTK
 			float kernelSize;
 
 		protected:
-			std::vector<NQVTK::VolumeParamSet*> volumes;
-
-			std::string GetVarName(const std::string &baseName, int index);
-
 			// Unit used for stepSize and kernelSize
+			// TODO: add method to compute unitSize over all volumes
 			double unitSize;
+
+			// TODO: add method to set texture parameters (interpolation)
 
 		private:
 			// Not implemented

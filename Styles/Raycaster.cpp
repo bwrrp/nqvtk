@@ -45,31 +45,15 @@ namespace NQVTK
 
 		// --------------------------------------------------------------------
 		void Raycaster::PrepareForObject(GLProgram *scribe, 
-			int objectId, NQVTK::Renderable *renderable)
+			int objectId, Renderable *renderable)
 		{
-			scribe->SetUniform1i("hasVolume", 0);
-			Superclass::PrepareForObject(scribe, objectId, renderable);
-
-			VolumeParamSet *vps = dynamic_cast<VolumeParamSet*>(
-				renderable->GetParamSet("volume"));
-			if (vps)
+			// Make sure each renderable has a VolumeParamSet
+			// TODO: it's better to handle this elsewhere (not for each frame!)
+			if (!renderable->GetParamSet("volume"))
 			{
-				Volume *volume = vps->GetVolume();
-				if (volume)
-				{
-					// Make sure we have enough room
-					if (static_cast<int>(volumes.size()) < objectId + 1) 
-					{
-						volumes.resize(objectId + 1, 0);
-					}
-					// Store the paramset
-					volumes[objectId] = vps;
-				}
-				else
-				{
-					scribe->SetUniform1i("hasVolume", 0);
-				}
+				renderable->SetParamSet("volume", new VolumeParamSet(0));
 			}
+			Superclass::PrepareForObject(scribe, objectId, renderable);
 		}
 
 		// --------------------------------------------------------------------
@@ -177,16 +161,8 @@ namespace NQVTK
 			assert(infoCurrent);
 			tm->AddTexture("infoCurrent", infoCurrent, false);
 
-			// TODO: make sure bindings are initialized
-			// TODO: find a good way to pass number of volumes to shader
-			// TODO: getactiveuniforms returns volume, size 4, not volume[0]
-			for (int i = 0; i < 4; ++i)
-			{
-				tm->AddTexture(GetVarName("volume", i), 0, false);
-			}
-
+			/*
 			// Prepare volumes for the painter / raycasting stage
-			// TODO: per-object textures should be handled through paramsets
 			// This also recomputes the unit size
 			unitSize = 1000000.0;
 			for (unsigned int i = 0; i < volumes.size(); ++i)
@@ -202,10 +178,6 @@ namespace NQVTK
 					glTexParameteri(volume->GetTextureTarget(), 
 						GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					volume->UnbindCurrent();
-
-					// Add the volume
-					tm->AddTexture(GetVarName("volume", i), 
-						volume, false);
 
 					// Compute spacings and update unitSize if any are smaller
 					NQVTK::Vector3 size = 
@@ -225,6 +197,7 @@ namespace NQVTK
 					// Ignore this object for now, the volume shouldn't be used
 				}
 			}
+			*/
 		}
 
 		// --------------------------------------------------------------------
@@ -236,15 +209,6 @@ namespace NQVTK
 				static_cast<float>(stepSize * unitSize));
 			painter->SetUniform1f("kernelSize", 
 				static_cast<float>(kernelSize * unitSize));
-		}
-
-		// --------------------------------------------------------------------
-		std::string Raycaster::GetVarName(const std::string &baseName, 
-			int index)
-		{
-			std::ostringstream name;
-			name << baseName << "[" << index << "]";
-			return name.str();
 		}
 	}
 }

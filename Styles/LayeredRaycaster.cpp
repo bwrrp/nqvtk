@@ -131,7 +131,7 @@ namespace NQVTK
 		void LayeredRaycaster::RegisterPainterTextures(GLFramebuffer *current, 
 			GLFramebuffer *previous) 
 		{
-			// Register infobuffers and volumes
+			// Register infobuffers
 			Superclass::RegisterPainterTextures(current, previous);
 			
 			// Current layer normals and IDs
@@ -154,7 +154,9 @@ namespace NQVTK
 			painter->SetUniform1f("isoOpacity", isoOpacity);
 			painter->SetUniform1f("cornerEdgeThreshold", cornerEdgeThreshold);
 
-			double maxRayLength = 0.0;
+			// TODO: add a method to compute maxRayLength over all volumes
+			double maxRayLength = 10.0;
+			/*
 			for (unsigned int i = 0; i < volumes.size(); ++i)
 			{
 				NQVTK::VolumeParamSet *vps = volumes[i];
@@ -167,6 +169,7 @@ namespace NQVTK
 					if (diameter > maxRayLength) maxRayLength = diameter;
 				}
 			}
+			*/
 			painter->SetUniform1f("occlusionEdgeThreshold", 
 				occlusionEdgeThreshold * 
 				static_cast<float>(maxRayLength / 10.0));
