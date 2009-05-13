@@ -27,8 +27,6 @@ namespace NQVTK
 		// --------------------------------------------------------------------
 		DistanceFields::DistanceFields()
 		{ 
-			distanceFieldId = GLTextureManager::BAD_SAMPLER_ID;
-
 			SetOption("NQVTK_USE_DISTANCEFIELDS");
 
 			// Set default parameters
@@ -36,46 +34,6 @@ namespace NQVTK
 			distanceThreshold = 0.0;
 			useGridTexture = false;
 			useGlyphTexture = false;
-		}
-
-		// --------------------------------------------------------------------
-		void DistanceFields::PrepareForObject(GLProgram *scribe, 
-			int objectId, NQVTK::Renderable *renderable)
-		{
-			scribe->SetUniform1i("hasVolume", 0);
-			Superclass::PrepareForObject(scribe, objectId, renderable);
-
-			VolumeParamSet *vps = dynamic_cast<VolumeParamSet*>(
-				renderable->GetParamSet("volume"));
-			if (vps)
-			{
-				Volume *distanceField = vps->GetVolume();
-				// HACK: the second condition is a hack for shadow map creation
-				if (distanceField && distanceFieldId != 
-					GLTextureManager::BAD_SAMPLER_ID)
-				{
-					// Update distance field texture
-					tm->SwapTexture(distanceFieldId, distanceField);
-				}
-				else
-				{
-					scribe->SetUniform1i("hasVolume", 0);
-				}
-			}
-			tm->Bind();
-		}
-
-		// --------------------------------------------------------------------
-		void DistanceFields::RegisterScribeTextures(GLFramebuffer *previous) 
-		{
-			Superclass::RegisterScribeTextures(previous);
-
-			if (distanceFieldId == GLTextureManager::BAD_SAMPLER_ID)
-			{
-				// Register distance field sampler
-				// This is set to different textures in PrepareForObject
-				distanceFieldId = tm->AddTexture("volume", 0, false);
-			}
 		}
 
 		// --------------------------------------------------------------------

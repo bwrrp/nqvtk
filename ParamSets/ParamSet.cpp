@@ -2,8 +2,6 @@
 
 #include "ParamSet.h"
 
-#include "GLBlaat/GLProgram.h"
-
 #include <sstream>
 #include <string>
 
@@ -21,6 +19,16 @@ namespace NQVTK
 
 	// ------------------------------------------------------------------------
 	void ParamSet::SetupProgramArrays(GLProgram *program, int objectId)
+	{
+	}
+
+	// ------------------------------------------------------------------------
+	void ParamSet::SetupTextures(GLTextureManager *tm)
+	{
+	}
+
+	// ------------------------------------------------------------------------
+	void ParamSet::SetupTextureArrays(GLTextureManager *tm, int objectId)
 	{
 	}
 

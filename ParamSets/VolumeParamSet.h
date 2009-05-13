@@ -17,6 +17,9 @@ namespace NQVTK
 		virtual void SetupProgram(GLProgram *program);
 		virtual void SetupProgramArrays(GLProgram *program, int objectId);
 
+		virtual void SetupTextures(GLTextureManager *tm);
+		virtual void SetupTextureArrays(GLTextureManager *tm, int objectId);
+
 		virtual Volume *SetVolume(Volume *volume);
 		Volume *GetVolume() { return volume; }
 

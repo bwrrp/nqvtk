@@ -6,7 +6,6 @@
 #include "ParamSets/ParamSet.h"
 
 #include "GLBlaat/GL.h"
-#include "GLBlaat/GLProgram.h"
 
 #include <string>
 #include <map>
@@ -107,22 +106,25 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void Renderable::ApplyParamSets(GLProgram *program)
+	void Renderable::ApplyParamSets(GLProgram *program, GLTextureManager *tm)
 	{
 		for (ParamSetType::iterator it = paramSets.begin();
 			it != paramSets.end(); ++it)
 		{
-			it->second->SetupProgram(program);
+			if (program) it->second->SetupProgram(program);
+			if (tm) it->second->SetupTextures(tm);
 		}
 	}
 
 	// ------------------------------------------------------------------------
-	void Renderable::ApplyParamSetsArrays(GLProgram *program, int objectId)
+	void Renderable::ApplyParamSetsArrays(GLProgram *program, 
+		GLTextureManager *tm, int objectId)
 	{
 		for (ParamSetType::iterator it = paramSets.begin();
 			it != paramSets.end(); ++it)
 		{
-			it->second->SetupProgramArrays(program, objectId);
+			if (program) it->second->SetupProgramArrays(program, objectId);
+			if (tm) it->second->SetupTextureArrays(tm, objectId);
 		}
 	}
 }

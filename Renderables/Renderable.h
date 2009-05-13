@@ -6,6 +6,7 @@
 #include <map>
 
 class GLProgram;
+class GLTextureManager;
 
 namespace NQVTK 
 {
@@ -42,8 +43,9 @@ namespace NQVTK
 		ParamSet *GetParamSet(const std::string &name);
 		void SetParamSet(const std::string &name, ParamSet *params);
 
-		void ApplyParamSets(GLProgram *program);
-		void ApplyParamSetsArrays(GLProgram *program, int objectId);
+		void ApplyParamSets(GLProgram *program, GLTextureManager *tm);
+		void ApplyParamSetsArrays(GLProgram *program, 
+			GLTextureManager *tm, int objectId);
 
 	protected:
 		double bounds[6];

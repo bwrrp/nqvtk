@@ -5,6 +5,7 @@
 #include "Rendering/Volume.h"
 
 #include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLTextureManager.h"
 
 namespace NQVTK
 {
@@ -77,6 +78,18 @@ namespace NQVTK
 				size.y / static_cast<double>(volume->GetHeight() - 1)), 
 			static_cast<float>(
 				size.z / static_cast<double>(volume->GetDepth() - 1)));
+	}
+
+	// ------------------------------------------------------------------------
+	void VolumeParamSet::SetupTextures(GLTextureManager *tm)
+	{
+		tm->AddTexture("volume", volume, false);
+	}
+
+	// ------------------------------------------------------------------------
+	void VolumeParamSet::SetupTextureArrays(GLTextureManager *tm, int objectId)
+	{
+		tm->AddTexture(GetArrayName("volume", objectId), volume, false);
 	}
 
 	// ------------------------------------------------------------------------

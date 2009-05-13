@@ -349,10 +349,12 @@ namespace NQVTK
 		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
 		if (mesh) mesh->SetupAttributes(scribeAttribs);
 		// Apply all ParamSets
-		renderable->ApplyParamSets(scribe);
+		renderable->ApplyParamSets(scribe, tm);
 		// Prepare style
 		// TODO: remove PrepareForObject once textures are handled by paramsets
 		style->PrepareForObject(scribe, objectId, renderable);
+		// Allow tm to bind updated textures
+		tm->Bind();
 	}
 
 	// ------------------------------------------------------------------------
@@ -365,7 +367,7 @@ namespace NQVTK
 			Renderable *renderable = *it;
 			if (renderable)
 			{
-				renderable->ApplyParamSetsArrays(program, objectId);
+				renderable->ApplyParamSetsArrays(program, tm, objectId);
 			}
 			++objectId;
 		}

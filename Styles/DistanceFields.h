@@ -13,10 +13,6 @@ namespace NQVTK
 
 			DistanceFields();
 
-			virtual void PrepareForObject(GLProgram *scribe, 
-				int objectId, NQVTK::Renderable *renderable);
-
-			virtual void RegisterScribeTextures(GLFramebuffer *previous);
 			virtual void UpdateScribeParameters(GLProgram *scribe);
 
 			// Program parameters
@@ -25,10 +21,6 @@ namespace NQVTK
 			float distanceThreshold;
 			bool useGridTexture;
 			bool useGlyphTexture;
-
-		protected:
-			// SamplerIds
-			int distanceFieldId;
 
 		private:
 			// Not implemented

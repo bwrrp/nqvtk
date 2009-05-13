@@ -8,6 +8,7 @@
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLUtility.h"
 #include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLTextureManager.h"
 
 #include <cassert>
 #include <vector>
@@ -50,15 +51,15 @@ namespace NQVTK
 	void SimpleRenderer::PrepareForRenderable(int objectId, 
 		Renderable *renderable)
 	{
-		if (shader)
+		if (shaderAttribs.size() > 0)
 		{
-			if (shaderAttribs.size() > 0)
-			{
-				NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
-				if (mesh) mesh->SetupAttributes(shaderAttribs);
-			}
-			renderable->ApplyParamSets(shader);
+			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+			if (mesh) mesh->SetupAttributes(shaderAttribs);
 		}
+		// If shader is null, this will still setup textures
+		// (remember to enable them during rendering...)
+		renderable->ApplyParamSets(shader, tm);
+		tm->Bind();
 	}
 
 	// ------------------------------------------------------------------------
