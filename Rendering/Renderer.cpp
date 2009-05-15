@@ -176,12 +176,6 @@ namespace NQVTK
 	{
 		GLFramebuffer *oldTarget = this->fboTarget;
 		this->fboTarget = target;
-		if (target)
-		{
-			// Make sure it's the right size
-			bool ok = target->Resize(viewportWidth, viewportHeight);
-			assert(ok);
-		}
 		return oldTarget;
 	}
 
