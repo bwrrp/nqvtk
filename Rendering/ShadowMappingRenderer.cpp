@@ -50,24 +50,20 @@ namespace NQVTK
 		if (shadowStyle) delete shadowStyle;
 		// Clear the shadow renderables first
 		shadowRenderer->SetRenderables(std::vector<Renderable*>());
-		// Also unshare the texture manager
-		shadowRenderer->ShareTextures(0);
 		delete shadowRenderer;
 	}
 
 	// ------------------------------------------------------------------------
 	bool ShadowMappingRenderer::Initialize()
 	{
-		if (style)
-		{
-			style->SetOption("NQVTK_USE_SHADOWMAP");
-			style->SetOption("NQVTK_USE_VSM");
-		}
+		if (!style) return false;
+		style->SetOption("NQVTK_USE_SHADOWMAP");
+		style->SetOption("NQVTK_USE_VSM");
+
 		if (!Superclass::Initialize()) return false;
-		
+
 		// Set up the shadow renderer
-		shadowRenderer->ShareTextures(this->tm);
-		if (shadowStyle) delete shadowStyle;
+		delete shadowStyle;
 		shadowStyle = new NQVTK::Styles::ShadowMap(style);
 		shadowRenderer->SetStyle(shadowStyle);
 		return shadowRenderer->Initialize();

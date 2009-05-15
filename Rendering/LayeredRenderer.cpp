@@ -88,7 +88,7 @@ namespace NQVTK
 			return false;
 		}
 
-		if (query) delete query;
+		delete query;
 		query = GLOcclusionQuery::New();
 
 		return true;

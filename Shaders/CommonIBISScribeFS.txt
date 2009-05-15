@@ -54,7 +54,9 @@ vec2 packFloat2(float depth);
 void main() {
 	vec4 r0 = gl_FragCoord;
 	vec4 col = color;
+#ifndef NQVTK_GENERATE_SHADOWMAP
 	vec3 n = normal;
+#endif
 
 	// Depth peeling
 	if (layer > 0) {

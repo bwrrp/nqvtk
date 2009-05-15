@@ -172,12 +172,6 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void Renderer::ShareTextures(GLTextureManager *tm)
-	{
-		this->tm = tm;
-	}
-
-	// ------------------------------------------------------------------------
 	GLFramebuffer *Renderer::SetTarget(GLFramebuffer *target)
 	{
 		GLFramebuffer *oldTarget = this->fboTarget;

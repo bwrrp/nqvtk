@@ -49,8 +49,6 @@ namespace NQVTK
 		Camera *GetCamera();
 		void SetCamera(Camera *cam);
 
-		void ShareTextures(GLTextureManager *tm);
-
 		GLFramebuffer *SetTarget(GLFramebuffer *target);
 		GLFramebuffer *GetTarget() { return this->fboTarget; }
 
