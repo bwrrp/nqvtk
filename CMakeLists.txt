@@ -100,6 +100,9 @@ SET( ${ProjectName}_Math_Classes
 )
 
 SET( ${ProjectName}_Rendering_Classes
+	# Scene
+	Scene
+
 	# Cameras
 	Camera
 	OrbitCamera

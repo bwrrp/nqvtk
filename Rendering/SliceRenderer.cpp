@@ -3,6 +3,8 @@
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLFramebuffer.h"
 
+#include "Scene.h"
+
 #include "Renderables/Renderable.h"
 
 namespace NQVTK
@@ -57,14 +59,13 @@ namespace NQVTK
 
 		// Draw a single slice for each renderable
 		glBegin(GL_QUADS);
-		int objectId = 0;
-		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
-			it != renderables.end(); ++it)
+		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+			++objectId)
 		{
 			// The shader should discard renderables without volumes and 
 			// generate appropriate alpha values or discards for blending
 
-			Renderable *renderable = *it;
+			Renderable *renderable = scene->GetRenderable(objectId);
 			if (renderable)
 			{
 				if (renderable->visible)
@@ -88,7 +89,6 @@ namespace NQVTK
 					glVertex3d(-1.0, 1.0, 0.0);
 				}
 			}
-			++objectId;
 		}
 		glEnd();
 

@@ -4,6 +4,8 @@
 
 #include "GLBlaat/GL.h"
 
+#include "Scene.h"
+
 #include "Renderables/PolyData.h"
 
 #include "Math/Vector3.h"
@@ -32,9 +34,8 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	PointFilteringRenderer::~PointFilteringRenderer()
 	{
-		// This renderer doesn't own its renderables or camera
+		// This renderer doesn't own its camera
 		camera = 0;
-		renderables.clear();
 
 		if (pointFilter) delete pointFilter;
 		if (renderBuffer) delete renderBuffer;
@@ -93,7 +94,8 @@ namespace NQVTK
 		tm->Bind();
 
 		// Draw the points
-		NQVTK::PolyData *pd = dynamic_cast<NQVTK::PolyData*>(GetRenderable(0));
+		// TODO: we could just pass the renderable directly...
+		NQVTK::PolyData *pd = dynamic_cast<NQVTK::PolyData*>(scene->GetRenderable(0));
 		if (pd)
 		{
 			pd->Draw(NQVTK::PolyData::DRAWMODE_POINTS, 

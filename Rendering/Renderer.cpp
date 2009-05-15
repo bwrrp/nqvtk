@@ -2,6 +2,7 @@
 
 #include "Renderer.h"
 #include "Camera.h"
+#include "Scene.h"
 #include "Renderables/Renderable.h"
 #include "Math/Vector3.h"
 
@@ -18,7 +19,7 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	Renderer::Renderer() : camera(0), tm(0), fboTarget(0)
+	Renderer::Renderer() : camera(0), scene(0), tm(0), fboTarget(0)
 	{
 		viewportX = 0;
 		viewportY = 0;
@@ -32,9 +33,9 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	Renderer::~Renderer() 
 	{
-		DeleteAllRenderables();
 		if (camera) delete camera;
 		if (tm) delete tm;
+		// We do NOT own the scene, so don't delete it
 	}
 
 	// ------------------------------------------------------------------------
@@ -95,61 +96,9 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	int Renderer::AddRenderable(Renderable *obj)
+	void Renderer::SetScene(Scene *scene)
 	{
-		renderables.push_back(obj);
-		return renderables.size() - 1;
-	}
-
-	// ------------------------------------------------------------------------
-	Renderable *Renderer::GetRenderable(unsigned int i)
-	{
-		if (i >= renderables.size()) return 0;
-		return renderables[i];
-	}
-
-	// ------------------------------------------------------------------------
-	Renderable *Renderer::SetRenderable(unsigned int i, Renderable *obj)
-	{
-		assert(i < static_cast<unsigned int>(GetNumberOfRenderables()));
-		Renderable *old = GetRenderable(i);
-		renderables[i] = obj;
-		return old;
-	}
-
-	// ------------------------------------------------------------------------
-	int Renderer::GetNumberOfRenderables() 
-	{
-		return renderables.size();
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::DeleteAllRenderables()
-	{
-		for (std::vector<Renderable*>::iterator it = renderables.begin();
-			it != renderables.end(); ++it)
-		{
-			delete *it;
-		}
-		renderables.clear();
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::SetRenderables(std::vector<Renderable*> renderables)
-	{
-		this->renderables = renderables;
-	}
-
-	// ------------------------------------------------------------------------
-	void Renderer::ResetRenderables()
-	{
-		for (std::vector<Renderable*>::iterator it = renderables.begin();
-			it != renderables.end(); ++it)
-		{
-			(*it)->position = Vector3();
-			(*it)->rotateX = 0.0;
-			(*it)->rotateY = 0.0;
-		}
+		this->scene = scene;
 	}
 
 	// ------------------------------------------------------------------------
@@ -183,12 +132,13 @@ namespace NQVTK
 	void Renderer::DrawCamera()
 	{
 		// Get bounds for all renderables
+		// TODO: this could be moved to the scene
 		const double inf = std::numeric_limits<double>::infinity();
 		double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
-		unsigned int numRenderables = GetNumberOfRenderables();
+		unsigned int numRenderables = scene->GetNumberOfRenderables();
 		for (unsigned int i = 0; i < numRenderables; ++i)
 		{
-			Renderable *renderable = GetRenderable(i);
+			Renderable *renderable = scene->GetRenderable(i);
 			if (renderable)
 			{
 				double rbounds[6];
@@ -245,21 +195,22 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::DrawRenderables()
 	{
-		int objectId = 0;
-		// Iterate over all renderables and draw them
-		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
-			it != renderables.end(); ++it)
+		if (!scene) return;
+
+		// Iterate over all renderables in the scene and draw them
+		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+			++objectId)
 		{
-			Renderable *renderable = *it;
+			Renderable *renderable = scene->GetRenderable(objectId);
 			if (renderable)
 			{
+				// TODO: handle visibility on a per-view basis
 				if (renderable->visible)
 				{
 					PrepareForRenderable(objectId, renderable);
 					renderable->Draw();
 				}
 			}
-			++objectId;
 		}
 	}
 

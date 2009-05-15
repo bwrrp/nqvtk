@@ -12,6 +12,7 @@ namespace NQVTK
 {
 	class Camera;
 	class Renderable;
+	class Scene;
 
 	class Renderer
 	{
@@ -32,19 +33,8 @@ namespace NQVTK
 
 		virtual void DrawCamera();
 
-		int AddRenderable(Renderable *obj);
-		Renderable *GetRenderable(unsigned int i);
-		Renderable *SetRenderable(unsigned int i, Renderable *obj);
-		
-		int GetNumberOfRenderables();
-		
-		void DeleteAllRenderables();
-
-		// Replace the renderables with the given set
-		// Beware of memory leaks!
-		void SetRenderables(std::vector<Renderable*> renderables);
-
-		void ResetRenderables();
+		Scene *GetScene() { return this->scene; }
+		void SetScene(Scene *scene);
 
 		Camera *GetCamera();
 		void SetCamera(Camera *cam);
@@ -67,7 +57,7 @@ namespace NQVTK
 		int viewportHeight;
 
 		Camera *camera;
-		std::vector<Renderable*> renderables;
+		Scene *scene;
 		NQVTK::Vector3 lightPos;
 
 		GLTextureManager *tm;

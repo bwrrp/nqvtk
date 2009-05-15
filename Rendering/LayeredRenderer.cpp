@@ -4,6 +4,7 @@
 
 #include "LayeredRenderer.h"
 #include "Camera.h"
+#include "Scene.h"
 #include "Renderables/VBOMesh.h"
 #include "Styles/RenderStyle.h"
 
@@ -361,32 +362,33 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void LayeredRenderer::ApplyParamSetsArrays(GLProgram *program)
 	{
-		int objectId = 0;
-		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
-			it != renderables.end(); ++it)
+		if (!scene) return;
+
+		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+			++objectId)
 		{
-			Renderable *renderable = *it;
+			Renderable *renderable = scene->GetRenderable(objectId);
 			if (renderable)
 			{
 				renderable->ApplyParamSetsArrays(program, tm, objectId);
 			}
-			++objectId;
 		}
 	}
 
 	// ------------------------------------------------------------------------
 	void LayeredRenderer::DrawRenderables()
 	{
-		int objectId = 0;
+		if (!scene) return;
+
 		// Load object transforms
 		// HACK: should be handled elsewhere, but we need the volume transforms
-		for (std::vector<Renderable*>::const_iterator it = renderables.begin();
-			it != renderables.end(); ++it)
+		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+			++objectId)
 		{
 			glActiveTexture(GL_TEXTURE0 + objectId);
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
-			Renderable *renderable = *it;
+			Renderable *renderable = scene->GetRenderable(objectId);
 			if (renderable)
 			{
 				Vector3 center = renderable->GetCenter();
@@ -397,7 +399,6 @@ namespace NQVTK
 				glRotated(renderable->rotateY, 0.0, 1.0, 0.0);
 				glTranslated(-center.x, -center.y, -center.z);
 			}
-			++objectId;
 		}
 		glActiveTexture(GL_TEXTURE0);
 

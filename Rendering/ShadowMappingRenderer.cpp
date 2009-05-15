@@ -48,8 +48,6 @@ namespace NQVTK
 	{
 		if (shadowBuffer) delete shadowBuffer;
 		if (shadowStyle) delete shadowStyle;
-		// Clear the shadow renderables first
-		shadowRenderer->SetRenderables(std::vector<Renderable*>());
 		delete shadowRenderer;
 	}
 
@@ -98,7 +96,7 @@ namespace NQVTK
 	void ShadowMappingRenderer::Draw()
 	{
 		// Synchronize renderer state
-		shadowRenderer->SetRenderables(renderables);
+		shadowRenderer->SetScene(scene);
 		shadowRenderer->maxLayers = maxLayers;
 
 		// TODO: add a parallel projection camera so zoom doesn't affect shadowmap bounds
