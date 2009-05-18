@@ -158,6 +158,7 @@ SET( ${ProjectName}_Styles_Classes
 )
 
 SET( ${ProjectName}_Interactors_Classes
+	MouseEvent
 	Interactor
 	CameraInteractor
 	OrbitCameraInteractor
