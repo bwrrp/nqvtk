@@ -164,6 +164,13 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	void Renderer::ResetTextures()
+	{
+		// Reset texture manager binding cache
+		tm->BeginNewPass();
+	}
+
+	// ------------------------------------------------------------------------
 	void Renderer::UpdateLighting()
 	{
 		if (lightRelativeToCamera)
