@@ -22,6 +22,8 @@ namespace NQVTK
 
 		virtual void Draw();
 
+		virtual void SetScene(Scene *scene);
+
 	protected:
 		GLFramebuffer *shadowBuffer;
 		NQVTK::Styles::ShadowMap *shadowStyle;

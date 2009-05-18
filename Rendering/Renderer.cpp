@@ -131,30 +131,33 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::DrawCamera()
 	{
-		// Get bounds for all renderables
-		// TODO: this could be moved to the scene
-		const double inf = std::numeric_limits<double>::infinity();
-		double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
-		unsigned int numRenderables = scene->GetNumberOfRenderables();
-		for (unsigned int i = 0; i < numRenderables; ++i)
+		if (scene)
 		{
-			Renderable *renderable = scene->GetRenderable(i);
-			if (renderable)
+			// Get bounds for all renderables
+			// TODO: this could be moved to the scene
+			const double inf = std::numeric_limits<double>::infinity();
+			double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
+			unsigned int numRenderables = scene->GetNumberOfRenderables();
+			for (unsigned int i = 0; i < numRenderables; ++i)
 			{
-				double rbounds[6];
-				renderable->GetBounds(rbounds);
-				for (int i = 0; i < 3; ++i)
+				Renderable *renderable = scene->GetRenderable(i);
+				if (renderable)
 				{
-					if (rbounds[i*2] < bounds[i*2]) 
-						bounds[i*2] = rbounds[i*2];
+					double rbounds[6];
+					renderable->GetBounds(rbounds);
+					for (int i = 0; i < 3; ++i)
+					{
+						if (rbounds[i*2] < bounds[i*2]) 
+							bounds[i*2] = rbounds[i*2];
 
-					if (rbounds[i*2+1] > bounds[i*2+1]) 
-						bounds[i*2+1] = rbounds[i*2+1];
+						if (rbounds[i*2+1] > bounds[i*2+1]) 
+							bounds[i*2+1] = rbounds[i*2+1];
+					}
 				}
 			}
-		}
 
-		camera->SetZPlanes(bounds);
+			camera->SetZPlanes(bounds);
+		}
 
 		// Set up the camera (matrices)
 		camera->Draw();

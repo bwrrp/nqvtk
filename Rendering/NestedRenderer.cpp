@@ -12,6 +12,8 @@ namespace NQVTK
 	NestedRenderer::NestedRenderer(Renderer *baseRenderer)
 		: baseRenderer(baseRenderer)
 	{
+		// Share the scene for easy access
+		this->scene = baseRenderer->GetScene();
 	}
 
 	// ------------------------------------------------------------------------

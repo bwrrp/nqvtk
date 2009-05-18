@@ -34,7 +34,7 @@ namespace NQVTK
 		virtual void DrawCamera();
 
 		Scene *GetScene() { return this->scene; }
-		void SetScene(Scene *scene);
+		virtual void SetScene(Scene *scene);
 
 		Camera *GetCamera();
 		void SetCamera(Camera *cam);

@@ -96,7 +96,6 @@ namespace NQVTK
 	void ShadowMappingRenderer::Draw()
 	{
 		// Synchronize renderer state
-		shadowRenderer->SetScene(scene);
 		shadowRenderer->maxLayers = maxLayers;
 
 		// TODO: add a parallel projection camera so zoom doesn't affect shadowmap bounds
@@ -165,5 +164,12 @@ namespace NQVTK
 		TestDrawTexture(shadowMap, 0.0, 1.0, 0.0, 1.0);
 		if (fboTarget) fboTarget->Unbind();
 		//*/
+	}
+
+	// ------------------------------------------------------------------------
+	void ShadowMappingRenderer::SetScene(Scene *scene)
+	{
+		Superclass::SetScene(scene);
+		shadowRenderer->SetScene(scene);
 	}
 }
