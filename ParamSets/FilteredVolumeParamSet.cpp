@@ -14,14 +14,16 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	FilteredVolumeParamSet::FilteredVolumeParamSet(
 		Volume *volume, GPGPU::VolumeToVolumeFilter *filter)
-		: VolumeParamSet(0), originalVolume(0), filter(filter)
+		: VolumeParamSet(0), originalVolume(0), 
+		filter(filter), filterEnabled(true)
 	{
 		assert(volume);
 		assert(filter);
 
-		// NOTE: calling a virtual function here won't call overrides!
-		// Don't subclass this paramset!
+		// NOTE: don't subclass and make SetVolume virtual again!
 		SetVolume(volume);
+
+		SetFilterEnabled(false);
 	}
 
 	// ------------------------------------------------------------------------
@@ -40,9 +42,12 @@ namespace NQVTK
 
 		originalVolume = volume;
 
-		// Get rid of the filtered volume
-		delete this->volume;
-		this->volume = 0;
+		if (filterEnabled)
+		{
+			// Get rid of the filtered volume
+			delete this->volume;
+			this->volume = 0;
+		}
 
 		if (filter)
 		{
@@ -60,9 +65,35 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void FilteredVolumeParamSet::Update(float scale)
+	void FilteredVolumeParamSet::SetFilterEnabled(bool enabled)
 	{
-		filter->scale = scale;
-		volume = filter->Execute(volume);
+		if (enabled == filterEnabled) return;
+
+		if (!filter) return;
+
+		filterEnabled = enabled;
+
+		if (enabled)
+		{
+			// Turn on filtering
+			volume = 0;
+			Update();
+		}
+		else
+		{
+			// Delete filtered volume
+			delete volume;
+			volume = originalVolume;
+		}
+	}
+
+	// ------------------------------------------------------------------------
+	void FilteredVolumeParamSet::Update()
+	{
+		if (filterEnabled)
+		{
+			filter->scale = scale;
+			volume = filter->Execute(volume);
+		}
 	}
 }
