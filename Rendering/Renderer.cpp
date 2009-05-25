@@ -211,15 +211,12 @@ namespace NQVTK
 		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
 			++objectId)
 		{
-			Renderable *renderable = scene->GetRenderable(objectId);
-			if (renderable)
+			// Visibility implies that the renderable is not null
+			if (scene->GetVisibility(objectId))
 			{
-				// TODO: handle visibility on a per-view basis
-				if (renderable->visible)
-				{
-					PrepareForRenderable(objectId, renderable);
-					renderable->Draw();
-				}
+				Renderable *renderable = scene->GetRenderable(objectId);
+				PrepareForRenderable(objectId, renderable);
+				renderable->Draw();
 			}
 		}
 	}

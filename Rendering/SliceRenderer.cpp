@@ -65,29 +65,27 @@ namespace NQVTK
 			// The shader should discard renderables without volumes and 
 			// generate appropriate alpha values or discards for blending
 
-			Renderable *renderable = scene->GetRenderable(objectId);
-			if (renderable)
+			// Visibility implies that the renderable is not null
+			if (scene->GetVisibility(objectId))
 			{
-				if (renderable->visible)
-				{
-					PrepareForRenderable(objectId, renderable);
+				Renderable *renderable = scene->GetRenderable(objectId);
+				PrepareForRenderable(objectId, renderable);
 
-					glColor4d(
-						renderable->color.x, 
-						renderable->color.y, 
-						renderable->color.z, 
-						renderable->opacity);
+				glColor4d(
+					renderable->color.x, 
+					renderable->color.y, 
+					renderable->color.z, 
+					renderable->opacity);
 
-					// Draw the full screen quad for this plane
-					glTexCoord3dv(origin.V);
-					glVertex3d(-1.0, -1.0, 0.0);
-					glTexCoord3dv((origin + right).V);
-					glVertex3d(1.0, -1.0, 0.0);
-					glTexCoord3dv((origin + right + up).V);
-					glVertex3d(1.0, 1.0, 0.0);
-					glTexCoord3dv((origin + up).V);
-					glVertex3d(-1.0, 1.0, 0.0);
-				}
+				// Draw the full screen quad for this plane
+				glTexCoord3dv(origin.V);
+				glVertex3d(-1.0, -1.0, 0.0);
+				glTexCoord3dv((origin + right).V);
+				glVertex3d(1.0, -1.0, 0.0);
+				glTexCoord3dv((origin + right + up).V);
+				glVertex3d(1.0, 1.0, 0.0);
+				glTexCoord3dv((origin + up).V);
+				glVertex3d(-1.0, 1.0, 0.0);
 			}
 		}
 		glEnd();
