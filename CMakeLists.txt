@@ -100,8 +100,9 @@ SET( ${ProjectName}_Math_Classes
 )
 
 SET( ${ProjectName}_Rendering_Classes
-	# Scene
+	# Scene and views
 	Scene
+	SelectionView
 
 	# Cameras
 	Camera
