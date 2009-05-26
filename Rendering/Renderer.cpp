@@ -2,7 +2,7 @@
 
 #include "Renderer.h"
 #include "Camera.h"
-#include "Scene.h"
+#include "View.h"
 #include "Renderables/Renderable.h"
 #include "Math/Vector3.h"
 
@@ -19,7 +19,7 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	Renderer::Renderer() : camera(0), scene(0), tm(0), fboTarget(0)
+	Renderer::Renderer() : camera(0), view(0), tm(0), fboTarget(0)
 	{
 		viewportX = 0;
 		viewportY = 0;
@@ -33,9 +33,9 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	Renderer::~Renderer() 
 	{
-		if (camera) delete camera;
-		if (tm) delete tm;
-		// We do NOT own the scene, so don't delete it
+		delete camera;
+		delete view;
+		delete tm;
 	}
 
 	// ------------------------------------------------------------------------
@@ -98,7 +98,19 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::SetScene(Scene *scene)
 	{
-		this->scene = scene;
+		assert(scene);
+		delete view;
+		view = new View(scene);
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::SetView(View *view)
+	{
+		assert(view);
+		if (view == this->view) return;
+
+		delete this->view;
+		this->view = view;
 	}
 
 	// ------------------------------------------------------------------------
@@ -131,17 +143,17 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::DrawCamera()
 	{
-		if (scene)
+		// Get bounds for all visible renderables
+		// TODO: this could be moved to the scene or the view
+		const double inf = std::numeric_limits<double>::infinity();
+		double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
+		if (view)
 		{
-			// Get bounds for all renderables
-			// TODO: this could be moved to the scene
-			const double inf = std::numeric_limits<double>::infinity();
-			double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
-			unsigned int numRenderables = scene->GetNumberOfRenderables();
+			unsigned int numRenderables = view->GetNumberOfRenderables();
 			for (unsigned int i = 0; i < numRenderables; ++i)
 			{
-				Renderable *renderable = scene->GetRenderable(i);
-				if (renderable)
+				Renderable *renderable = view->GetRenderable(i);
+				if (view->GetVisibility(i))
 				{
 					double rbounds[6];
 					renderable->GetBounds(rbounds);
@@ -155,9 +167,9 @@ namespace NQVTK
 					}
 				}
 			}
-
-			camera->SetZPlanes(bounds);
 		}
+
+		camera->SetZPlanes(bounds);
 
 		// Set up the camera (matrices)
 		camera->Draw();
@@ -205,16 +217,16 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::DrawRenderables()
 	{
-		if (!scene) return;
+		if (!view) return;
 
 		// Iterate over all renderables in the scene and draw them
-		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+		for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
 			++objectId)
 		{
 			// Visibility implies that the renderable is not null
-			if (scene->GetVisibility(objectId))
+			if (view->GetVisibility(objectId))
 			{
-				Renderable *renderable = scene->GetRenderable(objectId);
+				Renderable *renderable = view->GetRenderable(objectId);
 				PrepareForRenderable(objectId, renderable);
 				renderable->Draw();
 			}

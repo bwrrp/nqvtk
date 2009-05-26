@@ -3,6 +3,7 @@
 #include "NestedRenderer.h"
 
 #include "Camera.h"
+#include "View.h"
 
 #include "GLBlaat/GLTexture.h"
 
@@ -12,8 +13,8 @@ namespace NQVTK
 	NestedRenderer::NestedRenderer(Renderer *baseRenderer)
 		: baseRenderer(baseRenderer)
 	{
-		// Share the scene for easy access
-		this->scene = baseRenderer->GetScene();
+		// Create view for easy access
+		this->view = new View(baseRenderer->GetView());
 	}
 
 	// ------------------------------------------------------------------------

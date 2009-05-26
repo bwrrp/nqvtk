@@ -4,7 +4,7 @@
 
 #include "LayeredRenderer.h"
 #include "Camera.h"
-#include "Scene.h"
+#include "View.h"
 #include "Renderables/VBOMesh.h"
 #include "Styles/RenderStyle.h"
 
@@ -362,12 +362,12 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void LayeredRenderer::ApplyParamSetsArrays(GLProgram *program)
 	{
-		if (!scene) return;
+		if (!view) return;
 
-		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+		for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
 			++objectId)
 		{
-			Renderable *renderable = scene->GetRenderable(objectId);
+			Renderable *renderable = view->GetRenderable(objectId);
 			if (renderable)
 			{
 				renderable->ApplyParamSetsArrays(program, tm, objectId);
@@ -378,17 +378,17 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void LayeredRenderer::DrawRenderables()
 	{
-		if (!scene) return;
+		if (!view) return;
 
 		// Load object transforms
 		// HACK: should be handled elsewhere, but we need the volume transforms
-		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
+		for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
 			++objectId)
 		{
 			glActiveTexture(GL_TEXTURE0 + objectId);
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
-			Renderable *renderable = scene->GetRenderable(objectId);
+			Renderable *renderable = view->GetRenderable(objectId);
 			if (renderable)
 			{
 				Vector3 center = renderable->GetCenter();

@@ -3,7 +3,7 @@
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLFramebuffer.h"
 
-#include "Scene.h"
+#include "View.h"
 
 #include "Renderables/Renderable.h"
 
@@ -51,44 +51,44 @@ namespace NQVTK
 		// TODO: set up blending (and figure out how we want to do this)
 
 		// TODO: set up shader, textures...
-		// TODO: It would be nice if the paramsets could handle per-object textures now
-		// This requires them to register with the tm before rendering and swap in 
-		// their textures during PrepareForRenderable (in addition to setting uniforms)
 
 		Clear();
 
-		// Draw a single slice for each renderable
-		glBegin(GL_QUADS);
-		for (int objectId = 0; objectId < scene->GetNumberOfRenderables(); 
-			++objectId)
+		if (view)
 		{
-			// The shader should discard renderables without volumes and 
-			// generate appropriate alpha values or discards for blending
-
-			// Visibility implies that the renderable is not null
-			if (scene->GetVisibility(objectId))
+			// Draw a single slice for each renderable
+			glBegin(GL_QUADS);
+			for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
+				++objectId)
 			{
-				Renderable *renderable = scene->GetRenderable(objectId);
-				PrepareForRenderable(objectId, renderable);
+				// The shader should discard renderables without volumes and 
+				// generate appropriate alpha values or discards for blending
 
-				glColor4d(
-					renderable->color.x, 
-					renderable->color.y, 
-					renderable->color.z, 
-					renderable->opacity);
+				// Visibility implies that the renderable is not null
+				if (view->GetVisibility(objectId))
+				{
+					Renderable *renderable = view->GetRenderable(objectId);
+					PrepareForRenderable(objectId, renderable);
 
-				// Draw the full screen quad for this plane
-				glTexCoord3dv(origin.V);
-				glVertex3d(-1.0, -1.0, 0.0);
-				glTexCoord3dv((origin + right).V);
-				glVertex3d(1.0, -1.0, 0.0);
-				glTexCoord3dv((origin + right + up).V);
-				glVertex3d(1.0, 1.0, 0.0);
-				glTexCoord3dv((origin + up).V);
-				glVertex3d(-1.0, 1.0, 0.0);
+					glColor4d(
+						renderable->color.x, 
+						renderable->color.y, 
+						renderable->color.z, 
+						renderable->opacity);
+
+					// Draw the full screen quad for this plane
+					glTexCoord3dv(origin.V);
+					glVertex3d(-1.0, -1.0, 0.0);
+					glTexCoord3dv((origin + right).V);
+					glVertex3d(1.0, -1.0, 0.0);
+					glTexCoord3dv((origin + right + up).V);
+					glVertex3d(1.0, 1.0, 0.0);
+					glTexCoord3dv((origin + up).V);
+					glVertex3d(-1.0, 1.0, 0.0);
+				}
 			}
+			glEnd();
 		}
-		glEnd();
 
 		glPopAttrib();
 

@@ -13,6 +13,7 @@ namespace NQVTK
 	class Camera;
 	class Renderable;
 	class Scene;
+	class View;
 
 	class Renderer
 	{
@@ -35,8 +36,10 @@ namespace NQVTK
 
 		void ResetTextures();
 
-		Scene *GetScene() { return this->scene; }
 		virtual void SetScene(Scene *scene);
+
+		View *GetView() { return this->view; }
+		virtual void SetView(View *view);
 
 		Camera *GetCamera();
 		void SetCamera(Camera *cam);
@@ -59,7 +62,8 @@ namespace NQVTK
 		int viewportHeight;
 
 		Camera *camera;
-		Scene *scene;
+		View *view;
+
 		NQVTK::Vector3 lightPos;
 
 		GLTextureManager *tm;

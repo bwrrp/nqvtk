@@ -11,7 +11,7 @@
 #include "Rendering/ArcballCamera.h"
 #include "Rendering/OrbitCamera.h"
 
-#include "Rendering/Scene.h"
+#include "Rendering/View.h"
 
 #include "Rendering/Renderer.h"
 #include "Rendering/OverlayRenderer.h"
@@ -49,9 +49,9 @@ namespace NQVTK
 		}
 		// Create object interactors
 		// TODO: we might want to pass the scene separately to the constructor
-		NQVTK::Renderable *renderable = ren->GetScene()->GetRenderable(0);
+		NQVTK::Renderable *renderable = ren->GetView()->GetRenderable(0);
 		if (renderable) objectInt = new ObjectInteractor(renderable);
-		NQVTK::Renderable *clipper = ren->GetScene()->GetRenderable(2);
+		NQVTK::Renderable *clipper = ren->GetView()->GetRenderable(2);
 		if (clipper) clipperInt = new ObjectInteractor(clipper);
 	}
 

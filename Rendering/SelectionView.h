@@ -1,25 +1,24 @@
 #pragma once
 
-#include "Scene.h"
+#include "View.h"
 
 #include <set>
 
 namespace NQVTK
 {
-	// A view of a Scene that only shows selected Renderables
-	// NOTE: Views do not own the base Scene because it may be shared
-	class SelectionView : public Scene
+	// A view that only shows selected Renderables
+	class SelectionView : public View
 	{
 	public:
-		typedef Scene Superclass;
+		typedef View Superclass;
 
-		SelectionView(Scene *baseScene);
+		SelectionView(Scene *scene);
 
 		virtual void SetVisibility(unsigned int i, bool visible);
 		virtual bool GetVisibility(unsigned int i);
 
 	protected:
-		Scene *baseScene;
+		Scene *scene;
 		std::set<unsigned int> selection;
 	};
 }

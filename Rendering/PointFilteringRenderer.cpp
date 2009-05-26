@@ -4,7 +4,7 @@
 
 #include "GLBlaat/GL.h"
 
-#include "Scene.h"
+#include "View.h"
 
 #include "Renderables/PolyData.h"
 
@@ -95,7 +95,8 @@ namespace NQVTK
 
 		// Draw the points
 		// TODO: we could just pass the renderable directly...
-		NQVTK::PolyData *pd = dynamic_cast<NQVTK::PolyData*>(scene->GetRenderable(0));
+		NQVTK::PolyData *pd = dynamic_cast<NQVTK::PolyData*>(
+			view->GetRenderable(0));
 		if (pd)
 		{
 			pd->Draw(NQVTK::PolyData::DRAWMODE_POINTS, 

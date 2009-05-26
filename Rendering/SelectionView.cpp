@@ -1,11 +1,13 @@
 #include "SelectionView.h"
 
+#include "Renderables/Renderable.h"
+
 #include <set>
 
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	SelectionView::SelectionView(Scene *baseScene) : baseScene(baseScene)
+	SelectionView::SelectionView(Scene *scene) : View(scene)
 	{
 	}
 
@@ -27,8 +29,8 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	bool SelectionView::GetVisibility(unsigned int i)
 	{
-		// A renderable is visible if it exists and is part of the selection
-		return (GetRenderable(i) != 0) && 
-			(selection.find(i) != selection.end());
+		// Visible means it exists, is globally visible and is in the selection
+		return (selection.find(i) != selection.end()) 
+			&& Superclass::GetVisibility(i);
 	}
 }
