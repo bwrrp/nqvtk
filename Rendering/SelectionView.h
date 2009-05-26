@@ -13,6 +13,7 @@ namespace NQVTK
 		typedef View Superclass;
 
 		SelectionView(Scene *scene);
+		SelectionView(View *sameSceneAs);
 
 		virtual void SetVisibility(unsigned int i, bool visible);
 		virtual bool GetVisibility(unsigned int i);

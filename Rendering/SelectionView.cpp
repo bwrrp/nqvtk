@@ -12,6 +12,11 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	SelectionView::SelectionView(View *sameSceneAs) : View(sameSceneAs)
+	{
+	}
+
+	// ------------------------------------------------------------------------
 	void SelectionView::SetVisibility(unsigned int i, bool visible)
 	{
 		if (visible)
