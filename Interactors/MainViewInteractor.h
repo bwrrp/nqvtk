@@ -9,13 +9,14 @@ namespace NQVTK
 	class CameraInteractor;
 	class ObjectInteractor;
 	class BrushingInteractor;
+	class Scene;
 
 	class MainViewInteractor : public Interactor
 	{
 	public:
 		typedef Interactor Superclass;
 
-		MainViewInteractor(Renderer *ren); 
+		MainViewInteractor(Renderer *ren, Scene *scene); 
 		virtual ~MainViewInteractor();
 
 		virtual bool MouseMoveEvent(MouseEvent event);

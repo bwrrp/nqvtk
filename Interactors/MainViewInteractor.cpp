@@ -11,7 +11,7 @@
 #include "Rendering/ArcballCamera.h"
 #include "Rendering/OrbitCamera.h"
 
-#include "Rendering/View.h"
+#include "Rendering/Scene.h"
 
 #include "Rendering/Renderer.h"
 #include "Rendering/OverlayRenderer.h"
@@ -20,7 +20,7 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	MainViewInteractor::MainViewInteractor(Renderer *ren) 
+	MainViewInteractor::MainViewInteractor(Renderer *ren, Scene *scene) 
 		: Interactor(), cameraInt(0), objectInt(0), clipperInt(0), brushInt(0)
 	{
 		// Create the proper camera interactor
@@ -48,11 +48,14 @@ namespace NQVTK
 			ren = oren->GetBaseRenderer();
 		}
 		// Create object interactors
-		// TODO: we might want to pass the scene separately to the constructor
-		NQVTK::Renderable *renderable = ren->GetView()->GetRenderable(0);
-		if (renderable) objectInt = new ObjectInteractor(renderable);
-		NQVTK::Renderable *clipper = ren->GetView()->GetRenderable(2);
-		if (clipper) clipperInt = new ObjectInteractor(clipper);
+		if (scene)
+		{
+			NQVTK::Renderable *renderable = scene->GetRenderable(0);
+			if (renderable) objectInt = new ObjectInteractor(renderable);
+			// TODO: should use clipperId from the ibisStyle
+			NQVTK::Renderable *clipper = scene->GetRenderable(2);
+			if (clipper) clipperInt = new ObjectInteractor(clipper);
+		}
 	}
 
 	// ------------------------------------------------------------------------
