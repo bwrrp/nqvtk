@@ -135,11 +135,4 @@ namespace NQVTK
 		// Restore viewport (again)
 		SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 	}
-
-	// ------------------------------------------------------------------------
-	void CrossEyedStereoRenderer::SetScene(Scene *scene)
-	{
-		Superclass::SetScene(scene);
-		baseRenderer->SetScene(scene);
-	}
 }

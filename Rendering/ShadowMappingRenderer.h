@@ -22,7 +22,7 @@ namespace NQVTK
 
 		virtual void Draw();
 
-		virtual void SetScene(Scene *scene);
+		virtual void SetView(View *view);
 
 	protected:
 		GLFramebuffer *shadowBuffer;

@@ -99,8 +99,7 @@ namespace NQVTK
 	void Renderer::SetScene(Scene *scene)
 	{
 		assert(scene);
-		delete view;
-		view = new View(scene);
+		SetView(new View(scene));
 	}
 
 	// ------------------------------------------------------------------------

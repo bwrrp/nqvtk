@@ -20,8 +20,6 @@ namespace NQVTK
 
 		virtual void Draw();
 
-		virtual void SetScene(Scene *scene);
-
 		// GetBaseRenderer is provided by NestedRenderer
 		Renderer *GetOverlayRenderer() { return overlayRenderer; }
 

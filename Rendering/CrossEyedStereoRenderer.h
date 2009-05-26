@@ -22,8 +22,6 @@ namespace NQVTK
 
 		virtual void Draw();
 
-		virtual void SetScene(Scene *scene);
-
 		double eyeSpacing;
 
 	protected:

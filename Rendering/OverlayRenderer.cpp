@@ -153,13 +153,6 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void OverlayRenderer::SetScene(Scene *scene)
-	{
-		Superclass::SetScene(scene);
-		baseRenderer->SetScene(scene);
-	}
-
-	// ------------------------------------------------------------------------
 	GLTexture *OverlayRenderer::GetBaseImage()
 	{
 		return baseFbo->GetTexture2D();

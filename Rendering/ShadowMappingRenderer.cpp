@@ -46,8 +46,10 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	ShadowMappingRenderer::~ShadowMappingRenderer() 
 	{
-		if (shadowBuffer) delete shadowBuffer;
-		if (shadowStyle) delete shadowStyle;
+		delete shadowBuffer;
+		delete shadowStyle;
+		// The view is shared with shadowRenderer, so prevent double deletion
+		view = 0;
 		delete shadowRenderer;
 	}
 
@@ -87,7 +89,8 @@ namespace NQVTK
 		{
 			//if (!shadowBuffer->Resize(w, h))
 			//{
-			//	std::cerr << "WARNING! shadowBuffer resize failed!" << std::endl;
+			//	std::cerr << "WARNING! shadowBuffer resize failed!" 
+			//		<< std::endl;
 			//}
 		}
 	}
@@ -98,7 +101,6 @@ namespace NQVTK
 		// Synchronize renderer state
 		shadowRenderer->maxLayers = maxLayers;
 
-		// TODO: add a parallel projection camera so zoom doesn't affect shadowmap bounds
 		UpdateLighting();
 
 		shadowRenderer->GetCamera()->focus = camera->focus;
@@ -108,7 +110,8 @@ namespace NQVTK
 		shadowRenderer->Draw();
 		
 		// Get the shadow map
-		GLTexture *shadowMap = shadowBuffer->GetTexture2D(GL_COLOR_ATTACHMENT0_EXT);
+		GLTexture *shadowMap = shadowBuffer->GetTexture2D(
+			GL_COLOR_ATTACHMENT0_EXT);
 		tm->AddTexture("shadowMap", shadowMap, false);
 
 		// Get the modelview and projection matrices for the light's camera
@@ -167,9 +170,11 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void ShadowMappingRenderer::SetScene(Scene *scene)
+	void ShadowMappingRenderer::SetView(View *view)
 	{
-		Superclass::SetScene(scene);
-		shadowRenderer->SetScene(scene);
+		// The view is shared with the shadowRenderer
+		shadowRenderer->SetView(view);
+		this->view = 0;
+		Superclass::SetView(view);
 	}
 }

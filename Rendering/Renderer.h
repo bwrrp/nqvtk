@@ -36,7 +36,7 @@ namespace NQVTK
 
 		void ResetTextures();
 
-		virtual void SetScene(Scene *scene);
+		void SetScene(Scene *scene);
 
 		View *GetView() { return this->view; }
 		virtual void SetView(View *view);

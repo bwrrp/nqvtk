@@ -13,13 +13,15 @@ namespace NQVTK
 	NestedRenderer::NestedRenderer(Renderer *baseRenderer)
 		: baseRenderer(baseRenderer)
 	{
-		// Create view for easy access
-		this->view = new View(baseRenderer->GetView());
+		// We share the view of the base Renderer
+		view = baseRenderer->GetView();
 	}
 
 	// ------------------------------------------------------------------------
 	NestedRenderer::~NestedRenderer()
 	{
+		// The view is shared, so prevent double deletion
+		view = 0;
 		delete baseRenderer;
 	}
 
@@ -46,5 +48,14 @@ namespace NQVTK
 		baseRenderer->GetCamera()->position = GetCamera()->position;
 		baseRenderer->GetCamera()->focus = camera->focus;
 		baseRenderer->GetCamera()->up = camera->up;
+	}
+
+	// ------------------------------------------------------------------------
+	void NestedRenderer::SetView(NQVTK::View *view)
+	{
+		// The view is shared for easy access
+		baseRenderer->SetView(view);
+		this->view = 0;
+		Superclass::SetView(view);
 	}
 }
