@@ -22,6 +22,10 @@ namespace NQVTK
 
 		void ResetRenderables();
 
+		// Shortcuts for global visibility
+		bool GetVisibility(unsigned int i);
+		void SetVisibility(unsigned int i, bool visible);
+
 	protected:
 		std::vector<Renderable*> renderables;
 	};

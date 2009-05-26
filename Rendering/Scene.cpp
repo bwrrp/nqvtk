@@ -72,4 +72,20 @@ namespace NQVTK
 			(*it)->rotateY = 0.0;
 		}
 	}
+
+	// ------------------------------------------------------------------------
+	bool Scene::GetVisibility(unsigned int i)
+	{
+		Renderable *renderable = GetRenderable(i);
+		if (!renderable) return false;
+		return renderable->visible;
+	}
+
+	// ------------------------------------------------------------------------
+	void Scene::SetVisibility(unsigned int i, bool visible)
+	{
+		Renderable *renderable = GetRenderable(i);
+		if (!renderable) return;
+		renderable->visible = visible;
+	}
 }

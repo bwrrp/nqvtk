@@ -39,16 +39,12 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	bool View::GetVisibility(unsigned int i)
 	{
-		Renderable *renderable = GetRenderable(i);
-		if (!renderable) return false;
-		return renderable->visible;
+		return scene->GetVisibility(i);
 	}
 
 	// ------------------------------------------------------------------------
 	void View::SetVisibility(unsigned int i, bool visible)
 	{
-		Renderable *renderable = GetRenderable(i);
-		if (!renderable) return;
-		renderable->visible = visible;
+		scene->SetVisibility(i, visible);
 	}
 }
