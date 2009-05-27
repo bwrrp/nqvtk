@@ -2,6 +2,7 @@
 
 #include "ObjectInteractor.h"
 
+#include "Rendering/Scene.h"
 #include "Renderables/Renderable.h"
 
 #include <cassert>
@@ -9,10 +10,10 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	ObjectInteractor::ObjectInteractor(Renderable *obj)
+	ObjectInteractor::ObjectInteractor(Scene *scene, unsigned int objectId)
+		: scene(scene), objectId(objectId)
 	{
-		assert(obj);
-		renderable = obj;
+		assert(scene);
 		lastX = lastY = 0;
 	}
 
@@ -21,36 +22,41 @@ namespace NQVTK
 	{
 		bool handled = false;
 
-		if (event.buttons & MouseEvent::LeftButton)
+		Renderable *renderable = scene->GetRenderable(objectId);
+
+		if (renderable)
 		{
-			// Rotate
-			renderable->rotateY += event.x - lastX;
-			renderable->rotateX -= event.y - lastY;
-
-			if (renderable->rotateX > 80.0) 
+			if (event.buttons & MouseEvent::LeftButton)
 			{
-				renderable->rotateX = 80.0;
+				// Rotate
+				renderable->rotateY += event.x - lastX;
+				renderable->rotateX -= event.y - lastY;
+
+				if (renderable->rotateX > 80.0) 
+				{
+					renderable->rotateX = 80.0;
+				}
+				if (renderable->rotateX < -80.0) 
+				{
+					renderable->rotateX = -80.0;
+				}
+
+				handled = true;
 			}
-			if (renderable->rotateX < -80.0) 
+
+			if (event.buttons & MouseEvent::MiddleButton)
 			{
-				renderable->rotateX = -80.0;
+				// TODO: make translation relative to window
+				Vector3 right = Vector3(1.0, 0.0, 0.0);
+				Vector3 up = Vector3(0.0, 1.0, 0.0);
+				double factor = 0.6;
+				// Translate
+				renderable->position += 
+					(lastX - event.x) * factor * right +
+					(lastY - event.y) * factor * up;
+
+				handled = true;
 			}
-
-			handled = true;
-		}
-
-		if (event.buttons & MouseEvent::MiddleButton)
-		{
-			// TODO: make translation relative to window
-			Vector3 right = Vector3(1.0, 0.0, 0.0);
-			Vector3 up = Vector3(0.0, 1.0, 0.0);
-			double factor = 0.6;
-			// Translate
-			renderable->position += 
-				(lastX - event.x) * factor * right +
-				(lastY - event.y) * factor * up;
-
-			handled = true;
 		}
 
 		lastX = event.x;

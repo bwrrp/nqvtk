@@ -50,11 +50,9 @@ namespace NQVTK
 		// Create object interactors
 		if (scene)
 		{
-			NQVTK::Renderable *renderable = scene->GetRenderable(0);
-			if (renderable) objectInt = new ObjectInteractor(renderable);
+			objectInt = new ObjectInteractor(scene, 0);
 			// TODO: should use clipperId from the ibisStyle
-			NQVTK::Renderable *clipper = scene->GetRenderable(2);
-			if (clipper) clipperInt = new ObjectInteractor(clipper);
+			clipperInt = new ObjectInteractor(scene, 2);
 		}
 	}
 
@@ -71,31 +69,29 @@ namespace NQVTK
 	{
 		if (oren) oren->updateBase = true;
 
-		if (event.control && objectInt)
+		if (event.control)
 		{
 			// Control controls renderable 0
-			return objectInt->MouseMoveEvent(event);
+			if (objectInt) return objectInt->MouseMoveEvent(event);
 		}
-		else if (event.alt && clipperInt)
+		else if (event.alt)
 		{
 			// Alt controls the clipper (renderable 2)
-			return clipperInt->MouseMoveEvent(event);
+			if (clipperInt) return clipperInt->MouseMoveEvent(event);
 		}
-		else if (event.shift && brushInt)
+		else if (event.shift)
 		{
 			// HACK: Shift controls brushing
 			if (oren) oren->updateBase = false;
-			return brushInt->MouseMoveEvent(event);
-		}
-		else if (cameraInt)
-		{
-			// No modifiers: camera control
-			return cameraInt->MouseMoveEvent(event);
+			if (brushInt) return brushInt->MouseMoveEvent(event);
 		}
 		else
 		{
-			return Superclass::MouseMoveEvent(event);
+			// No modifiers: camera control
+			if (cameraInt) return cameraInt->MouseMoveEvent(event);
 		}
+		
+		return Superclass::MouseMoveEvent(event);
 	}
 
 	// ------------------------------------------------------------------------

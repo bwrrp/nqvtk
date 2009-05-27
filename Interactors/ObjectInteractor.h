@@ -4,19 +4,20 @@
 
 namespace NQVTK
 {
-	class Renderable;
+	class Scene;
 
 	class ObjectInteractor : public Interactor
 	{
 	public:
 		typedef Interactor Superclass;
 
-		ObjectInteractor(Renderable *obj);
+		ObjectInteractor(Scene *obj, unsigned int objectId);
 
 		virtual bool MouseMoveEvent(MouseEvent event);
 
 	protected:
-		Renderable *renderable;
+		Scene *scene;
+		unsigned int objectId;
 
 		// Previous mouse coordinates
 		int lastX;
