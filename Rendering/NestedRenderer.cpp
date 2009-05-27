@@ -51,6 +51,13 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	void NestedRenderer::ResetTextures()
+	{
+		Superclass::ResetTextures();
+		baseRenderer->ResetTextures();
+	}
+
+	// ------------------------------------------------------------------------
 	void NestedRenderer::SetView(NQVTK::View *view)
 	{
 		// The view is shared for easy access

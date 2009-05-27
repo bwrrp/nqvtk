@@ -20,6 +20,8 @@ namespace NQVTK
 
 		virtual void DrawCamera();
 
+		virtual void ResetTextures();
+
 		virtual void SetView(NQVTK::View *view);
 
 	protected:
