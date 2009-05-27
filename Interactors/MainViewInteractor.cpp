@@ -20,7 +20,7 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	MainViewInteractor::MainViewInteractor(Renderer *ren, Scene *scene) 
+	MainViewInteractor::MainViewInteractor(Renderer *ren) 
 		: Interactor(), cameraInt(0), objectInt(0), clipperInt(0), brushInt(0)
 	{
 		// Create the proper camera interactor
@@ -47,13 +47,6 @@ namespace NQVTK
 			if (bren) brushInt = new BrushingInteractor(bren);
 			ren = oren->GetBaseRenderer();
 		}
-		// Create object interactors
-		if (scene)
-		{
-			objectInt = new ObjectInteractor(scene, 0);
-			// TODO: should use clipperId from the ibisStyle
-			clipperInt = new ObjectInteractor(scene, 2);
-		}
 	}
 
 	// ------------------------------------------------------------------------
@@ -62,6 +55,24 @@ namespace NQVTK
 		delete cameraInt;
 		delete objectInt;
 		delete clipperInt;
+	}
+
+	// ------------------------------------------------------------------------
+	void MainViewInteractor::SetScene(Scene *scene)
+	{
+		delete objectInt;
+		delete clipperInt;
+        // Create object interactors
+		if (scene)
+		{
+			objectInt = new ObjectInteractor(scene, 0);
+			// TODO: should use clipperId from the ibisStyle
+			clipperInt = new ObjectInteractor(scene, 2);
+		}
+		else
+		{
+			objectInt = clipperInt = 0;
+		}
 	}
 
 	// ------------------------------------------------------------------------

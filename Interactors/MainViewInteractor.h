@@ -16,8 +16,10 @@ namespace NQVTK
 	public:
 		typedef Interactor Superclass;
 
-		MainViewInteractor(Renderer *ren, Scene *scene); 
+		MainViewInteractor(Renderer *ren); 
 		virtual ~MainViewInteractor();
+
+		void SetScene(Scene *scene);
 
 		virtual bool MouseMoveEvent(MouseEvent event);
 		virtual bool MousePressEvent(MouseEvent event);
