@@ -50,8 +50,8 @@ namespace NQVTK
 	protected:
 		double bounds[6];
 
-		typedef std::map<std::string, ParamSet*> ParamSetType;
-		ParamSetType paramSets;
+		typedef std::map<std::string, ParamSet*> ParamSetsType;
+		ParamSetsType paramSets;
 
 	private:
 		// Not implemented

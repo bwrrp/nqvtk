@@ -31,7 +31,7 @@ namespace NQVTK
 	Renderable::~Renderable() 
 	{
 		// Delete all ParamSets
-		for (std::map<std::string, ParamSet*>::iterator it = paramSets.begin();
+		for (ParamSetsType::iterator it = paramSets.begin();
 			it != paramSets.end(); ++it)
 		{
 			delete it->second;
@@ -91,7 +91,7 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	ParamSet *Renderable::GetParamSet(const std::string &name)
 	{
-		ParamSetType::iterator it = paramSets.find(name);
+		ParamSetsType::iterator it = paramSets.find(name);
 		if (it != paramSets.end())
 		{
 			return it->second;
@@ -102,13 +102,19 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderable::SetParamSet(const std::string &name, ParamSet *params)
 	{
+		// Delete any existing paramset with the same name
+		ParamSetsType::iterator it = paramSets.find(name);
+		if (it != paramSets.end())
+		{
+			if (it->second != params) delete it->second;
+		}
 		paramSets[name] = params;
 	}
 
 	// ------------------------------------------------------------------------
 	void Renderable::ApplyParamSets(GLProgram *program, GLTextureManager *tm)
 	{
-		for (ParamSetType::iterator it = paramSets.begin();
+		for (ParamSetsType::iterator it = paramSets.begin();
 			it != paramSets.end(); ++it)
 		{
 			if (program) it->second->SetupProgram(program);
@@ -120,7 +126,7 @@ namespace NQVTK
 	void Renderable::ApplyParamSetsArrays(GLProgram *program, 
 		GLTextureManager *tm, int objectId)
 	{
-		for (ParamSetType::iterator it = paramSets.begin();
+		for (ParamSetsType::iterator it = paramSets.begin();
 			it != paramSets.end(); ++it)
 		{
 			if (program) it->second->SetupProgramArrays(program, objectId);
