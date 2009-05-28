@@ -98,14 +98,19 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::SetScene(Scene *scene)
 	{
-		assert(scene);
-		SetView(new View(scene));
+		if (scene)
+		{
+			SetView(new View(scene));
+		}
+		else
+		{
+			SetView(0);
+		}
 	}
 
 	// ------------------------------------------------------------------------
 	void Renderer::SetView(View *view)
 	{
-		assert(view);
 		if (view == this->view) return;
 
 		delete this->view;
