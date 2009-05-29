@@ -101,6 +101,7 @@ namespace NQVTK
 		if (view)
 		{
 			view->SetScene(scene);
+			ResetTextures();
 		}
 		else
 		{
@@ -115,6 +116,8 @@ namespace NQVTK
 
 		delete this->view;
 		this->view = view;
+
+		ResetTextures();
 	}
 
 	// ------------------------------------------------------------------------
