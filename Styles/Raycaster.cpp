@@ -36,8 +36,8 @@ namespace NQVTK
 			stepSize = 10.0;
 			kernelSize = 1.0;
 
-			// TODO: find out why setting this to 1 does not work
-			SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "2");
+			// This is recomputed whenever the scene changes
+			SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", 1);
 
 			SetOption("NQVTK_RAYCASTER_LIGHTING");
 			SetOption("NQVTK_RAYCASTER_DITHERPOS");
@@ -183,6 +183,8 @@ namespace NQVTK
 
 			// Compute unitSize
 			unitSize = 1000000.0;
+			// Compute max objectId which has a volume
+			unsigned int maxVolumeId = 0;
 			for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
 			{
 				Renderable *renderable = view->GetRenderable(i);
@@ -195,6 +197,7 @@ namespace NQVTK
 						Volume *volume = vps->GetVolume();
 						if (volume)
 						{
+							maxVolumeId = i;
 							// Compute spacings
 							NQVTK::Vector3 size = 
 								volume->GetOriginalSize();
@@ -213,6 +216,10 @@ namespace NQVTK
 				}
 			}
 			assert(unitSize > 0.0);
+			// This can't be lower than 1
+			unsigned int volumeCount = maxVolumeId + 1;
+			if (volumeCount < 1) volumeCount = 1;
+			SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", volumeCount);
 		}
 	}
 }

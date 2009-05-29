@@ -34,8 +34,6 @@ namespace NQVTK
 			smearDensity = 2.0;
 			smearLength = 1.0;
 
-			SetOption("NQVTK_RAYCASTER_VOLUMECOUNT", "4");
-
 			//UnsetOption("NQVTK_RAYCASTER_CENTRALDIFFERENCES");
 			UnsetOption("NQVTK_RAYCASTER_LIGHTING");
 			//UnsetOption("NQVTK_RAYCASTER_DITHERPOS");
