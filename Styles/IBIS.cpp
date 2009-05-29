@@ -8,10 +8,16 @@
 #include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLUtility.h"
 
+#include "Rendering/View.h"
+#include "Renderables/Renderable.h"
+#include "ParamSets/PCAParamSet.h"
+
 #include "Shaders.h"
 
 #include <cassert>
 #include <iostream>
+#include <string>
+#include <sstream>
 
 namespace NQVTK
 {
@@ -172,6 +178,31 @@ namespace NQVTK
 		{
 			// Set program parameters
 			scribe->SetUniform1f("pvalueThreshold", pvalueThreshold);
+		}
+
+		// --------------------------------------------------------------------
+		void IBIS::SceneChanged(View *view)
+		{
+			// Find maximum number of PCA eigenmodes
+			unsigned int maxNumEigenModes = 0;
+			for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
+			{
+				Renderable *renderable = view->GetRenderable(i);
+				if (renderable)
+				{
+					PCAParamSet *pcaps = dynamic_cast<PCAParamSet*>(
+						renderable->GetParamSet("pca"));
+					if (pcaps)
+					{
+						unsigned int numEigenModes = pcaps->weights.size();
+						if (numEigenModes > maxNumEigenModes)
+						{
+							maxNumEigenModes = numEigenModes;
+						}
+					}
+				}
+			}
+			SetOption("NQVTK_USE_PCA", maxNumEigenModes);
 		}
 	}
 }

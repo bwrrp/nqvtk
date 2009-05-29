@@ -51,10 +51,10 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void NestedRenderer::ResetTextures()
+	void NestedRenderer::SceneChanged()
 	{
-		Superclass::ResetTextures();
-		baseRenderer->ResetTextures();
+		Superclass::SceneChanged();
+		baseRenderer->SceneChanged();
 	}
 
 	// ------------------------------------------------------------------------

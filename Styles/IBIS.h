@@ -25,6 +25,8 @@ namespace NQVTK
 			virtual void UpdatePainterParameters(GLProgram *painter);
 			virtual void UpdateScribeParameters(GLProgram *scribe);
 
+			virtual void SceneChanged(View *view);
+
 			// Program parameters
 			// - Painter
 			bool useContours;

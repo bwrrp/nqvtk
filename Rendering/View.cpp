@@ -46,7 +46,7 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	int View::GetNumberOfRenderables()
+	unsigned int View::GetNumberOfRenderables()
 	{
 		if (!scene) return 0;
 		return scene->GetNumberOfRenderables();

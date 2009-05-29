@@ -58,7 +58,8 @@ namespace NQVTK
 		{
 			// Draw a single slice for each renderable
 			glBegin(GL_QUADS);
-			for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
+			for (unsigned int objectId = 0; 
+				objectId < view->GetNumberOfRenderables(); 
 				++objectId)
 			{
 				// The shader should discard renderables without volumes and 

@@ -364,7 +364,8 @@ namespace NQVTK
 	{
 		if (!view) return;
 
-		for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
+		for (unsigned int objectId = 0; 
+			objectId < view->GetNumberOfRenderables(); 
 			++objectId)
 		{
 			Renderable *renderable = view->GetRenderable(objectId);
@@ -382,7 +383,8 @@ namespace NQVTK
 
 		// Load object transforms
 		// HACK: should be handled elsewhere, but we need the volume transforms
-		for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
+		for (unsigned int objectId = 0; 
+			objectId < view->GetNumberOfRenderables(); 
 			++objectId)
 		{
 			glActiveTexture(GL_TEXTURE0 + objectId);
@@ -407,9 +409,23 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	void LayeredRenderer::SceneChanged()
+	{
+		Superclass::SceneChanged();
+
+		if (view != 0 && style != 0)
+		{
+			// Recompute scene-dependent RenderStyle parameters
+			style->SceneChanged(view);
+		}
+	}
+
+	// ------------------------------------------------------------------------
 	bool LayeredRenderer::SetStyle(RenderStyle *style) 
 	{ 
 		this->style = style;
+		// Update style parameters for the current scene
+		style->SceneChanged(view);
 		// Re-initialize if we're initialized
 		if (query && style) 
 		{

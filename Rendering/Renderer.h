@@ -34,7 +34,7 @@ namespace NQVTK
 
 		virtual void DrawCamera();
 
-		virtual void ResetTextures();
+		virtual void SceneChanged();
 
 		void SetScene(Scene *scene);
 

@@ -10,6 +10,7 @@ class GLProgram;
 namespace NQVTK
 {
 	class Renderable;
+	class View;
 
 	class RenderStyle
 	{
@@ -38,9 +39,12 @@ namespace NQVTK
 
 		virtual void DrawBackground();
 
-		// NOTE: caller should re-create scribe and painter after changing options
-		virtual void SetOption(const std::string &option, 
-			const std::string &value = "1");
+		virtual void SceneChanged(View *view);
+
+		// TODO: caller should re-create shaders after changing options
+		void SetOption(const std::string &option);
+		template <typename T> void SetOption(
+			const std::string &option, const T &value);
 		virtual bool HasOption(const std::string &option);
 		virtual void UnsetOption(const std::string &option);
 

@@ -16,7 +16,7 @@ namespace NQVTK
 		Renderable *GetRenderable(unsigned int i);
 		Renderable *SetRenderable(unsigned int i, Renderable *obj);
 
-		int GetNumberOfRenderables();
+		unsigned int GetNumberOfRenderables();
 
 		void DeleteAllRenderables();
 

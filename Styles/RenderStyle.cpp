@@ -91,8 +91,36 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void RenderStyle::SetOption(const std::string &option, 
-		const std::string &value)
+	void RenderStyle::SceneChanged(View *view)
+	{
+	}
+
+	// ------------------------------------------------------------------------
+	void RenderStyle::SetOption(const std::string &option)
+	{
+		SetOption(option, "1");
+	}
+
+	// ------------------------------------------------------------------------
+	template <typename T>
+	void RenderStyle::SetOption(const std::string &option, const T &value)
+	{
+		std::ostringstream str;
+		str << value;
+		SetOption(option, str.str());
+	}
+
+	// ------------------------------------------------------------------------
+	template void RenderStyle::SetOption<int>(
+		const std::string&, const int&);
+	template void RenderStyle::SetOption<unsigned int>(
+		const std::string&, const unsigned int&);
+	template void RenderStyle::SetOption<float>(
+		const std::string&, const float&);
+
+	// ------------------------------------------------------------------------
+	template <> void RenderStyle::SetOption<std::string>(
+		const std::string &option, const std::string &value)
 	{
 		defines[option] = value;
 	}

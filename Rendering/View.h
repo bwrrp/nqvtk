@@ -19,7 +19,7 @@ namespace NQVTK
 
 		// Passed on to the scene
 		Renderable *GetRenderable(unsigned int i);
-		int GetNumberOfRenderables();
+		unsigned int GetNumberOfRenderables();
 
 		// Override to provide local visibility
 		virtual bool GetVisibility(unsigned int i);

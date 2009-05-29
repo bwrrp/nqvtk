@@ -45,7 +45,7 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	int Scene::GetNumberOfRenderables() 
+	unsigned int Scene::GetNumberOfRenderables() 
 	{
 		return renderables.size();
 	}

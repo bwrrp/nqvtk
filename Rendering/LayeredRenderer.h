@@ -39,6 +39,8 @@ namespace NQVTK
 
 		virtual void DrawRenderables();
 
+		virtual void SceneChanged();
+
 		bool SetStyle(RenderStyle *style);
 
 		int maxLayers;

@@ -101,7 +101,7 @@ namespace NQVTK
 		if (view)
 		{
 			view->SetScene(scene);
-			ResetTextures();
+			SceneChanged();
 		}
 		else
 		{
@@ -117,7 +117,7 @@ namespace NQVTK
 		delete this->view;
 		this->view = view;
 
-		ResetTextures();
+		SceneChanged();
 	}
 
 	// ------------------------------------------------------------------------
@@ -183,7 +183,7 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void Renderer::ResetTextures()
+	void Renderer::SceneChanged()
 	{
 		// Reset texture manager binding cache
 		if (tm) tm->BeginNewPass();
@@ -227,7 +227,8 @@ namespace NQVTK
 		if (!view) return;
 
 		// Iterate over all renderables in the scene and draw them
-		for (int objectId = 0; objectId < view->GetNumberOfRenderables(); 
+		for (unsigned int objectId = 0; 
+			objectId < view->GetNumberOfRenderables(); 
 			++objectId)
 		{
 			// Visibility implies that the renderable is not null
