@@ -37,8 +37,11 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	int PCAParamSet::GetNumEigenModes(NQVTK::VBOMesh *mesh)
+	int PCAParamSet::GetNumEigenModes(NQVTK::Renderable *object)
 	{
+		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(object);
+		if (!mesh) return 0;
+
 		// We assume a shape model mesh contains attribs called eigvecs[i]
 		int i = 0;
 		NQVTK::AttributeSet *aset;
