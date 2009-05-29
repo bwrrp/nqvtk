@@ -122,6 +122,16 @@ namespace NQVTK
 	template <> void RenderStyle::SetOption<std::string>(
 		const std::string &option, const std::string &value)
 	{
+		// If the value changes, we need to rebuild the shaders
+		std::map<std::string, std::string>::iterator it = 
+			defines.find(option);
+		if (it != defines.end())
+		{
+			if (value != it->second)
+			{
+				shadersNeedUpdate = true;
+			}
+		}
 		defines[option] = value;
 	}
 
@@ -137,6 +147,19 @@ namespace NQVTK
 	void RenderStyle::UnsetOption(const std::string &option)
 	{
 		defines.erase(option);
+	}
+
+	// ------------------------------------------------------------------------
+	bool RenderStyle::DoShadersNeedUpdate()
+	{
+		return shadersNeedUpdate;
+	}
+
+	// ------------------------------------------------------------------------
+	void RenderStyle::ShadersUpdated()
+	{
+		// TODO: reset shadersNeedUpdate automatically
+		shadersNeedUpdate = false;
 	}
 
 	// ------------------------------------------------------------------------

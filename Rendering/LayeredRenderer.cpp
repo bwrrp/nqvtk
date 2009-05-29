@@ -89,6 +89,8 @@ namespace NQVTK
 			return false;
 		}
 
+		style->ShadersUpdated();
+
 		delete query;
 		query = GLOcclusionQuery::New();
 
@@ -417,6 +419,14 @@ namespace NQVTK
 		{
 			// Recompute scene-dependent RenderStyle parameters
 			style->SceneChanged(view);
+			// Reinitialize if we were initialized and the shaders have changed
+			if (query && style)
+			{
+				if (style->DoShadersNeedUpdate())
+				{
+					Initialize();
+				}
+			}
 		}
 	}
 

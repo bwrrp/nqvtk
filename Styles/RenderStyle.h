@@ -48,9 +48,12 @@ namespace NQVTK
 		virtual bool HasOption(const std::string &option);
 		virtual void UnsetOption(const std::string &option);
 
+		bool DoShadersNeedUpdate();
+		void ShadersUpdated();
+
 	protected:
 		GLTextureManager *tm;
-
+		bool shadersNeedUpdate;
 		std::map<std::string, std::string> defines;
 
 		std::string AddShaderDefines(std::string shader);
