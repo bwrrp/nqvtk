@@ -186,7 +186,7 @@ namespace NQVTK
 	void Renderer::ResetTextures()
 	{
 		// Reset texture manager binding cache
-		tm->BeginNewPass();
+		if (tm) tm->BeginNewPass();
 	}
 
 	// ------------------------------------------------------------------------
