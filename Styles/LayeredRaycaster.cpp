@@ -2,14 +2,16 @@
 
 #include "LayeredRaycaster.h"
 
-#include "ParamSets/VolumeParamSet.h"
-#include "Rendering/Volume.h"
-
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLUtility.h"
+
+#include "ParamSets/VolumeParamSet.h"
+#include "Renderables/Renderable.h"
+#include "Rendering/Volume.h"
+#include "Rendering/View.h"
 
 #include "Shaders.h"
 
@@ -23,6 +25,7 @@ namespace NQVTK
 		// --------------------------------------------------------------------
 		LayeredRaycaster::LayeredRaycaster()
 		{
+			maxRayLength = 10.0f;
 			testParam = 0.5f;
 			isoOpacity = 0.6f;
 			occlusionEdgeThreshold = 0.1f;
@@ -153,26 +156,37 @@ namespace NQVTK
 			painter->SetUniform1f("testParam", testParam);
 			painter->SetUniform1f("isoOpacity", isoOpacity);
 			painter->SetUniform1f("cornerEdgeThreshold", cornerEdgeThreshold);
-
-			// TODO: add a method to compute maxRayLength over all volumes
-			double maxRayLength = 10.0;
-			/*
-			for (unsigned int i = 0; i < volumes.size(); ++i)
-			{
-				NQVTK::VolumeParamSet *vps = volumes[i];
-				if (vps)
-				{
-					double w = vps->GetVolume()->GetWidth();
-					double h = vps->GetVolume()->GetHeight();
-					double d = vps->GetVolume()->GetDepth();
-					double diameter = sqrt(w * w + h * h + d * d);
-					if (diameter > maxRayLength) maxRayLength = diameter;
-				}
-			}
-			*/
+			// maxRayLength / 10.0 seems to be a good base for this...
+			// TODO: find a way to compute a good occlusionEdgeThreshold scale
 			painter->SetUniform1f("occlusionEdgeThreshold", 
 				occlusionEdgeThreshold * 
 				static_cast<float>(maxRayLength / 10.0));
+		}
+
+		// --------------------------------------------------------------------
+		void LayeredRaycaster::SceneChanged(View *view)
+		{
+			Superclass::SceneChanged(view);
+
+			// Compute maxRayLength over all volumes
+			maxRayLength = 10.0;
+			for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
+			{
+				Renderable *renderable = view->GetRenderable(i);
+				if (renderable)
+				{
+					VolumeParamSet *vps = dynamic_cast<VolumeParamSet*>(
+						renderable->GetParamSet("volume"));
+					if (vps)
+					{
+						double w = vps->GetVolume()->GetWidth();
+						double h = vps->GetVolume()->GetHeight();
+						double d = vps->GetVolume()->GetDepth();
+						double diameter = sqrt(w * w + h * h + d * d);
+						if (diameter > maxRayLength) maxRayLength = diameter;
+					}
+				}
+			}
 		}
 	}
 }

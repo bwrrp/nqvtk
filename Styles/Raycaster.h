@@ -31,6 +31,8 @@ namespace NQVTK
 
 			virtual void UpdatePainterParameters(GLProgram *painter);
 
+			virtual void SceneChanged(View *view);
+
 			float stepSize;
 			float kernelSize;
 

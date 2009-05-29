@@ -11,6 +11,7 @@
 #include "ParamSets/VolumeParamSet.h"
 #include "Renderables/Renderable.h"
 #include "Rendering/Volume.h"
+#include "Rendering/View.h"
 
 #include "Shaders.h"
 
@@ -161,43 +162,7 @@ namespace NQVTK
 			assert(infoCurrent);
 			tm->AddTexture("infoCurrent", infoCurrent, false);
 
-			/*
-			// Prepare volumes for the painter / raycasting stage
-			// This also recomputes the unit size
-			unitSize = 1000000.0;
-			for (unsigned int i = 0; i < volumes.size(); ++i)
-			{
-				NQVTK::VolumeParamSet *vps = volumes[i];
-				if (vps)
-				{
-					Volume *volume = vps->GetVolume();
-					// Use linear interpolation for sampling this volume
-					volume->BindToCurrent();
-					glTexParameteri(volume->GetTextureTarget(), 
-						GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(volume->GetTextureTarget(), 
-						GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					volume->UnbindCurrent();
-
-					// Compute spacings and update unitSize if any are smaller
-					NQVTK::Vector3 size = 
-						volume->GetOriginalSize();
-					double spX = size.x / static_cast<double>(
-						volume->GetWidth() - 1);
-					double spY = size.y / static_cast<double>(
-						volume->GetHeight() - 1);
-					double spZ = size.z / static_cast<double>(
-						volume->GetDepth() - 1);
-					if (spX < unitSize) unitSize = spX;
-					if (spY < unitSize) unitSize = spY;
-					if (spZ < unitSize) unitSize = spZ;
-				}
-				else
-				{
-					// Ignore this object for now, the volume shouldn't be used
-				}
-			}
-			*/
+			// TODO: make sure the volumes use linear interpolation
 		}
 
 		// --------------------------------------------------------------------
@@ -209,6 +174,45 @@ namespace NQVTK
 				static_cast<float>(stepSize * unitSize));
 			painter->SetUniform1f("kernelSize", 
 				static_cast<float>(kernelSize * unitSize));
+		}
+
+		// --------------------------------------------------------------------
+		void Raycaster::SceneChanged(View *view)
+		{
+			Superclass::SceneChanged(view);
+
+			// Compute unitSize
+			unitSize = 1000000.0;
+			for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
+			{
+				Renderable *renderable = view->GetRenderable(i);
+				if (renderable)
+				{
+					VolumeParamSet *vps = dynamic_cast<VolumeParamSet*>(
+						renderable->GetParamSet("volume"));
+					if (vps)
+					{
+						Volume *volume = vps->GetVolume();
+						if (volume)
+						{
+							// Compute spacings
+							NQVTK::Vector3 size = 
+								volume->GetOriginalSize();
+							double spX = size.x / static_cast<double>(
+								volume->GetWidth() - 1);
+							double spY = size.y / static_cast<double>(
+								volume->GetHeight() - 1);
+							double spZ = size.z / static_cast<double>(
+								volume->GetDepth() - 1);
+							// Update unitSize if any are smaller
+							if (spX < unitSize) unitSize = spX;
+							if (spY < unitSize) unitSize = spY;
+							if (spZ < unitSize) unitSize = spZ;
+						}
+					}
+				}
+			}
+			assert(unitSize > 0.0);
 		}
 	}
 }

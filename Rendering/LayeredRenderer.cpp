@@ -425,7 +425,7 @@ namespace NQVTK
 	{ 
 		this->style = style;
 		// Update style parameters for the current scene
-		style->SceneChanged(view);
+		if (view) style->SceneChanged(view);
 		// Re-initialize if we're initialized
 		if (query && style) 
 		{

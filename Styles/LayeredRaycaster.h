@@ -29,11 +29,17 @@ namespace NQVTK
 				GLFramebuffer *previous);
 			virtual void UpdatePainterParameters(GLProgram *painter);
 
+			virtual void SceneChanged(View *view);
+
 			float testParam;
 
 			float isoOpacity;
 			float occlusionEdgeThreshold;
 			float cornerEdgeThreshold;
+
+		protected:
+			// Maximum length of a ray through the volume
+			double maxRayLength;
 
 		private:
 			// Not implemented

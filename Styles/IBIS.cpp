@@ -202,7 +202,14 @@ namespace NQVTK
 					}
 				}
 			}
-			SetOption("NQVTK_USE_PCA", maxNumEigenModes);
+			if (maxNumEigenModes > 0)
+			{
+				SetOption("NQVTK_USE_PCA", maxNumEigenModes);
+			}
+			else
+			{
+				UnsetOption("NQVTK_USE_PCA");
+			}
 		}
 	}
 }
