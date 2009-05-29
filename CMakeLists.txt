@@ -145,7 +145,7 @@ SET( ${ProjectName}_ParamSets_Classes
 	FilteredVolumeParamSet
 	PCAParamSet
 	PCACorrespondenceParamSet
-	TransferFunctionParamSet
+	DualThresholdParamSet
 )
 
 SET( ${ProjectName}_Styles_Classes
