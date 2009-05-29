@@ -14,6 +14,9 @@ namespace NQVTK
 		View(View *sameSceneAs);
 		virtual ~View();
 
+		virtual void SetScene(Scene *scene);
+		void SetScene(View *sameSceneAs);
+
 		// Passed on to the scene
 		Renderable *GetRenderable(unsigned int i);
 		int GetNumberOfRenderables();

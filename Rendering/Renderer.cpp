@@ -98,13 +98,13 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void Renderer::SetScene(Scene *scene)
 	{
-		if (scene)
+		if (view)
 		{
-			SetView(new View(scene));
+			view->SetScene(scene);
 		}
 		else
 		{
-			SetView(0);
+			SetView(new View(scene));
 		}
 	}
 
