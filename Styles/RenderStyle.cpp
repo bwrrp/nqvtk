@@ -36,12 +36,6 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void RenderStyle::PrepareForObject(GLProgram *scribe, 
-		int objectId, Renderable *renderable) 
-	{
-	}
-
-	// ------------------------------------------------------------------------
 	void RenderStyle::RegisterScribeTextures(GLFramebuffer *previous)
 	{
 	}

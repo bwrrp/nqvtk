@@ -98,13 +98,6 @@ namespace NQVTK
 		}
 
 		// --------------------------------------------------------------------
-		void ShadowMap::PrepareForObject(GLProgram *scribe, 
-			int objectId, Renderable *renderable)
-		{
-			baseStyle->PrepareForObject(scribe, objectId, renderable);
-		}
-
-		// --------------------------------------------------------------------
 		void ShadowMap::RegisterScribeTextures(GLFramebuffer *previous) 
 		{
 			// Get the previous layer's info buffer

@@ -45,19 +45,6 @@ namespace NQVTK
 		}
 
 		// --------------------------------------------------------------------
-		void Raycaster::PrepareForObject(GLProgram *scribe, 
-			int objectId, Renderable *renderable)
-		{
-			// Make sure each renderable has a VolumeParamSet
-			// TODO: it's better to handle this elsewhere (not for each frame!)
-			if (!renderable->GetParamSet("volume"))
-			{
-				renderable->SetParamSet("volume", new VolumeParamSet(0));
-			}
-			Superclass::PrepareForObject(scribe, objectId, renderable);
-		}
-
-		// --------------------------------------------------------------------
 		GLFramebuffer *Raycaster::CreateFBO(int w, int h)
 		{
 			GLFramebuffer *fbo = GLFramebuffer::New(w, h);
@@ -183,7 +170,7 @@ namespace NQVTK
 
 			// Compute unitSize
 			unitSize = 1000000.0;
-			// Compute max objectId which has a volume
+			// Compute max objectId which has a non-null volume
 			unsigned int maxVolumeId = 0;
 			for (unsigned int i = 0; i < view->GetNumberOfRenderables(); ++i)
 			{
@@ -212,6 +199,12 @@ namespace NQVTK
 							if (spY < unitSize) unitSize = spY;
 							if (spZ < unitSize) unitSize = spZ;
 						}
+					}
+					else
+					{
+						// Add an empty volume ParamSet
+						renderable->SetParamSet("volume", 
+							new NQVTK::VolumeParamSet(0));
 					}
 				}
 			}

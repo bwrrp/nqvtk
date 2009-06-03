@@ -25,9 +25,6 @@ namespace NQVTK
 		virtual GLProgram *CreateScribe() = 0;
 		virtual GLProgram *CreatePainter() = 0;
 
-		virtual void PrepareForObject(GLProgram *scribe, 
-			int objectId, Renderable *renderable);
-
 		virtual void RegisterScribeTextures(GLFramebuffer *previous);
 		virtual void UnregisterScribeTextures();
 		virtual void UpdateScribeParameters(GLProgram *scribe);

@@ -349,9 +349,6 @@ namespace NQVTK
 		Renderable *renderable)
 	{
 		scribe->SetUniform1i("objectId", objectId);
-		// Prepare style
-		// TODO: remove PrepareForObject once textures are handled by paramsets
-		style->PrepareForObject(scribe, objectId, renderable);
 		// Setup attributes
 		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
 		if (mesh) mesh->SetupAttributes(scribeAttribs);

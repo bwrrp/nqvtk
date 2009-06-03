@@ -18,9 +18,6 @@ namespace NQVTK
 
 			Raycaster();
 
-			virtual void PrepareForObject(GLProgram *scribe, 
-				int objectId, NQVTK::Renderable *renderable);
-
 			virtual GLFramebuffer *CreateFBO(int w, int h);
 			virtual GLProgram *CreateScribe();
 			virtual GLProgram *CreatePainter();
