@@ -179,11 +179,16 @@ namespace NQVTK
 						renderable->GetParamSet("volume"));
 					if (vps)
 					{
-						double w = vps->GetVolume()->GetWidth();
-						double h = vps->GetVolume()->GetHeight();
-						double d = vps->GetVolume()->GetDepth();
-						double diameter = sqrt(w * w + h * h + d * d);
-						if (diameter > maxRayLength) maxRayLength = diameter;
+						NQVTK::Volume *volume = vps->GetVolume();
+						if (volume)
+						{
+							double w = volume->GetWidth();
+							double h = volume->GetHeight();
+							double d = volume->GetDepth();
+							double diameter = sqrt(w * w + h * h + d * d);
+							if (diameter > maxRayLength) 
+								maxRayLength = diameter;
+						}
 					}
 				}
 			}
