@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Math/Vector3.h"
+
 namespace NQVTK
 {
 	class Scene;
@@ -25,7 +27,12 @@ namespace NQVTK
 		virtual bool GetVisibility(unsigned int i);
 		virtual void SetVisibility(unsigned int i, bool visible);
 
+		const double *GetVisibleBounds();
+		const Vector3 GetVisibleCenter();
+
 	protected:
 		Scene *scene;
+
+		double bounds[6];
 	};
 }

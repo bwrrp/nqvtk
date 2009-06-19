@@ -19,7 +19,7 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void Camera::SetZPlanes(double *bounds)
+	void Camera::SetZPlanes(const double *bounds)
 	{
 		// Project each of the bounding box corners on the view vector
 		// and check max / min distance

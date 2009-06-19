@@ -58,6 +58,7 @@ namespace NQVTK
 		glPopMatrix();
 	}
 
+	// ------------------------------------------------------------------------
 	void Renderable::GetBounds(
 		double &xmin, double &xmax, 
 		double &ymin, double &ymax,

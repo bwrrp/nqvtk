@@ -9,6 +9,7 @@
 
 #include "GLBlaat/GLBuffer.h"
 
+#include <algorithm>
 #include <string>
 #include <sstream>
 #include <cassert>
@@ -115,6 +116,18 @@ namespace NQVTK
 		idset->SetData(numLines * 2, ids);
 		AddAttributeSet("sourceId", idset, true);
 		delete [] ids;
+
+		// The bounds are roughly the combined bounds for the two meshes
+		// TODO: bounds change when the mesh is deformed!
+		double bounds1[6];
+		double bounds2[6];
+		obj1->GetBounds(bounds1);
+		obj2->GetBounds(bounds2);
+		for (unsigned int i = 0; i < 3; ++i)
+		{
+			bounds[2 * i] = std::min(bounds1[2 * i], bounds2[2 * i]);
+			bounds[2 * i + 1] = std::max(bounds1[2 * i + 1], bounds2[2 * i + 1]);
+		}
 
 		// Add a combined param set for the weights
 		SetParamSet("pcacorrespondence", new PCACorrespondenceParamSet(

@@ -14,7 +14,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <limits>
 
 namespace NQVTK
 {
@@ -151,32 +150,10 @@ namespace NQVTK
 	void Renderer::DrawCamera()
 	{
 		// Get bounds for all visible renderables
-		// TODO: this could be moved to the scene or the view
-		const double inf = std::numeric_limits<double>::infinity();
-		double bounds[] = {inf, -inf, inf, -inf, inf, -inf};
 		if (view)
 		{
-			unsigned int numRenderables = view->GetNumberOfRenderables();
-			for (unsigned int i = 0; i < numRenderables; ++i)
-			{
-				Renderable *renderable = view->GetRenderable(i);
-				if (view->GetVisibility(i))
-				{
-					double rbounds[6];
-					renderable->GetBounds(rbounds);
-					for (int i = 0; i < 3; ++i)
-					{
-						if (rbounds[i*2] < bounds[i*2]) 
-							bounds[i*2] = rbounds[i*2];
-
-						if (rbounds[i*2+1] > bounds[i*2+1]) 
-							bounds[i*2+1] = rbounds[i*2+1];
-					}
-				}
-			}
+			camera->SetZPlanes(view->GetVisibleBounds());
 		}
-
-		camera->SetZPlanes(bounds);
 
 		// Set up the camera (matrices)
 		camera->Draw();
@@ -187,6 +164,8 @@ namespace NQVTK
 	{
 		// Reset texture manager binding cache
 		if (tm) tm->BeginNewPass();
+		// Refocus camera
+		if (camera && view) camera->focus = view->GetVisibleCenter();
 	}
 
 	// ------------------------------------------------------------------------

@@ -18,7 +18,7 @@ namespace NQVTK
 
 		Camera();
 
-		virtual void SetZPlanes(double *bounds);
+		virtual void SetZPlanes(const double *bounds);
 
 		virtual void FocusOn(const Renderable *obj);
 
