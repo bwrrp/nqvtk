@@ -108,8 +108,9 @@ namespace NQVTK
 		if (it != paramSets.end())
 		{
 			if (it->second != params) delete it->second;
+			if (!params) paramSets.erase(it);
 		}
-		paramSets[name] = params;
+		if (params) paramSets[name] = params;
 	}
 
 	// ------------------------------------------------------------------------
