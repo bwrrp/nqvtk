@@ -8,15 +8,15 @@ namespace NQVTK
 	{
 		// TODO: we may want to create an abstract superclass
 		// (layered raycaster styles have an extra stage)
-		class LayeredRaycaster : public NQVTK::Styles::Raycaster
+		class LayeredRaycaster : public Raycaster
 		{
 		public:
-			typedef NQVTK::Styles::Raycaster Superclass;
+			typedef Raycaster Superclass;
 
 			LayeredRaycaster();
 
 			virtual GLFramebuffer *CreateFBO(int w, int h);
-			
+
 			// Scribe stage peeling pass
 			virtual GLProgram *CreateScribe();
 			// Scribe stage raycasting pass
