@@ -157,6 +157,7 @@ SET( ${ProjectName}_Styles_Classes
 	Raycaster
 	DeformationRaycaster
 	LayeredRaycaster
+	CustomLayeredRaycaster
 )
 
 SET( ${ProjectName}_Interactors_Classes
