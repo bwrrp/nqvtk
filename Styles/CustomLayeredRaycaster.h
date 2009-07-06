@@ -21,8 +21,12 @@ namespace NQVTK
 			void SetRaycasterSource(
 				std::string vertexSource, 
 				std::string fragmentSource);
+			void SetRaycasterSource(
+				std::string fragmentSource);
 			void SetPainterSource(
 				std::string vertexSource, 
+				std::string fragmentSource);
+			void SetPainterSource(
 				std::string fragmentSource);
 
 			virtual GLFramebuffer *CreateFBO(int w, int h);
