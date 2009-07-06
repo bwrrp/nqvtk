@@ -29,11 +29,17 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	bool OverlayRenderer::IsInitialized()
+	{
+		return Superclass::IsInitialized() && overlayRenderer->IsInitialized();
+	}
+
+	// ------------------------------------------------------------------------
 	bool OverlayRenderer::Initialize()
 	{
 		bool ok = Superclass::Initialize();
-		if (ok && baseRenderer) ok = baseRenderer->Initialize();
-		if (ok && overlayRenderer) ok = overlayRenderer->Initialize();
+		if (ok && baseRenderer) ok = baseRenderer->TryInitialize();
+		if (ok && overlayRenderer) ok = overlayRenderer->TryInitialize();
 
 		delete baseFbo;
 		delete overlayFbo;

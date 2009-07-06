@@ -15,8 +15,6 @@ namespace NQVTK
 
 		BrushingRenderer();
 
-		virtual bool Initialize();
-
 		virtual void SetViewport(int x, int y, int w, int h);
 
 		virtual void Draw();
@@ -27,6 +25,8 @@ namespace NQVTK
 		std::queue<NQVTK::Vector3> pointQueue;
 		Vector3 lastPos;
 		double leftover;
+
+		virtual bool Initialize();
 
 	private:
 		// Not implemented

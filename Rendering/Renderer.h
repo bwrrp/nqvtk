@@ -21,7 +21,8 @@ namespace NQVTK
 		Renderer();
 		virtual ~Renderer();
 
-		virtual bool Initialize();
+		bool TryInitialize();
+		virtual bool IsInitialized();
 
 		void Move(int x, int y);
 		void Resize(int w, int h);
@@ -61,6 +62,8 @@ namespace NQVTK
 		int viewportWidth;
 		int viewportHeight;
 
+		bool initialized;
+
 		Camera *camera;
 		View *view;
 
@@ -69,6 +72,8 @@ namespace NQVTK
 		GLTextureManager *tm;
 
 		GLFramebuffer *fboTarget;
+
+		virtual bool Initialize();
 
 		virtual void UpdateLighting();
 

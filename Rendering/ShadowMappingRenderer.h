@@ -16,7 +16,7 @@ namespace NQVTK
 		ShadowMappingRenderer();
 		virtual ~ShadowMappingRenderer();
 
-		virtual bool Initialize();
+		virtual bool IsInitialized();
 
 		virtual void SetViewport(int x, int y, int w, int h);
 
@@ -28,5 +28,7 @@ namespace NQVTK
 		GLFramebuffer *shadowBuffer;
 		NQVTK::Styles::ShadowMap *shadowStyle;
 		NQVTK::LayeredRenderer *shadowRenderer;
+
+		virtual bool Initialize();
 	};
 }

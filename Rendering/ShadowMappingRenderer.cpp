@@ -52,6 +52,12 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	bool ShadowMappingRenderer::IsInitialized()
+	{
+		return Superclass::IsInitialized() && shadowRenderer->IsInitialized();
+	}
+
+	// ------------------------------------------------------------------------
 	bool ShadowMappingRenderer::Initialize()
 	{
 		if (!style) return false;
@@ -64,7 +70,7 @@ namespace NQVTK
 		delete shadowStyle;
 		shadowStyle = new NQVTK::Styles::ShadowMap(style);
 		shadowRenderer->SetStyle(shadowStyle);
-		return shadowRenderer->Initialize();
+		return shadowRenderer->TryInitialize();
 	}
 
 	// ------------------------------------------------------------------------

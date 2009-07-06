@@ -15,8 +15,6 @@ namespace NQVTK
 		LayeredRaycastingRenderer();
 		virtual ~LayeredRaycastingRenderer();
 
-		virtual bool Initialize();
-
 		virtual void SetViewport(int x, int y, int w, int h);
 
 		virtual void DrawScribePass(int layer);
@@ -29,5 +27,7 @@ namespace NQVTK
 
 		// Whether the current style requires layered raycasting
 		bool layeredRaycasting;
+
+		virtual bool Initialize();
 	};
 }

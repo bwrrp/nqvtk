@@ -426,18 +426,11 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	bool LayeredRenderer::SetStyle(RenderStyle *style) 
+	void LayeredRenderer::SetStyle(RenderStyle *style) 
 	{ 
 		this->style = style;
 		// Update style parameters for the current scene
 		if (view) style->SceneChanged(view);
-		// Re-initialize if we're initialized
-		if (query && style) 
-		{
-			bool ok = Initialize();
-			Resize(viewportWidth, viewportHeight);
-			return ok;
-		}
-		return true;
+		initialized = false;
 	}
 }

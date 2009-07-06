@@ -9,12 +9,12 @@ namespace NQVTK
 	class OverlayRenderer : public NestedRenderer
 	{
 	public:
-		typedef Renderer Superclass;
+		typedef NestedRenderer Superclass;
 
 		OverlayRenderer(Renderer *base, Renderer *overlay);
 		virtual ~OverlayRenderer();
 
-		virtual bool Initialize();
+		virtual bool IsInitialized();
 
 		virtual void SetViewport(int x, int y, int w, int h);
 
@@ -34,6 +34,8 @@ namespace NQVTK
 
 		GLFramebuffer *baseFbo;
 		GLFramebuffer *overlayFbo;
+
+		virtual bool Initialize();
 
 	private:
 		// Not implemented

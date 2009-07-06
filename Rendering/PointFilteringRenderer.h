@@ -18,8 +18,6 @@ namespace NQVTK
 		PointFilteringRenderer();
 		virtual ~PointFilteringRenderer();
 
-		virtual bool Initialize();
-
 		virtual void Draw();
 
 		void SetMask(GLTexture *mask);
@@ -30,6 +28,8 @@ namespace NQVTK
 		// TODO: point storage (VTK PolyData?)
 		GLProgram *pointFilter;
 		GLFramebuffer *renderBuffer;
+
+		virtual bool Initialize();
 
 	private:
 		// Not implemented

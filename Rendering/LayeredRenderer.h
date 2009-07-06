@@ -21,8 +21,6 @@ namespace NQVTK
 		LayeredRenderer();
 		virtual ~LayeredRenderer();
 
-		virtual bool Initialize();
-
 		virtual void SetViewport(int x, int y, int w, int h);
 
 		void SwapFramebuffers();
@@ -41,7 +39,7 @@ namespace NQVTK
 
 		virtual void SceneChanged();
 
-		bool SetStyle(RenderStyle *style);
+		void SetStyle(RenderStyle *style);
 
 		int maxLayers;
 		int skipLayers;
@@ -56,6 +54,8 @@ namespace NQVTK
 		GLProgram *scribe;
 		GLProgram *painter;
 		GLOcclusionQuery *query;
+
+		virtual bool Initialize();
 
 	private:
 		// Not implemented

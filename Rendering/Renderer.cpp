@@ -20,8 +20,10 @@ namespace NQVTK
 	{
 		viewportX = 0;
 		viewportY = 0;
-		viewportWidth = 1;
-		viewportHeight = 1;
+		viewportWidth = -1;
+		viewportHeight = -1;
+
+		initialized = false;
 
 		lightOffsetDirection = 270.0;
 		lightRelativeToCamera = true;
@@ -36,27 +38,22 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	bool Renderer::Initialize()
+	bool Renderer::TryInitialize()
 	{
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-
-		// Make sure we have a camera
-		GetCamera();
-
-		if (!tm)
+		initialized = Initialize();
+		// If this is re-initialization, pretend we're resizing as well
+		if (initialized && viewportWidth > 0 && viewportHeight > 0)
 		{
-			tm = GLTextureManager::New();
-			if (!tm)
-			{
-				std::cerr << "Failed to create texture manager! " <<
-					"Check hardware requirements..." << std::endl;
-				return false;
-			}
+			Resize(viewportWidth, viewportHeight);
 		}
-		tm->BeginNewPass();
+		return initialized;
+	}
 
-		return true;
+	// ------------------------------------------------------------------------
+	bool Renderer::IsInitialized()
+	{
+		if (!this) return false;
+		return initialized;
 	}
 
 	// ------------------------------------------------------------------------
@@ -164,6 +161,30 @@ namespace NQVTK
 		if (tm) tm->BeginNewPass();
 		// Refocus camera
 		if (camera && view) camera->focus = view->GetVisibleCenter();
+	}
+
+	// ------------------------------------------------------------------------
+	bool Renderer::Initialize()
+	{
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+
+		// Make sure we have a camera
+		GetCamera();
+
+		if (!tm)
+		{
+			tm = GLTextureManager::New();
+			if (!tm)
+			{
+				std::cerr << "Failed to create texture manager! " <<
+					"Check hardware requirements..." << std::endl;
+				return false;
+			}
+		}
+		tm->BeginNewPass();
+
+		return true;
 	}
 
 	// ------------------------------------------------------------------------

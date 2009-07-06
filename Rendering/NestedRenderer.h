@@ -14,6 +14,8 @@ namespace NQVTK
 
 		Renderer *GetBaseRenderer() { return baseRenderer; }
 
+		virtual bool IsInitialized();
+
 		virtual void SetViewport(int x, int y, int w, int h);
 
 		virtual void Draw() = 0;

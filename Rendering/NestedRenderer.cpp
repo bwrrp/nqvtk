@@ -24,6 +24,13 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	bool NestedRenderer::IsInitialized()
+	{
+		// Check the base renderer as well
+		return Superclass::IsInitialized() && baseRenderer->IsInitialized();
+	}
+
+	// ------------------------------------------------------------------------
 	void NestedRenderer::SetViewport(int x, int y, int w, int h)
 	{
 		Superclass::SetViewport(x, y, w, h);

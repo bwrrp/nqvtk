@@ -28,7 +28,7 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	bool CrossEyedStereoRenderer::Initialize()
 	{
-		bool ok = baseRenderer->Initialize();
+		bool ok = baseRenderer->TryInitialize();
 		delete fboEyeHelper;
 		fboEyeHelper = 0;
 
