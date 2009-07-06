@@ -1,5 +1,3 @@
-#pragma once
-
 #include "IBIS.h"
 
 #include "GLBlaat/GL.h"

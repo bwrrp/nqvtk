@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Renderable.h"
 
 #include "Math/Vector3.h"

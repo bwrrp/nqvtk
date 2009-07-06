@@ -1,5 +1,3 @@
-#pragma once
-
 #include "DepthPeeling.h"
 
 #include "GLBlaat/GL.h"

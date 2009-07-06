@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ArcballCameraInteractor.h"
 
 #include "Rendering/ArcballCamera.h"

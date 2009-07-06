@@ -1,5 +1,3 @@
-#pragma once
-
 #include "GLBlaat/GL.h"
 
 #include "LayeredRenderer.h"

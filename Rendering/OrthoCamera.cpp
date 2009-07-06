@@ -1,5 +1,3 @@
-#pragma once
-
 #include "OrthoCamera.h"
 
 #include "Renderables/Renderable.h"

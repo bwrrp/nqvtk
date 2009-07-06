@@ -1,5 +1,3 @@
-#pragma once
-
 #include "BrushingRenderer.h"
 
 #include "OrthoCamera.h"

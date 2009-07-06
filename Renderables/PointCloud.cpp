@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PointCloud.h"
 #include "VBOMesh.h"
 

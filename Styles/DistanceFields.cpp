@@ -1,5 +1,3 @@
-#pragma once
-
 #include "DistanceFields.h"
 
 #include "GLBlaat/GL.h"

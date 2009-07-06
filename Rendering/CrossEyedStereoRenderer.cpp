@@ -1,5 +1,3 @@
-#pragma once
-
 #include "CrossEyedStereoRenderer.h"
 
 #include "Camera.h"

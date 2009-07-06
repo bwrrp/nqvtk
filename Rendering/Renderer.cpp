@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Renderer.h"
 #include "Camera.h"
 #include "View.h"

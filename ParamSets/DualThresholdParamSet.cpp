@@ -1,5 +1,3 @@
-#pragma once
-
 #include "DualThresholdParamSet.h"
 
 #include "GLBlaat/GLProgram.h"

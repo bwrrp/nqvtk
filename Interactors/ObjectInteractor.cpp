@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ObjectInteractor.h"
 
 #include "Rendering/Scene.h"

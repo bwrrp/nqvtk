@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PCAParamSet.h"
 
 #include "Renderables/VBOMesh.h"

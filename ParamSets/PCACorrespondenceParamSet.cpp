@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PCACorrespondenceParamSet.h"
 
 #include "PCAParamSet.h"

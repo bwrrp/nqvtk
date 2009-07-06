@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Interactor.h"
 
 namespace NQVTK

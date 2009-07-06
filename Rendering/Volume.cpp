@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Volume.h"
 
 #include "GLBlaat/GLTexture3D.h"

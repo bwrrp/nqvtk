@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PolyData.h"
 #include "VBOMesh.h"
 #include "AttributeSet.h"

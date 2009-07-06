@@ -1,5 +1,3 @@
-#pragma once
-
 #include "RenderStyle.h"
 
 #include "Renderables/Renderable.h"

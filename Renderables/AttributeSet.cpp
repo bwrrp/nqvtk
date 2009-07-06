@@ -1,5 +1,3 @@
-#pragma once
-
 #include "AttributeSet.h"
 
 #include "AttributePointers.h"

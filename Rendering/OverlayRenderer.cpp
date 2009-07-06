@@ -1,5 +1,3 @@
-#pragma once
-
 #include "OverlayRenderer.h"
 
 #include "GLBlaat/GLUtility.h"

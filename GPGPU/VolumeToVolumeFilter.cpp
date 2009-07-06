@@ -1,5 +1,3 @@
-#pragma once
-
 #include "VolumeToVolumeFilter.h"
 
 #include "Rendering/Volume.h"

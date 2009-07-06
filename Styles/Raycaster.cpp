@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Raycaster.h"
 
 #include "GLBlaat/GL.h"

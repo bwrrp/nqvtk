@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ShadowMappingRenderer.h"
 
 #include "Camera.h"

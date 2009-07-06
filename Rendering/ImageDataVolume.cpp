@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ImageDataVolume.h"
 
 #include "Math/Vector3.h"

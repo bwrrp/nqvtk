@@ -1,5 +1,3 @@
-#pragma once
-
 #include "VolumeParamSet.h"
 
 #include "Rendering/Volume.h"

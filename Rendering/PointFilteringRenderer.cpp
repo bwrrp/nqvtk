@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PointFilteringRenderer.h"
 
 #include "GLBlaat/GL.h"

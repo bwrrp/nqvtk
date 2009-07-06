@@ -1,5 +1,3 @@
-#pragma once
-
 #include "CameraInteractor.h"
 
 #include "Rendering/Camera.h"

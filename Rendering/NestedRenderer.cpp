@@ -1,5 +1,3 @@
-#pragma once
-
 #include "NestedRenderer.h"
 
 #include "Camera.h"

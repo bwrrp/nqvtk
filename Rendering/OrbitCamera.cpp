@@ -1,5 +1,3 @@
-#pragma once
-
 #include "OrbitCamera.h"
 
 #include "Renderables/Renderable.h"

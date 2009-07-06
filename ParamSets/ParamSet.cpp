@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ParamSet.h"
 
 #include <sstream>

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "DeformationRaycaster.h"
 
 #include "GLBlaat/GL.h"

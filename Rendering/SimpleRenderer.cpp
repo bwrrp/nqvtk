@@ -1,5 +1,3 @@
-#pragma once
-
 #include "SimpleRenderer.h"
 
 #include "Renderables/VBOMesh.h"

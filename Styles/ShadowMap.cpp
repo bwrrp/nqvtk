@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ShadowMap.h"
 
 #include "GLBlaat/GL.h"

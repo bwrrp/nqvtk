@@ -1,5 +1,3 @@
-#pragma once
-
 #include "LayeredRaycastingRenderer.h"
 
 #include "Camera.h"

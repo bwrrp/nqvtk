@@ -1,5 +1,3 @@
-#pragma once
-
 #include "BrushingInteractor.h"
 
 #include "Rendering/BrushingRenderer.h"

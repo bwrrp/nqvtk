@@ -1,5 +1,3 @@
-#pragma once
-
 #include "VBOMesh.h"
 
 #include "AttributeSet.h"

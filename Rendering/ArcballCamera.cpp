@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ArcballCamera.h"
 
 #include "Math/Vector3.h"

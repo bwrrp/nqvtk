@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PCAPointCorrespondenceGlyphs.h"
 #include "VBOMesh.h"
 #include "AttributeSet.h"
