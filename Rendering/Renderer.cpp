@@ -42,7 +42,7 @@ namespace NQVTK
 	{
 		initialized = Initialize();
 		// If this is re-initialization, pretend we're resizing as well
-		if (initialized && viewportWidth > 0 && viewportHeight > 0)
+		if (viewportWidth > 0 && viewportHeight > 0)
 		{
 			Resize(viewportWidth, viewportHeight);
 		}
