@@ -67,7 +67,11 @@ namespace NQVTK
 	{
 		if (enabled == filterEnabled) return;
 
-		if (!filter) return;
+		if (!filter)
+		{
+			filterEnabled = false;
+			return;
+		}
 
 		filterEnabled = enabled;
 
