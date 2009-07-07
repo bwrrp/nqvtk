@@ -31,6 +31,7 @@ namespace NQVTK
 			useFog = true;
 			depthCueRange = 10.0f;
 			pvalueThreshold = 1.0;
+			clipId = -1;
 
 			SetOption("NQVTK_USE_PVALS");
 		}

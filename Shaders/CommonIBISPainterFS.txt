@@ -88,10 +88,12 @@ void main() {
 #endif
 
 	// Clipping: objectId clipId is our clipping object
-	if (getBit(maskAfter, clipId) && !getBit(maskBefore, clipId)) {
-		color.a = 0.0; // Just render the fog for this slab
-	} else if ((getBit(maskAfter, clipId) || getBit(maskBefore, clipId))) {
-		discard; // Nothing to render for this slab
+	if (clipId >= 0) {
+		if (getBit(maskAfter, clipId) && !getBit(maskBefore, clipId)) {
+			color.a = 0.0; // Just render the fog for this slab
+		} else if ((getBit(maskAfter, clipId) || getBit(maskBefore, clipId))) {
+			discard; // Nothing to render for this slab
+		}
 	}
 
 #ifndef NQVTK_GENERATE_SHADOWMAP
