@@ -34,6 +34,7 @@ namespace NQVTK
 			clipId = -1;
 
 			SetOption("NQVTK_USE_PVALS");
+			SetOption("NQVTK_IBIS_COLORED_FOG");
 		}
 
 		// --------------------------------------------------------------------

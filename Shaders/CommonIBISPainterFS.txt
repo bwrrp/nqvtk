@@ -99,7 +99,11 @@ void main() {
 #ifndef NQVTK_GENERATE_SHADOWMAP
 	// Apply fogging
 	if (useFog && CSGFog(maskBefore)) {
+#ifdef NQVTK_IBIS_COLORED_FOG
+		vec3 fogColor = getBit(maskBefore, 0) ? vec3(1.0, 0.5, 0.0) : vec3(0.0, 0.5, 1.0);
+#else
 		vec3 fogColor = vec3(1.0, 0.0, 0.2);
+#endif
 		float depthRange = (farPlane - nearPlane);
 		float front = unpackFloat(infoBefore.zw) * depthRange;
 		float back = unpackFloat(infoAfter.zw) * depthRange;
