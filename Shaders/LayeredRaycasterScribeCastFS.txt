@@ -67,44 +67,10 @@ float determinant(mat3 m) {
 		- m[0][0] * m[1][2] * m[2][1];
 }
 
-float plane(vec3 n, float d, vec3 pos)
-{
-	return dot(pos, n) - d;
-}
-
-float column(vec3 pos)
-{
-	float p1 = plane(vec3(1,0,0), 2, pos);
-	float p2 = plane(vec3(-1,0,0), 2, pos);
-	float p3 = plane(vec3(0,0,1), 2, pos);
-	float p4 = plane(vec3(0,0,-1), 2, pos);
-	return max(max(p1, p2), max(p3, p4));
-}
-
-vec3 twist(vec3 pos)
-{
-	return vec3(
-		pos.x * sin(pos.y) + pos.z * cos(pos.y), 
-		pos.y, 
-		pos.x * -cos(pos.y) + pos.z * sin(pos.y));
-}
-
-float distance(vec3 pos)
-{
-	float c1 = column(twist(pos));
-	float c2 = column(twist(pos + vec3(5.0, 0.0, 5.0)));
-	float c3 = column(twist(pos + vec3(-5.0, 0.0, 5.0)));
-	float c4 = column(twist(pos + vec3(-5.0, 0.0, -5.0)));
-	float c5 = column(twist(pos + vec3(5.0, 0.0, -5.0)));
-	return min(c1, min(min(c2, c3), min(c4, c5)));
-}
-
 float getValue(int v, vec3 pos) {
 	//vec4 tpos = gl_TextureMatrixInverse[v] * vec4(pos, 1.0);
 	//vec3 p = ((tpos.xyz / tpos.w) - volumeOrigin[v]) / volumeSize[v];
 	//return texture3D(volume[v], p).x;
-	return distance(pos);
-	/*
 #ifdef NQVTK_RAYCASTER_CENTRALDIFFERENCES
 	vec3 val = vec3(0.0);
 #else
@@ -117,7 +83,6 @@ float getValue(int v, vec3 pos) {
 	else
 		g = detJ - 1.0;
 	return g + 0.5;
-	*/
 }
 
 // Compute gradient of the volume
