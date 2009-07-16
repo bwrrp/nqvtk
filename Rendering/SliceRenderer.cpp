@@ -28,6 +28,7 @@ namespace NQVTK
 	{
 		if (shader)
 		{
+			shader->SetUniform1i("objectId", objectId);
 			if (shaderAttribs.size() > 0)
 			{
 				NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
@@ -63,6 +64,7 @@ namespace NQVTK
 
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glDisable(GL_LIGHTING);
+		glDepthMask(GL_FALSE);
 
 		// Use alpha blending for now (with premultiplied alpha)
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -166,11 +168,14 @@ namespace NQVTK
 			"uniform vec3 volumeSize;"
 			"uniform float volumeDataShift;"
 			"uniform float volumeDataScale;"
+			"uniform int objectId;"
 			"void main() {"
 			"   vec3 tc = (gl_TexCoord[0].xyz - volumeOrigin) / volumeSize;"
+			"   if (objectId == 1) tc.z = 1.0-tc.z;"
 			"   vec3 tex = vec3(volumeDataShift) + volumeDataScale * "
 			"      texture3D(volume, tc).xyz;"
-			"   gl_FragColor = vec4(abs(tex), 1.0);"
+			"   vec4 color = vec4(abs(tex), length(tex));"
+			"   gl_FragColor = vec4(color.rgb * color.a, color.a);"
 			"}");
 		if (ok) ok = shader->Link();
 		if (ok) SetShader(shader);
