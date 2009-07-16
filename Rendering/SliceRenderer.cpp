@@ -35,6 +35,8 @@ namespace NQVTK
 				if (mesh) mesh->SetupAttributes(shaderAttribs);
 			}
 			renderable->ApplyParamSets(shader, tm);
+			// Allow tm to bind updated textures
+			tm->Bind();
 		}
 	}
 
@@ -174,6 +176,7 @@ namespace NQVTK
 			"   if (objectId == 1) tc.z = 1.0-tc.z;"
 			"   vec3 tex = vec3(volumeDataShift) + volumeDataScale * "
 			"      texture3D(volume, tc).xyz;"
+			"   tex *= 10.0;"
 			"   vec4 color = vec4(abs(tex), length(tex));"
 			"   gl_FragColor = vec4(color.rgb * color.a, color.a);"
 			"}");
