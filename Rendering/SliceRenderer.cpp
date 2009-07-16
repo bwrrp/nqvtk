@@ -2,15 +2,18 @@
 
 #include "GLBlaat/GL.h"
 #include "GLBlaat/GLFramebuffer.h"
+#include "GLBlaat/GLTextureManager.h"
 
 #include "View.h"
 
 #include "Renderables/Renderable.h"
+#include "Renderables/VBOMesh.h"
 
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
 	SliceRenderer::SliceRenderer()
+		: shader(0)
 	{
 	}
 
@@ -23,7 +26,6 @@ namespace NQVTK
 	void SliceRenderer::PrepareForRenderable(int objectId, 
 		Renderable *renderable)
 	{
-		/*
 		if (shader)
 		{
 			if (shaderAttribs.size() > 0)
@@ -31,9 +33,8 @@ namespace NQVTK
 				NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
 				if (mesh) mesh->SetupAttributes(shaderAttribs);
 			}
-			renderable->ApplyParamSets(shader);
+			renderable->ApplyParamSets(shader, tm);
 		}
-		*/
 	}
 
 	// ------------------------------------------------------------------------
@@ -46,18 +47,39 @@ namespace NQVTK
 		}
 		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
+		// TODO: per-object textures are not initialized before SetupProgram
+		// This doesn't matter in layered rendering because the scribe doesn't 
+		// use them, but will add them to the tm. However, here we don't have 
+		// such an extra pass...
+		if (shader) shader->Start();
+		for (unsigned int objectId = 0; 
+			objectId < view->GetNumberOfRenderables(); 
+			++objectId)
+		{
+			Renderable *renderable = view->GetRenderable(objectId);
+			PrepareForRenderable(objectId, renderable);
+		}
+		if (shader) shader->Stop();
+
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glDisable(GL_LIGHTING);
-		// TODO: set up blending (and figure out how we want to do this)
 
-		// TODO: set up shader, textures...
+		// Use alpha blending for now (with premultiplied alpha)
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
 
 		Clear();
 
 		if (view)
 		{
+			if (shader)
+			{
+				shader->Start();
+				tm->SetupProgram(shader);
+				tm->Bind();
+			}
+
 			// Draw a single slice for each renderable
-			glBegin(GL_QUADS);
 			for (unsigned int objectId = 0; 
 				objectId < view->GetNumberOfRenderables(); 
 				++objectId)
@@ -77,7 +99,8 @@ namespace NQVTK
 						renderable->color.z, 
 						renderable->opacity);
 
-					// Draw the full screen quad for this plane
+					// Draw the full screen quad for our slice plane
+					glBegin(GL_QUADS);
 					glTexCoord3dv(origin.V);
 					glVertex3d(-1.0, -1.0, 0.0);
 					glTexCoord3dv((origin + right).V);
@@ -86,9 +109,15 @@ namespace NQVTK
 					glVertex3d(1.0, 1.0, 0.0);
 					glTexCoord3dv((origin + up).V);
 					glVertex3d(-1.0, 1.0, 0.0);
+					glEnd();
 				}
 			}
-			glEnd();
+
+			if (shader)
+			{
+				tm->Unbind();
+				shader->Stop();
+			}
 		}
 
 		glPopAttrib();
@@ -100,11 +129,52 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
-	void SliceRenderer::SetPlane(const Vector3 &origin, const Vector3 &up, 
-		const Vector3 &right)
+	void SliceRenderer::SetPlane(const Vector3 &origin, 
+		const Vector3 &right, const Vector3 &up)
 	{
 		this->origin = origin;
-		this->up = up;
 		this->right = right;
+		this->up = up;
+	}
+
+	// ------------------------------------------------------------------------
+	GLProgram *SliceRenderer::SetShader(GLProgram *shader)
+	{
+		GLProgram *oldshader = this->shader;
+		this->shader = shader;
+		shaderAttribs.clear();
+		if (shader) shaderAttribs = shader->GetActiveAttributes();
+		if (shader == oldshader) return 0;
+		return oldshader;
+	}
+
+	// ------------------------------------------------------------------------
+	bool SliceRenderer::CreateDefaultShader()
+	{
+		GLProgram *shader = GLProgram::New();
+		if (!shader) return false;
+		bool ok = true;
+		if (ok) ok = shader->AddVertexShader(
+			"void main() {"
+			"   gl_TexCoord[0] = gl_MultiTexCoord0;"
+			"   gl_Position = gl_Vertex;"
+			"}");
+		// TODO: we need the actual object transform here
+		if (ok) ok = shader->AddFragmentShader(
+			"uniform sampler3D volume;"
+			"uniform vec3 volumeOrigin;"
+			"uniform vec3 volumeSize;"
+			"uniform float volumeDataShift;"
+			"uniform float volumeDataScale;"
+			"void main() {"
+			"   vec3 tc = (gl_TexCoord[0].xyz - volumeOrigin) / volumeSize;"
+			"   vec3 tex = vec3(volumeDataShift) + volumeDataScale * "
+			"      texture3D(volume, tc).xyz;"
+			"   gl_FragColor = vec4(abs(tex), 1.0);"
+			"}");
+		if (ok) ok = shader->Link();
+		if (ok) SetShader(shader);
+		if (!ok) delete shader;
+		return ok;
 	}
 }
