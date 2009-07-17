@@ -83,6 +83,30 @@ namespace NQVTK
 				tm->Bind();
 			}
 
+			// Compute origin and right/up vectors which preserve aspect ratio
+			double viewportAspect = static_cast<double>(viewportWidth) / 
+				static_cast<double>(viewportHeight);
+			double sliceAspect = right.length() / up.length();
+			Vector3 neworigin;
+			Vector3 newright;
+			Vector3 newup;
+			if (viewportAspect > sliceAspect)
+			{
+				// Add margin left and right
+				double margin = viewportAspect / sliceAspect - 1.0;
+				neworigin = origin - 0.5 * margin * right;
+				newright = right + margin * right;
+				newup = up;
+			}
+			else
+			{
+				// Add margin above and below
+				double margin = sliceAspect / viewportAspect - 1.0;
+				neworigin = origin - 0.5 * margin * up;
+				newright = right;
+				newup = up + margin * up;
+			}
+
 			// Draw a single slice for each renderable
 			for (unsigned int objectId = 0; 
 				objectId < view->GetNumberOfRenderables(); 
@@ -105,13 +129,13 @@ namespace NQVTK
 
 					// Draw the full screen quad for our slice plane
 					glBegin(GL_QUADS);
-					glTexCoord3dv(origin.V);
+					glTexCoord3dv(neworigin.V);
 					glVertex3d(-1.0, -1.0, 0.0);
-					glTexCoord3dv((origin + right).V);
+					glTexCoord3dv((neworigin + newright).V);
 					glVertex3d(1.0, -1.0, 0.0);
-					glTexCoord3dv((origin + right + up).V);
+					glTexCoord3dv((neworigin + newright + newup).V);
 					glVertex3d(1.0, 1.0, 0.0);
-					glTexCoord3dv((origin + up).V);
+					glTexCoord3dv((neworigin + newup).V);
 					glVertex3d(-1.0, 1.0, 0.0);
 					glEnd();
 				}
