@@ -173,7 +173,6 @@ namespace NQVTK
 			"uniform int objectId;"
 			"void main() {"
 			"   vec3 tc = (gl_TexCoord[0].xyz - volumeOrigin) / volumeSize;"
-			"   if (objectId == 1) tc.z = 1.0-tc.z;"
 			"   vec3 tex = vec3(volumeDataShift) + volumeDataScale * "
 			"      texture3D(volume, tc).xyz;"
 			"   tex *= 10.0;"

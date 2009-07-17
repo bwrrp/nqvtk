@@ -30,6 +30,9 @@ namespace NQVTK
 		void SetPlane(const Vector3 &origin, 
 			const Vector3 &right, 
 			const Vector3 &up);
+		Vector3 GetPlaneOrigin() { return origin; }
+		Vector3 GetPlaneRight() { return right; }
+		Vector3 GetPlaneUp() { return up; }
 
 	protected:
 		GLProgram *shader;

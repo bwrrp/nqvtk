@@ -169,6 +169,7 @@ SET( ${ProjectName}_Interactors_Classes
 	ObjectInteractor
 	MainViewInteractor
 	BrushingInteractor
+	SliceViewInteractor
 )
 
 SET( ${ProjectName}_GPGPU_Classes
