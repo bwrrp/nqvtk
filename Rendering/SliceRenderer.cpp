@@ -26,18 +26,16 @@ namespace NQVTK
 	void SliceRenderer::PrepareForRenderable(int objectId, 
 		Renderable *renderable)
 	{
-		if (shader)
+		if (shader) shader->SetUniform1i("objectId", objectId);
+		if (shaderAttribs.size() > 0)
 		{
-			shader->SetUniform1i("objectId", objectId);
-			if (shaderAttribs.size() > 0)
-			{
-				NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
-				if (mesh) mesh->SetupAttributes(shaderAttribs);
-			}
-			renderable->ApplyParamSets(shader, tm);
-			// Allow tm to bind updated textures
-			tm->Bind();
+			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
+			if (mesh) mesh->SetupAttributes(shaderAttribs);
 		}
+		// If shader is null, this will still setup textures
+		// (remember to enable them during rendering...)
+		renderable->ApplyParamSets(shader, tm);
+		tm->Bind();
 	}
 
 	// ------------------------------------------------------------------------
@@ -199,8 +197,8 @@ namespace NQVTK
 			"   vec3 tc = (gl_TexCoord[0].xyz - volumeOrigin) / volumeSize;"
 			"   vec3 tex = vec3(volumeDataShift) + volumeDataScale * "
 			"      texture3D(volume, tc).xyz;"
-			"   tex *= 10.0;"
-			"   vec4 color = vec4(abs(tex), length(tex));"
+			//"   tex *= 10.0;"
+			"   vec4 color = vec4(tex + vec3(0.5), length(tex));"
 			"   gl_FragColor = vec4(color.rgb * color.a, color.a);"
 			"}");
 		if (ok) ok = shader->Link();

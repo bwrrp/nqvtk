@@ -49,6 +49,7 @@ namespace NQVTK
 	void SimpleRenderer::PrepareForRenderable(int objectId, 
 		Renderable *renderable)
 	{
+		if (shader) shader->SetUniform1i("objectId", objectId);
 		if (shaderAttribs.size() > 0)
 		{
 			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
