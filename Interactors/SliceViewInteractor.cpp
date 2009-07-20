@@ -11,6 +11,14 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
+	bool PointInBoundingBox(const Vector3 &point, const double *bounds)
+	{
+		return point.x >= bounds[0] && point.x <= bounds[1] &&
+			point.y >= bounds[2] && point.y <= bounds[3] &&
+			point.z >= bounds[4] && point.z <= bounds[5];
+	}
+
+	// ------------------------------------------------------------------------
 	SliceViewInteractor::SliceViewInteractor(SliceRenderer *renderer)
 		: renderer(renderer)
 	{
@@ -36,17 +44,18 @@ namespace NQVTK
 		if (event.buttons & MouseEvent::LeftButton)
 		{
 			// Move slice plane perpendicular to itself
-			Vector3 axis = right.cross(up).normalized();
+			Vector3 sliceNormal = right.cross(up).normalized();
 
 			// Figure out the extent of the data along axis
-			Vector3 diagonal(
-				bounds[1] - bounds[0], 
-				bounds[3] - bounds[2], 
-				bounds[5] - bounds[4]);
-			double extent = diagonal.dot(axis);
+			Vector3 corner(
+				sliceNormal.x > 0 ? bounds[1] : bounds[0], 
+				sliceNormal.y > 0 ? bounds[3] : bounds[2], 
+				sliceNormal.z > 0 ? bounds[5] : bounds[4]);
+			Vector3 halfDiagonal = corner - center;
+			double extent = halfDiagonal.dot(sliceNormal);
 
 			// Figure out the current plane position along this axis
-			double planeoffset = (origin - center).dot(axis);
+			double planeOffset = (origin - center).dot(sliceNormal);
 
 			// Mouse movement moves the position along the axis
 			double scale = static_cast<double>(
@@ -54,15 +63,15 @@ namespace NQVTK
 			double delta = extent * (lastY - event.y) / scale;
 
 			// Keep the plane intersecting the bounding box
-			if (planeoffset + delta > 0.5 * extent)
+			if (planeOffset + delta > extent)
 			{
-				delta = 0.5 * extent - planeoffset;
+				delta = extent - planeOffset;
 			}
-			if (planeoffset + delta < -0.5 * extent)
+			else if (planeOffset + delta < -extent)
 			{
-				delta = -0.5 * extent - planeoffset;
+				delta = -extent - planeOffset;
 			}
-			Vector3 offset = axis * delta;
+			Vector3 offset = sliceNormal * delta;
 
 			// Move plane origin
 			renderer->SetPlane(origin + offset, right, up);
@@ -102,19 +111,44 @@ namespace NQVTK
 
 			Vector3 offsetX = deltaX * extentX * right.normalized();
 			Vector3 offsetY = deltaY * extentY * up.normalized();
+			Vector3 offset = offsetX + offsetY;
 
-			// Keep the slice center within the bounding box
-			// TODO: this should only pan the slice
-			// TODO: the same check could be applied when changing slices
-			Vector3 sliceCenter = origin + offsetX + offsetY + 
-				0.5 * right + 0.5 * up;
-			sliceCenter.x = std::max(bounds[0], 
-				std::min(bounds[1], sliceCenter.x));
-			sliceCenter.y = std::max(bounds[2], 
-				std::min(bounds[3], sliceCenter.y));
-			sliceCenter.z = std::max(bounds[4], 
-				std::min(bounds[5], sliceCenter.z));
-			Vector3 neworigin = sliceCenter - 0.5 * right - 0.5 * up;
+			// We try to keep the slice center within the bounding box
+			Vector3 sliceCenter = origin + 0.5 * right + 0.5 * up;
+			Vector3 sliceNormal = right.cross(up).normalized();
+
+			if (PointInBoundingBox(sliceCenter, bounds))
+			{
+				// Clip movement to bounding box
+				// TODO: sometimes clipped positions are still outside, why?
+				// (accuracy problem?)
+				Vector3 newSliceCenter = sliceCenter + offset;
+				newSliceCenter.x = std::max(bounds[0], 
+					std::min(bounds[1], newSliceCenter.x));
+				newSliceCenter.y = std::max(bounds[2], 
+					std::min(bounds[3], newSliceCenter.y));
+				newSliceCenter.z = std::max(bounds[4], 
+					std::min(bounds[5], newSliceCenter.z));
+				offset = newSliceCenter - sliceCenter;
+				// Restrict movement to slice plane
+				offset = offset - sliceNormal.dot(offset) * sliceNormal;
+			}
+			else
+			{
+				// Only allow movement towards the projected scene center
+				Vector3 toCenter = center - sliceCenter;
+				Vector3 toProjectedCenter = (toCenter - 
+					sliceNormal.dot(toCenter) * sliceNormal).normalized();
+				double dot = toProjectedCenter.dot(offset);
+				if (dot < 0)
+				{
+					// Restrict by removing the in-slice radial component
+					Vector3 radial = toProjectedCenter * dot;
+					offset = offset - radial;
+				}
+			}
+
+			Vector3 neworigin = origin + offset;
 
 			renderer->SetPlane(neworigin, right, up);
 
