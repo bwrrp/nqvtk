@@ -135,16 +135,28 @@ namespace NQVTK
 			}
 			else
 			{
-				// Only allow movement towards the projected scene center
-				Vector3 toCenter = center - sliceCenter;
-				Vector3 toProjectedCenter = (toCenter - 
-					sliceNormal.dot(toCenter) * sliceNormal).normalized();
-				double dot = toProjectedCenter.dot(offset);
-				if (dot < 0)
+				// Only allow movement towards the bounding box
+				Vector3 gradient;
+				Vector3 newSliceCenter = sliceCenter + offset;
+				for (int i = 0; i < 3; ++i)
 				{
-					// Restrict by removing the in-slice radial component
-					Vector3 radial = toProjectedCenter * dot;
-					offset = offset - radial;
+					if (newSliceCenter.V[i] < bounds[2*i])
+					{
+						gradient.V[i] = newSliceCenter.V[i] - bounds[2*i];
+					}
+					else if (newSliceCenter.V[i] > bounds[2*i+1])
+					{
+						gradient.V[i] = newSliceCenter.V[i] - bounds[2*i+1];
+					}
+				}
+				// Only consider the in-slice part of this vector
+				gradient = (gradient - 
+					sliceNormal.dot(gradient) * sliceNormal).normalized();
+				double dot = gradient.dot(offset);
+				if (dot > 0)
+				{
+					// Remove the component moving away from the bounding box
+					offset = offset - dot * gradient;
 				}
 			}
 
