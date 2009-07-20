@@ -195,10 +195,9 @@ namespace NQVTK
 			"uniform int objectId;"
 			"void main() {"
 			"   vec3 tc = (gl_TexCoord[0].xyz - volumeOrigin) / volumeSize;"
-			"   vec3 tex = vec3(volumeDataShift) + volumeDataScale * "
+			"   vec3 tex = /*vec3(volumeDataShift) + volumeDataScale * */"
 			"      texture3D(volume, tc).xyz;"
-			//"   tex *= 10.0;"
-			"   vec4 color = vec4(tex + vec3(0.5), length(tex));"
+			"   vec4 color = vec4(tex, length(tex));"
 			"   gl_FragColor = vec4(color.rgb * color.a, color.a);"
 			"}");
 		if (ok) ok = shader->Link();
