@@ -142,6 +142,14 @@ namespace NQVTK
 
 			glPopAttrib();
 
+			// Use linear interpolation for the new volume
+			output->BindToCurrent();
+			glTexParameterf(output->GetTextureTarget(), 
+				GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameterf(output->GetTextureTarget(), 
+				GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			output->UnbindCurrent();
+
 			return output;
 		}
 
@@ -169,7 +177,11 @@ namespace NQVTK
 		{
 			// Make sure the input uses nearest neighbor filtering
 			// TODO: use hw linear interpolation for faster convolution
-			GLUtility::SetDefaultColorTextureParameters(input);
+			input->BindToCurrent();
+			glTexParameterf(input->GetTextureTarget(), 
+				GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameterf(input->GetTextureTarget(), 
+				GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			input->UnbindCurrent();
 
 			// Set the input
@@ -252,6 +264,14 @@ namespace NQVTK
 
 			// Deleting the fbo will unbind it
 			delete fbo;
+
+			// Restore linear interpolation for the input volume
+			input->BindToCurrent();
+			glTexParameterf(input->GetTextureTarget(), 
+				GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameterf(input->GetTextureTarget(), 
+				GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			input->UnbindCurrent();
 		}
 	}
 }
