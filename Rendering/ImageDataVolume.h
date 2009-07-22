@@ -11,7 +11,14 @@ namespace NQVTK
 	public:
 		typedef Volume Superclass;
 
-		static ImageDataVolume *New(vtkImageData *data);
+		enum VolumeDataType
+		{
+			UnsignedChar, 
+			Float
+		};
+
+		static ImageDataVolume *New(vtkImageData *data, 
+			VolumeDataType type = UnsignedChar);
 
 	protected:
 		ImageDataVolume(int width, int height, int depth, 

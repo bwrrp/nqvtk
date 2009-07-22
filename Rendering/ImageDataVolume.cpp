@@ -1,3 +1,5 @@
+#include "GLBlaat/GL.h"
+
 #include "ImageDataVolume.h"
 
 #include "Math/Vector3.h"
@@ -14,7 +16,8 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	ImageDataVolume *ImageDataVolume::New(vtkImageData *data)
+	ImageDataVolume *ImageDataVolume::New(vtkImageData *data, 
+		VolumeDataType type)
 	{
 		if (!data) return 0;
 
@@ -48,8 +51,20 @@ namespace NQVTK
 			vtkSmartPointer<vtkImageShiftScale>::New();
 		convert->SetInput(data);
 		convert->SetShift(-shift);
-		convert->SetScale(255.0 / scale);
-		convert->SetOutputScalarTypeToUnsignedChar();
+		switch (type)
+		{
+		case UnsignedChar:
+			convert->SetScale(255.0 / scale);
+			convert->SetOutputScalarTypeToUnsignedChar();
+			break;
+		case Float:
+			convert->SetScale(1.0 / scale);
+			convert->SetOutputScalarTypeToFloat();
+			break;
+		default:
+			std::cerr << "Unknown data type: " << type << std::endl;
+			return 0;
+		}
 		convert->ClampOverflowOn();
 		convert->Update();
 		vtkImageData *vol = convert->GetOutput();
@@ -62,13 +77,13 @@ namespace NQVTK
 			vtkDataArray *s = vol->GetPointData()->GetScalars();
 			s->GetRange(compRange, i);
 			std::cout << "Component " << i << 
-				" range after conversion: " << compRange[0] / 255.0 << 
-				".." << compRange[1] / 255.0 << std::endl;
+				" range after conversion: " << compRange[0] << 
+				".." << compRange[1] << std::endl;
 			range[0] = std::min(range[0], compRange[0]);
 			range[1] = std::max(range[1], compRange[1]);
 		}
 		std::cout << "Combined range after conversion: " << 
-			range[0] / 255.0 << ".." << range[1] / 255.0 << std::endl;
+			range[0] << ".." << range[1] << std::endl;
 
 		double bounds[6];
 		data->GetBounds(bounds);
@@ -93,38 +108,63 @@ namespace NQVTK
 		// TODO: check for NPOTS extension if needed
 
 		// Determine GL formats to use
-		int format = GL_NONE;
-
-		switch (numComps)
+		int internalformat = GL_NONE;
+		int dataformat = GL_NONE;
+		int datatype = GL_NONE;
+		if (numComps >  4 || numComps < 1)
 		{
-		case 1:
-			format = GL_LUMINANCE;
-			break;
-		case 2:
-			format = GL_LUMINANCE_ALPHA;
-			break;
-		case 3:
-			format = GL_RGB;
-			break;
-		case 4:
-			format = GL_RGBA;
-			break;
-		default:
-			std::cerr << "Volume has unsupported number of components!" << std::endl;
+			std::cerr << "Volume has unsupported number of components!" << 
+				std::endl;
 			return 0;
-		};
+		}
+		else
+		{
+			switch (type)
+			{
+			case UnsignedChar:
+				{
+				int formats[] = {
+					GL_LUMINANCE, 
+					GL_LUMINANCE_ALPHA, 
+					GL_RGB, 
+					GL_RGBA};
+				internalformat = formats[numComps - 1];
+				dataformat = internalformat;
+				datatype = GL_UNSIGNED_BYTE;
+				}
+				break;
+			case Float:
+				{
+					// TODO: check for the relevant extensions...
+					int internalformats[] = {
+						GL_LUMINANCE16F_ARB, 
+						GL_LUMINANCE_ALPHA16F_ARB, 
+						GL_RGB16F, 
+						GL_RGBA16F};
+					internalformat = internalformats[numComps - 1];
+					int dataformats[] = {
+						GL_LUMINANCE, 
+						GL_LUMINANCE_ALPHA, 
+						GL_RGB, 
+						GL_RGBA};
+					dataformat = dataformats[numComps - 1];
+					datatype = GL_FLOAT;
+				}
+				break;
+			default:
+				std::cerr << "Unknown GL data type: " << type << std::endl;
+				return 0;
+			}
+		}
 
 		// Finally, create the texture
-		unsigned char *dataPointer = 
-			static_cast<unsigned char*>(vol->GetScalarPointer());
 		ImageDataVolume *tex = new ImageDataVolume(
-			dim[0], dim[1], dim[2], format);
+			dim[0], dim[1], dim[2], internalformat);
 		tex->dataShift = shift;
 		tex->dataScale = scale;
 		tex->origin = origin;
 		tex->originalSize = size;
-		if (!tex->Allocate(format, 
-			GL_UNSIGNED_BYTE, dataPointer)) 
+		if (!tex->Allocate(dataformat, datatype, vol->GetScalarPointer())) 
 		{
 			delete tex;
 			return 0;
