@@ -174,6 +174,7 @@ SET( ${ProjectName}_Interactors_Classes
 
 SET( ${ProjectName}_GPGPU_Classes
 	VolumeToVolumeFilter
+	VolumeGaussianFilter
 )
 
 # --------------------------------------------------

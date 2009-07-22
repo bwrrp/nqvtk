@@ -2,7 +2,7 @@
 
 #include "Rendering/Volume.h"
 
-#include "GPGPU/VolumeToVolumeFilter.h"
+#include "GPGPU/VolumeGaussianFilter.h"
 
 #include <cassert>
 #include <iostream>
@@ -94,7 +94,9 @@ namespace NQVTK
 	{
 		if (filterEnabled)
 		{
-			filter->scale = scale;
+			NQVTK::GPGPU::VolumeGaussianFilter *scalefilter = 
+				dynamic_cast<NQVTK::GPGPU::VolumeGaussianFilter*>(filter);
+			if (scalefilter) scalefilter->scale = scale;
 			volume = filter->Execute(volume);
 		}
 	}
