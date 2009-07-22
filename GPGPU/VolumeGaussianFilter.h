@@ -25,7 +25,7 @@ namespace NQVTK
 			Volume *helperZXY;
 
 			virtual GLProgram *CreateProgram();
-			void ExecutePass(Volume *input, Volume *output);
+			virtual void SetupProgramParameters(GLProgram *program);
 		};
 	}
 }
