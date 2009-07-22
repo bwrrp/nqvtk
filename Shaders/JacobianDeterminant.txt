@@ -1,0 +1,43 @@
+#ifdef GL_EXT_gpu_shader4
+#extension GL_EXT_gpu_shader4 : enable
+#endif
+
+uniform sampler3D volume;
+uniform vec3 volumeDims;
+uniform vec3 volumeSpacing;
+uniform float volumeDataShift;
+uniform float volumeDataScale;
+uniform int slice;
+
+// Parameters
+uniform float scale;
+
+vec4 getSample(vec3 pos)
+{
+	// Compute the position in the input volume texture
+	vec3 p = pos / volumeDims;
+	return vec4(volumeDataShift) + volumeDataScale * texture3D(volume, p);
+}
+
+// Main shader function
+void main()
+{
+	vec3 pos = vec3(gl_FragCoord.xy, float(slice) + 0.5);
+	
+	// TODO: implement jacobian determinant computation for four slices
+	// TODO: figure out how to deal with output shift/scale
+	// TODO: compute growth measure instead?
+	
+	// Do convolution along z (in the output volume, x in the input)
+	vec4 result[4];
+	for (int i = 0; i < 4; ++i)
+	{
+		result[i] = getSample(vec3(pos.xy, pos.z + float(i)));
+	}
+	
+	// Write results
+	for (int i = 0; i < 4; ++i)
+	{
+		gl_FragData[i] = (result[i] - vec4(volumeDataShift)) / volumeDataScale;
+	}
+}

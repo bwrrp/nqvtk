@@ -175,6 +175,7 @@ SET( ${ProjectName}_Interactors_Classes
 SET( ${ProjectName}_GPGPU_Classes
 	VolumeToVolumeFilter
 	VolumeGaussianFilter
+	VolumeJacobianDeterminant
 )
 
 # --------------------------------------------------
@@ -211,6 +212,7 @@ SET( ${ProjectName}_Shaders_Text
 	
 	# GPGPU
 	ConvolutionFilter.txt
+	JacobianDeterminant.txt
 )
 
 # --------------------------------------------------
