@@ -62,15 +62,16 @@ namespace NQVTK
 		}
 		if (shader) shader->Stop();
 
+		Clear();
+
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glDisable(GL_LIGHTING);
 		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
 
 		// Use alpha blending for now (with premultiplied alpha)
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
-
-		Clear();
 
 		if (view)
 		{
