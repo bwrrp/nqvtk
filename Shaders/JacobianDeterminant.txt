@@ -19,6 +19,29 @@ vec4 getSample(vec3 pos)
 	return vec4(volumeDataShift) + volumeDataScale * texture3D(volume, p);
 }
 
+// Linear Jacobian
+mat3 jacobian(vec3 pos) {
+	vec3 dx = (getSample(pos + vec3(1.0, 0.0, 0.0)).xyz - 
+		getSample(pos - vec3(1.0, 0.0, 0.0)).xyz) / volumeSpacing.x;
+	vec3 dy = (getSample(pos + vec3(0.0, 1.0, 0.0)).xyz - 
+		getSample(pos - vec3(0.0, 1.0, 0.0)).xyz) / volumeSpacing.y;
+	vec3 dz = (getSample(pos + vec3(0.0, 0.0, 1.0)).xyz - 
+		getSample(pos - vec3(0.0, 0.0, 1.0)).xyz) / volumeSpacing.z;
+	
+	// Add identity (because we should have used pos + vec instead of vec)
+	return mat3(dx, dy, dz) + mat3(1.0);
+}
+
+// Compute determinant of matrix
+float determinant(mat3 m) {
+	return m[0][0] * m[1][1] * m[2][2] 
+		+ m[0][1] * m[1][2] * m[2][0] 
+		+ m[0][2] * m[1][0] * m[2][1] 
+		- m[0][2] * m[1][1] * m[2][0] 
+		- m[0][1] * m[1][0] * m[2][2] 
+		- m[0][0] * m[1][2] * m[2][1];
+}
+
 // Main shader function
 void main()
 {
@@ -28,16 +51,20 @@ void main()
 	// TODO: figure out how to deal with output shift/scale
 	// TODO: compute growth measure instead?
 	
-	// Do convolution along z (in the output volume, x in the input)
-	vec4 result[4];
+	// Compute the jacobians
 	for (int i = 0; i < 4; ++i)
 	{
-		result[i] = getSample(vec3(pos.xy, pos.z + float(i)));
-	}
-	
-	// Write results
-	for (int i = 0; i < 4; ++i)
-	{
-		gl_FragData[i] = (result[i] - vec4(volumeDataShift)) / volumeDataScale;
+		mat3 jacobian = jacobian(vec3(pos.xy, pos.z + float(i)));
+		float detJ = determinant(jacobian);
+		
+		// Compute growth measure
+		float g = 0.0;
+		if (detJ > 1.0) 
+			g = 1.0 - (1.0 / detJ);
+		else
+			g = detJ - 1.0;
+		//g = g + 0.5;
+		
+		gl_FragData[i] = (vec4(g) - vec4(volumeDataShift)) / volumeDataScale;
 	}
 }
