@@ -19,6 +19,8 @@ namespace NQVTK
 			virtual Volume *Execute(Volume *outVol = 0);
 
 			float scale;
+			float outDataShift;
+			float outDataScale;
 
 		protected:
 			virtual GLProgram *CreateProgram();

@@ -16,7 +16,7 @@ namespace NQVTK
 	{
 		// --------------------------------------------------------------------
 		VolumeJacobianDeterminant::VolumeJacobianDeterminant()
-			: scale(1.0)
+			: scale(1.0), outDataShift(-5.0), outDataScale(10.0)
 		{
 		}
 
@@ -71,8 +71,8 @@ namespace NQVTK
 			}
 
 			// Copy metadata from input
-			output->SetDataScale(input->GetDataScale());
-			output->SetDataShift(input->GetDataShift());
+			output->SetDataScale(outDataScale);
+			output->SetDataShift(outDataShift);
 			output->SetOrigin(input->GetOrigin());
 			output->SetOriginalSize(input->GetOriginalSize());
 
@@ -121,6 +121,8 @@ namespace NQVTK
 			GLProgram *program)
 		{
 			program->SetUniform1f("scale", scale);
+			program->SetUniform1f("outDataShift", outDataShift);
+			program->SetUniform1f("outDataScale", outDataScale);
 		}
 	}
 }

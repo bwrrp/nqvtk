@@ -11,6 +11,8 @@ uniform int slice;
 
 // Parameters
 uniform float scale;
+uniform float outDataShift;
+uniform float outDataScale;
 
 vec4 getSample(vec3 pos)
 {
@@ -63,8 +65,7 @@ void main()
 			g = 1.0 - (1.0 / detJ);
 		else
 			g = detJ - 1.0;
-		//g = g + 0.5;
 		
-		gl_FragData[i] = (vec4(g) - vec4(volumeDataShift)) / volumeDataScale;
+		gl_FragData[i] = vec4((g - outDataShift) / outDataScale);
 	}
 }
