@@ -376,6 +376,31 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
 # --------------------------------------------------
+# Generate files for using NQVTK from external cmake projects
+
+SET( ${ProjectName}_INCLUDE_DIRS_CONFIG
+	${${ProjectName}_SOURCE_DIR} # NQVTK includes
+	${${ProjectName}_BINARY_DIR} # Generated files
+)
+SET( ${ProjectName}_LIBRARY_DIRS_CONFIG
+	${${ProjectName}_Libraries}
+	${${ProjectName}_BINARY_DIR}
+)
+SET( ${ProjectName}_USE_FILE
+	"${${ProjectName}_BINARY_DIR}/UseNQVTK.cmake"
+)
+CONFIGURE_FILE(
+	${${ProjectName}_SOURCE_DIR}/UseNQVTK.cmake.in
+	${${ProjectName}_BINARY_DIR}/UseNQVTK.cmake
+	COPYONLY IMMEDIATE
+)
+CONFIGURE_FILE(
+	${${ProjectName}_SOURCE_DIR}/NQVTKConfig.cmake.in
+	${${ProjectName}_BINARY_DIR}/NQVTKConfig.cmake
+	@ONLY IMMEDIATE
+)
+
+# --------------------------------------------------
 # Library target
 
 ADD_LIBRARY( 

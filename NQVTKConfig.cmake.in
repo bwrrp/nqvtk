@@ -1,0 +1,15 @@
+# --------------------------------------------------
+# NQVTKConfig.cmake
+# NQVTK CMake configuration file for external projects.
+#
+# This file is configured by NQVTK and used by the UseNQVTK.cmake 
+# module to load NQVTK's settings for external projects.
+
+# The include file directories.
+SET(NQVTK_INCLUDE_DIRS "@NQVTK_INCLUDE_DIRS_CONFIG@")
+
+# The library directories.
+SET(NQVTK_LIBRARY_DIRS "@NQVTK_LIBRARY_DIRS_CONFIG@")
+
+# The location of the UseNQVTK.cmake file.
+SET(NQVTK_USE_FILE "@NQVTK_USE_FILE@")

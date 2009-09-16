@@ -1,0 +1,15 @@
+# --------------------------------------------------
+# This module is provided as NQVTK_USE_FILE by NQVTKConfig.cmake. It 
+# can be INCLUDEd in a project to load the needed compiler and linker 
+# settings to use NQVTK.
+
+IF(NOT NQVTK_USE_FILE_INCLUDED)
+	SET(NQVTK_USE_FILE_INCLUDED 1)
+
+	# Add include directories needed to use NQVTK.
+	INCLUDE_DIRECTORIES(${NQVTK_INCLUDE_DIRS})
+
+	# Add link directories needed to use NQVTK.
+	LINK_DIRECTORIES(${NQVTK_LIBRARY_DIRS})
+
+ENDIF(NOT NQVTK_USE_FILE_INCLUDED)
