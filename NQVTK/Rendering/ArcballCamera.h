@@ -2,8 +2,8 @@
 
 #include "Camera.h"
 
-#include "Math/Vector3.h"
-#include "Math/Matrix3x3.h"
+#include "NQVTK/Math/Vector3.h"
+#include "NQVTK/Math/Matrix3x3.h"
 
 namespace NQVTK
 {
