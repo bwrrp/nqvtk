@@ -1,8 +1,6 @@
 # --------------------------------------------------
 # Project name
 SET( ProjectName NQVTK )
-
-# TODO: create test project instead
 PROJECT( ${ProjectName} )
 
 # --------------------------------------------------
