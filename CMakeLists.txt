@@ -50,9 +50,9 @@ ELSE( WIN32 )
 ENDIF( WIN32 )
 
 # We need GLBlaat
-SUBDIRS( GLBlaat )
+ADD_SUBDIRECTORY( GLBlaat )
 SET( GLBlaat_lib
-	GLBlaat
+	${CMAKE_CURRENT_BINARY_DIR}/GLBlaat/GLBlaat
 )
 
 # The complete set of libraries required by the project
@@ -388,6 +388,10 @@ SET( ${ProjectName}_INCLUDE_DIRS_CONFIG
 SET( ${ProjectName}_LIBRARY_DIRS_CONFIG
 	${${ProjectName}_Libraries}
 	${${ProjectName}_BINARY_DIR}
+)
+SET( ${ProjectName}_LIBRARIES_CONFIG
+	${${ProjectName}_Libraries}
+	${ProjectName}
 )
 SET( ${ProjectName}_USE_FILE
 	"${${ProjectName}_BINARY_DIR}/UseNQVTK.cmake"
