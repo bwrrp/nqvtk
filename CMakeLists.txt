@@ -68,6 +68,10 @@ SET( ${ProjectName}_Libraries
 # --------------------------------------------------
 # Modules
 
+SET( ${ProjectName}_SourceBaseDir
+	"${CMAKE_CURRENT_SOURCE_DIR}/NQVTK"
+)
+
 SET( ${ProjectName}_Modules
 	Math
 	Rendering
@@ -234,11 +238,11 @@ GET_TARGET_PROPERTY( TextToHeaderExe TextToHeader LOCATION )
 
 MACRO( collect_class_source_files module class headers sources )
 	# Find header file
-	SET( headerfile "${CMAKE_CURRENT_SOURCE_DIR}/${module}/${class}.h" )
+	SET( headerfile "${${ProjectName}_SourceBaseDir}/${module}/${class}.h" )
 	IF( EXISTS ${headerfile} )
 		SET( ${headers} ${${headers}} ${headerfile} )
 	ELSE( EXISTS ${headerfile} )
-		SET( headerfile "${CMAKE_CURRENT_SOURCE_DIR}/${class}.h" )
+		SET( headerfile "${${ProjectName}_SourceBaseDir}/${class}.h" )
 		IF( EXISTS ${headerfile} )
 			SET( ${headers} ${${headers}} ${headerfile} )
 		ELSE( EXISTS ${headerfile} )
@@ -247,21 +251,21 @@ MACRO( collect_class_source_files module class headers sources )
 	ENDIF( EXISTS ${headerfile} )
 
 	# Find source files
-	SET( classfile "${CMAKE_CURRENT_SOURCE_DIR}/${module}/${class}.cpp" )
+	SET( classfile "${${ProjectName}_SourceBaseDir}/${module}/${class}.cpp" )
 	IF( EXISTS ${classfile} )
-		SET( ${sources} ${${sources}} "${module}/${class}.cpp" )
+		SET( ${sources} ${${sources}} "${classfile}" )
 	ELSE( EXISTS ${classfile} )
-		SET( classfile "${CMAKE_CURRENT_SOURCE_DIR}/${module}/${class}.cxx" )
+		SET( classfile "${${ProjectName}_SourceBaseDir}/${module}/${class}.cxx" )
 		IF( EXISTS ${classfile} )
-			SET( ${sources} ${${sources}} "${module}/${class}.cxx" )
+			SET( ${sources} ${${sources}} "${classfile}" )
 		ELSE( EXISTS ${classfile} )
-			SET( classfile "${CMAKE_CURRENT_SOURCE_DIR}/${class}.cpp" )
+			SET( classfile "${${ProjectName}_SourceBaseDir}/${class}.cpp" )
 			IF( EXISTS ${classfile} )
-				SET( ${sources} ${${sources}} "${class}.cpp" )
+				SET( ${sources} ${${sources}} "${classfile}" )
 			ELSE( EXISTS ${classfile} )
-				SET( classfile "${CMAKE_CURRENT_SOURCE_DIR}/${class}.cxx" )
+				SET( classfile "${${ProjectName}_SourceBaseDir}/${class}.cxx" )
 				IF( EXISTS ${classfile} )
-					SET( ${sources} ${${sources}} "${class}.cxx" )
+					SET( ${sources} ${${sources}} "${classfile}" )
 				ELSE( EXISTS ${classfile} )
 					# Allow header-only implementations
 					# MESSAGE( SEND_ERROR "Class implementation not found for '${class}'" )
@@ -322,7 +326,7 @@ FOREACH( i RANGE ${nmodules} )
 	LIST( GET ${ProjectName}_ModuleNames ${i} modulename )
 
 	# See if there is a separate CMake include for this module
-	SET( cmakeincludefile "${CMAKE_CURRENT_SOURCE_DIR}/${module}/sources.cmake" )
+	SET( cmakeincludefile "${${ProjectName}_SourceBaseDir}/${module}/sources.cmake" )
 	IF( EXISTS ${cmakeincludefile} )
 		# Include the file
 		INCLUDE( ${cmakeincludefile} )
@@ -373,6 +377,7 @@ SOURCE_GROUP( "Generated files"
 )
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
+INCLUDE_DIRECTORIES( ${${ProjectName}_SourceBaseDir} )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
 # --------------------------------------------------
