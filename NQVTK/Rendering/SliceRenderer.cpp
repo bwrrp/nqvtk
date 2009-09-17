@@ -52,15 +52,18 @@ namespace NQVTK
 		// This doesn't matter in layered rendering because the scribe doesn't 
 		// use them, but will add them to the tm. However, here we don't have 
 		// such an extra pass...
-		if (shader) shader->Start();
-		for (unsigned int objectId = 0; 
-			objectId < view->GetNumberOfRenderables(); 
-			++objectId)
+		if (view)
 		{
-			Renderable *renderable = view->GetRenderable(objectId);
-			PrepareForRenderable(objectId, renderable);
+			if (shader) shader->Start();
+			for (unsigned int objectId = 0; 
+				objectId < view->GetNumberOfRenderables(); 
+				++objectId)
+			{
+				Renderable *renderable = view->GetRenderable(objectId);
+				PrepareForRenderable(objectId, renderable);
+			}
+			if (shader) shader->Stop();
 		}
-		if (shader) shader->Stop();
 
 		Clear();
 
