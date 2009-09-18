@@ -60,7 +60,7 @@ namespace NQVTK
 			// Mouse movement moves the position along the axis
 			double scale = static_cast<double>(
 				std::min(viewportWidth, viewportHeight));
-			double delta = extent * (lastY - event.y) / scale;
+			double delta = extent * (event.y - lastY) / scale;
 
 			// Keep the plane intersecting the bounding box
 			if (planeOffset + delta > extent)
@@ -84,7 +84,7 @@ namespace NQVTK
 			Vector3 sliceCenter = origin + 0.5 * right + 0.5 * up;
 			double scale = static_cast<double>(
 				std::min(viewportWidth, viewportHeight));
-			double zoom = 1.0 + (lastY - event.y) / scale;
+			double zoom = 1.0 + (event.y - lastY) / scale;
 
 			// Try not to destroy the plane spanning vectors
 			// They may still lose accuracy when zooming out too far...
