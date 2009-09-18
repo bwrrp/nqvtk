@@ -1,6 +1,6 @@
 #include "CustomLayeredRaycaster.h"
 
-#include "GLBlaat/GLFrameBuffer.h"
+#include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLProgram.h"
 #include "GLBlaat/GLTextureManager.h"
 #include "GLBlaat/GLUtility.h"

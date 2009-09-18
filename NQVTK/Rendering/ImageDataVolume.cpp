@@ -155,8 +155,8 @@ namespace NQVTK
 					int internalformats[] = {
 						GL_LUMINANCE16F_ARB, 
 						GL_LUMINANCE_ALPHA16F_ARB, 
-						GL_RGB16F, 
-						GL_RGBA16F};
+						GL_RGB16F_ARB,  
+						GL_RGBA16F_ARB};
 					internalformat = internalformats[numComps - 1];
 					int dataformats[] = {
 						GL_LUMINANCE, 
