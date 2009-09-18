@@ -26,6 +26,22 @@ namespace NQVTK
 		int numComps = data->GetNumberOfScalarComponents();
 		std::cout << "Found " << numComps << " components" << std::endl;
 
+		if (type == Auto)
+		{
+			switch (data->GetScalarType())
+			{
+			case VTK_FLOAT:
+			case VTK_DOUBLE:
+				std::cout << "Auto type: float" << std::endl;
+				type = Float;
+				break;
+
+			default:
+				std::cout << "Auto type: unsigned char" << std::endl;
+				type = UnsignedChar;
+			}
+		}
+
 		// Get the scalar range of the image
 		double range[2];
 		data->GetScalarRange(range);

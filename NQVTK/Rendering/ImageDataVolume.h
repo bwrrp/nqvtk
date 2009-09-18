@@ -14,11 +14,12 @@ namespace NQVTK
 		enum VolumeDataType
 		{
 			UnsignedChar, 
-			Float
+			Float, 
+			Auto
 		};
 
 		static ImageDataVolume *New(vtkImageData *data, 
-			VolumeDataType type = UnsignedChar);
+			VolumeDataType type = Auto);
 
 	protected:
 		ImageDataVolume(int width, int height, int depth, 
