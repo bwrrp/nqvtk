@@ -2,7 +2,7 @@
 
 #include "CameraInteractor.h"
 
-#include "Math/Vector3.h"
+#include "NQVTK/Math/Vector3.h"
 
 namespace NQVTK
 {
