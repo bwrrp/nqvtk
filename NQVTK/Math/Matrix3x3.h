@@ -148,9 +148,9 @@ namespace NQVTK
 
 	private:
 		// Jacobi iteration for the solution of eigenvectors/eigenvalues of a 
-		//   3x3 real symmetric matrix. Square 3x3 matrix a; output eigenvalues in
-		//   w; and output eigenvectors in v. Resulting eigenvalues/vectors are 
-		//   sorted in decreasing order; eigenvectors are normalized.
+		// 3x3 real symmetric matrix. Square 3x3 matrix a; output eigenvalues 
+		// in w; and output eigenvectors in v. Resulting eigenvalues/vectors 
+		// are sorted in decreasing order; eigenvectors are normalized.
 		// Adapted from VTK (vtkMath.cxx) version 5.0.0.
 		#define ROTATE(a,i,j,k,l) g=a[i][j];h=a[k][l];a[i][j]=g-s*(h+g*tau);\
 				a[k][l]=h+s*(g-h*tau)
@@ -183,7 +183,7 @@ namespace NQVTK
 				{
 					for (iq = ip + 1; iq < 3; iq++) 
 					{
-						sm += abs(a.A[ip][iq]);
+						sm += std::abs(a.A[ip][iq]);
 					}
 				}
 				
@@ -202,25 +202,27 @@ namespace NQVTK
 				{
 					for (iq = ip + 1; iq < 3; iq++) 
 					{
-						g = 100.0f * abs(a.A[ip][iq]);
+						g = 100.0f * std::abs(a.A[ip][iq]);
 
 						// after 4 sweeps
-						if (i > 3 && (abs(w.V[ip]) + g) == abs(w.V[ip])
-							&& (abs(w.V[iq]) + g) == abs(w.V[iq])) 
+						if (i > 3 && 
+							(std::abs(w.V[ip]) + g) == std::abs(w.V[ip]) && 
+							(std::abs(w.V[iq]) + g) == std::abs(w.V[iq])) 
 						{	
 							a.A[ip][iq] = 0.0f;
 						} 
-						else if (abs(a.A[ip][iq]) > tresh) 
+						else if (std::abs(a.A[ip][iq]) > tresh) 
 						{
 							h = w.V[iq] - w.V[ip];
-							if ((abs(h) + g) == abs(h)) 
+							if ((std::abs(h) + g) == std::abs(h)) 
 							{
 								t = (a.A[ip][iq]) / h;
 							} 
 							else 
 							{
 								theta = 0.5f * h / (a.A[ip][iq]);
-								t = 1.0f / (abs(theta) + sqrt(1.0f + theta * theta));
+								t = 1.0f / (std::abs(theta) + 
+									sqrt(1.0f + theta * theta));
 								if (theta < 0.0) t = -t;
 							}
 							c = 1.0f / sqrt(1.0f + t * t);
@@ -289,10 +291,10 @@ namespace NQVTK
 					}
 				}
 			}
-			// insure eigenvector consistency (i.e., Jacobi can compute vectors that
-			// are negative of one another (.707,.707,0) and (-.707,-.707,0). This can
-			// reek havoc in hyperstreamline/other stuff. We will select the most
-			// positive eigenvector.
+			// ensure eigenvector consistency (i.e., Jacobi can compute vectors 
+			// that are negative of one another (.707,.707,0) and 
+			// (-.707,-.707,0). This can wreak havoc in hyperstreamline/other 
+			// stuff. We will select the most positive eigenvector.
 			for (j = 0; j < 3; j++) 
 			{
 				for (numPos = 0, i = 0; i < 3; i++) 
@@ -381,9 +383,9 @@ namespace NQVTK
 		return res;	
 	}
 
-	// Vector direct product operator. The vector direct product of v1 and v2 is 
-	//   the matrix resulting from multiplying v1 as a single-column matrix with 
-	//   v2 as a single-row matrix.
+	// Vector direct product operator. The vector direct product of v1 and v2 
+	// is the matrix resulting from multiplying v1 as a single-column matrix 
+	// with v2 as a single-row matrix.
 	inline const Matrix3x3 operator*(const Vector3 &v1, const Vector3 &v2) 
 	{
 		// v . vT (column vector . row vector)
