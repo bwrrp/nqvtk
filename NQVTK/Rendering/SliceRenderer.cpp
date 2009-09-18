@@ -202,6 +202,11 @@ namespace NQVTK
 			"   vec3 tex = /*vec3(volumeDataShift) + volumeDataScale * */"
 			"      texture3D(volume, tc).xyz;"
 			"   vec4 color = vec4(tex, length(tex));"
+			"   for (int i = 0; i < 3; ++i) {"
+			"      if (tc[i] < 0.0 || tc[i] > 1.0) {"
+			"         color = vec4(vec3(0.0), 1.0);"
+			"      }"
+			"   }"
 			"   gl_FragColor = vec4(color.rgb * color.a, color.a);"
 			"}");
 		if (ok) ok = shader->Link();
