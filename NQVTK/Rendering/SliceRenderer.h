@@ -33,13 +33,24 @@ namespace NQVTK
 		Vector3 GetPlaneOrigin() { return origin; }
 		Vector3 GetPlaneRight() { return right; }
 		Vector3 GetPlaneUp() { return up; }
+		Vector3 GetViewportPlaneOrigin() { return vporigin; }
+		Vector3 GetViewportPlaneRight() { return vpright; }
+		Vector3 GetViewportPlaneUp() { return vpup; }
 
 	protected:
 		GLProgram *shader;
 		std::vector<GLAttributeInfo> shaderAttribs;
 
+		// User-defined slice plane
 		Vector3 origin;
 		Vector3 right;
 		Vector3 up;
+
+		// Adjusted plane representing the entire viewport
+		Vector3 vporigin;
+		Vector3 vpright;
+		Vector3 vpup;
+
+		void UpdateViewportPlane();
 	};
 }

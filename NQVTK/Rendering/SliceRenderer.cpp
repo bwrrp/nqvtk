@@ -86,28 +86,7 @@ namespace NQVTK
 			}
 
 			// Compute origin and right/up vectors which preserve aspect ratio
-			double viewportAspect = static_cast<double>(viewportWidth) / 
-				static_cast<double>(viewportHeight);
-			double sliceAspect = right.length() / up.length();
-			Vector3 neworigin;
-			Vector3 newright;
-			Vector3 newup;
-			if (viewportAspect > sliceAspect)
-			{
-				// Add margin left and right
-				double margin = viewportAspect / sliceAspect - 1.0;
-				neworigin = origin - 0.5 * margin * right;
-				newright = right + margin * right;
-				newup = up;
-			}
-			else
-			{
-				// Add margin above and below
-				double margin = sliceAspect / viewportAspect - 1.0;
-				neworigin = origin - 0.5 * margin * up;
-				newright = right;
-				newup = up + margin * up;
-			}
+			UpdateViewportPlane();
 
 			// Draw a single slice for each renderable
 			for (unsigned int objectId = 0; 
@@ -131,13 +110,13 @@ namespace NQVTK
 
 					// Draw the full screen quad for our slice plane
 					glBegin(GL_QUADS);
-					glTexCoord3dv(neworigin.V);
+					glTexCoord3dv(vporigin.V);
 					glVertex3d(-1.0, -1.0, 0.0);
-					glTexCoord3dv((neworigin + newright).V);
+					glTexCoord3dv((vporigin + vpright).V);
 					glVertex3d(1.0, -1.0, 0.0);
-					glTexCoord3dv((neworigin + newright + newup).V);
+					glTexCoord3dv((vporigin + vpright + vpup).V);
 					glVertex3d(1.0, 1.0, 0.0);
-					glTexCoord3dv((neworigin + newup).V);
+					glTexCoord3dv((vporigin + vpup).V);
 					glVertex3d(-1.0, 1.0, 0.0);
 					glEnd();
 				}
@@ -213,5 +192,29 @@ namespace NQVTK
 		if (ok) SetShader(shader);
 		if (!ok) delete shader;
 		return ok;
+	}
+
+	// ------------------------------------------------------------------------
+	void SliceRenderer::UpdateViewportPlane()
+	{
+		double viewportAspect = static_cast<double>(viewportWidth) / 
+			static_cast<double>(viewportHeight);
+		double sliceAspect = right.length() / up.length();
+		if (viewportAspect > sliceAspect)
+		{
+			// Add margin left and right
+			double margin = viewportAspect / sliceAspect - 1.0;
+			vporigin = origin - 0.5 * margin * right;
+			vpright = right + margin * right;
+			vpup = up;
+		}
+		else
+		{
+			// Add margin above and below
+			double margin = sliceAspect / viewportAspect - 1.0;
+			vporigin = origin - 0.5 * margin * up;
+			vpright = right;
+			vpup = up + margin * up;
+		}
 	}
 }
