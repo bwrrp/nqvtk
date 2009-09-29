@@ -30,24 +30,37 @@ SET( OpenGL_lib
 )
 
 # GLEW
-IF( WIN32 )
-	IF( CYGWIN )
-		FIND_LIBRARY( GLEW_lib 
-			NAMES libGLEW GLEW glew32
-			PATHS /usr/lib /usr/lib/w32api
-		)
-	ELSE( CYGWIN )
-		# FIND_LIBRARY does not seem to work here (or maybe we need the paths...)
-		SET( GLEW_lib
-			glew32.lib
-		)
-	ENDIF( CYGWIN )
-ELSE( WIN32 )
-	FIND_LIBRARY( GLEW_lib
-		NAMES libGLEW GLEW glew32
-		PATHS /usr/lib /usr/local/lib
-	)
-ENDIF( WIN32 )
+IF (WIN32)
+	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
+		$ENV{PROGRAMFILES}/GLEW/include
+		DOC "The directory where GL/glew.h resides")
+	FIND_LIBRARY( GLEW_LIBRARY
+		NAMES glew GLEW glew32 glew32s
+		PATHS
+		$ENV{PROGRAMFILES}/GLEW/lib
+		DOC "The GLEW library")
+ELSE (WIN32)
+	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
+		/usr/include
+		/usr/local/include
+		/sw/include
+		/opt/local/include
+		DOC "The directory where GL/glew.h resides")
+	FIND_LIBRARY( GLEW_LIBRARY
+		NAMES GLEW glew
+		PATHS
+		/usr/lib64
+		/usr/lib
+		/usr/local/lib64
+		/usr/local/lib
+		/sw/lib
+		/opt/local/lib
+		DOC "The GLEW library")
+ENDIF (WIN32)
+INCLUDE_DIRECTORIES( ${GLEW_INCLUDE_PATH} )
+SET( GLEW_lib
+	${GLEW_LIBRARY}
+)
 
 # We need GLBlaat
 ADD_SUBDIRECTORY( GLBlaat )
