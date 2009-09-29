@@ -18,6 +18,7 @@ namespace NQVTK
 	RenderStyle::RenderStyle() 
 		: tm(0)
 	{
+		SetOption("NQVTK_BITMASK_BITS", 4);
 	}
 
 	// ------------------------------------------------------------------------

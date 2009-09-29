@@ -26,7 +26,7 @@ float unpackFloat(vec2 coded) {
 
 // Gets a single bit from a float-encoded bit set
 bool getBit(float byte, int bit) {
-	float N = 4.0;
+	float N = float(NQVTK_BITMASK_BITS);
 	float f = 2.0;
 	bool res = false;
 	if (bit < int(N)) {
@@ -52,7 +52,7 @@ bool getBit(float byte, int bit) {
 // Encodes a bit set in a float, range [0..1]
 float setBit(float byte, int bit, bool on) {
 	float f = 2.0;
-	float N = 4.0;
+	float N = float(NQVTK_BITMASK_BITS);
 	float max = pow(f, N) - 1.0;
 #ifdef GL_EXT_gpu_shader4
 // - gpu-shader4, use bitwise operators
