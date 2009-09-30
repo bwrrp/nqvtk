@@ -30,7 +30,7 @@ IF (WIN32)
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
 		$ENV{PROGRAMFILES}/GLEW/include
 		DOC "The directory where GL/glew.h resides")
-	FIND_LIBRARY( GLEW_LIBRARY
+	FIND_LIBRARY( GLEW_RELEASE_LIBRARY
 		NAMES glew32s glew32 glew GLEW
 		PATHS
 		${GLEW_INCLUDE_PATH}/../lib
@@ -43,8 +43,8 @@ IF (WIN32)
 		$ENV{PROGRAMFILES}/GLEW/lib
 		DOC "The debug version of the GLEW library (glew32sd.lib)")
 	SET( GLEW_LIBRARY
-		${GLEW_LIBRARY} optimized
-		${GLEW_DEBUG_LIBRARY} debug
+		optimized ${GLEW_RELEASE_LIBRARY}
+		debug ${GLEW_DEBUG_LIBRARY}
 	)
 ELSE (WIN32)
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
