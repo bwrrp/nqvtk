@@ -24,10 +24,6 @@ SET( VTK_lib
 
 # OpenGL and GLU
 FIND_PACKAGE( OpenGL REQUIRED )
-INCLUDE_DIRECTORIES( ${OPENGL_INCLUDE_DIR} )
-SET( OpenGL_lib
-	${OPENGL_LIBRARIES}
-)
 
 # GLEW
 IF (WIN32)
@@ -35,10 +31,21 @@ IF (WIN32)
 		$ENV{PROGRAMFILES}/GLEW/include
 		DOC "The directory where GL/glew.h resides")
 	FIND_LIBRARY( GLEW_LIBRARY
-		NAMES glew GLEW glew32 glew32s
+		NAMES glew32s glew32 glew GLEW
 		PATHS
+		${GLEW_INCLUDE_PATH}/../lib
 		$ENV{PROGRAMFILES}/GLEW/lib
-		DOC "The GLEW library")
+		DOC "The GLEW library (glew32s.lib)")
+	FIND_LIBRARY( GLEW_DEBUG_LIBRARY
+		NAMES glew32sd glew32d glew32s glew32 glew GLEW
+		PATHS
+		${GLEW_INCLUDE_PATH}/../lib
+		$ENV{PROGRAMFILES}/GLEW/lib
+		DOC "The debug version of the GLEW library (glew32sd.lib)")
+	SET( GLEW_LIBRARY
+		${GLEW_LIBRARY} optimized
+		${GLEW_DEBUG_LIBRARY} debug
+	)
 ELSE (WIN32)
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
 		/usr/include
@@ -49,6 +56,7 @@ ELSE (WIN32)
 	FIND_LIBRARY( GLEW_LIBRARY
 		NAMES GLEW glew
 		PATHS
+		${GLEW_INCLUDE_PATH}/../lib
 		/usr/lib64
 		/usr/lib
 		/usr/local/lib64
@@ -57,10 +65,7 @@ ELSE (WIN32)
 		/opt/local/lib
 		DOC "The GLEW library")
 ENDIF (WIN32)
-INCLUDE_DIRECTORIES( ${GLEW_INCLUDE_PATH} )
-SET( GLEW_lib
-	${GLEW_LIBRARY}
-)
+ADD_DEFINITIONS( -DGLEW_STATIC )
 
 # We need GLBlaat
 ADD_SUBDIRECTORY( GLBlaat )
@@ -68,12 +73,17 @@ SET( GLBlaat_lib
 	${CMAKE_CURRENT_BINARY_DIR}/GLBlaat/GLBlaat
 )
 
-# The complete set of libraries required by the project
-SET( ${ProjectName}_Libraries
+# Dependency libraries and include paths for users of the NQVTK library
+SET( ${ProjectName}_Dependency_Libraries
+	${OPENGL_LIBRARIES}
+	${GLEW_LIBRARY}
 	${VTK_lib}
-	${OpenGL_lib}
-	${GLEW_lib}
 	${GLBlaat_lib}
+)
+SET( ${ProjectName}_Dependency_Includes
+	${OPENGL_INCLUDE_DIR}
+	${GLEW_INCLUDE_PATH}
+	${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # --------------------------------------------------
@@ -390,6 +400,7 @@ SOURCE_GROUP( "Generated files"
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 INCLUDE_DIRECTORIES( ${${ProjectName}_SourceBaseDir} )
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
+INCLUDE_DIRECTORIES( ${${ProjectName}_Dependency_Includes} )
 
 # --------------------------------------------------
 # Generate files for using NQVTK from external cmake projects
@@ -397,14 +408,15 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 SET( ${ProjectName}_INCLUDE_DIRS_CONFIG
 	${${ProjectName}_SOURCE_DIR} # NQVTK includes
 	${${ProjectName}_BINARY_DIR} # Generated files
+	${${ProjectName}_Dependency_Includes} # Dependencies
 )
 SET( ${ProjectName}_LIBRARY_DIRS_CONFIG
-	${${ProjectName}_Libraries}
 	${${ProjectName}_BINARY_DIR}
+	${${ProjectName}_Dependency_Libraries}
 )
 SET( ${ProjectName}_LIBRARIES_CONFIG
-	${${ProjectName}_Libraries}
 	${ProjectName}
+	${${ProjectName}_Dependency_Libraries}
 )
 SET( ${ProjectName}_USE_FILE
 	"${${ProjectName}_BINARY_DIR}/UseNQVTK.cmake"
@@ -426,9 +438,4 @@ CONFIGURE_FILE(
 ADD_LIBRARY( 
 	${ProjectName}
 	${${ProjectName}_Source}
-)
-
-TARGET_LINK_LIBRARIES(
-	${ProjectName} 
-	${${ProjectName}_Libraries}
 )
