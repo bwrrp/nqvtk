@@ -3,8 +3,7 @@
 #include "Renderable.h"
 
 // For GLAttributeInfo
-// TODO: hide this dependency from the interface?
-#include "GLBlaat/GLProgram.h"
+#include "GLBlaat/GLShaderInfo.h"
 
 #include <vector>
 #include <map>
