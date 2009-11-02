@@ -159,4 +159,21 @@ namespace NQVTK
 		}
 		return 0;
 	}
+
+	// ------------------------------------------------------------------------
+	AttributeSet *VBOMesh::ReplaceAttributeSet(const std::string &name, 
+		AttributeSet *attribSet)
+	{
+		AttributeMap::iterator it = attributeSets.find(name);
+		assert(it != attributeSets.end());
+		AttributeSet *oldSet = it->second;
+		it->second = attribSet;
+		// Check the custom sets
+		it = customAttribs.find(name);
+		if (it != customAttribs.end())
+		{
+			it->second = attribSet;
+		}
+		return oldSet;
+	}
 }

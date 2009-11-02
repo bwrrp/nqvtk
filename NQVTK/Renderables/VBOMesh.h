@@ -30,6 +30,8 @@ namespace NQVTK
 		void AddAttributeSet(const std::string &name, 
 			AttributeSet *attribSet, bool isCustom = false);
 		AttributeSet *GetAttributeSet(const std::string &name);
+		AttributeSet *ReplaceAttributeSet(const std::string &name, 
+			AttributeSet *attribSet);
 
 		virtual void Draw() const = 0;
 
