@@ -71,12 +71,13 @@ namespace NQVTK
 		}
 		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 
-		// TODO: update shader params, attrib bindings etc.
-		if (shader) shader->Start();
-
 		Clear();
 		DrawCamera();
 		UpdateLighting();
+
+		// TODO: update shader params, attrib bindings etc.
+		if (shader) shader->Start();
+
 		DrawRenderables();
 		GLUtility::CheckOpenGLError("SimpleRenderer::Draw()");
 
