@@ -21,14 +21,20 @@ namespace NQVTK
 		virtual void PrepareForRenderable(int objectId, 
 			Renderable *renderable);
 
+		virtual void Clear();
+
 		virtual void Draw();
 
 		GLProgram *GetShader() { return shader; }
 		GLProgram *SetShader(GLProgram *shader);
 
+		void SetDrawBackground(bool draw);
+
 	protected:
 		GLProgram *shader;
 		std::vector<GLAttributeInfo> shaderAttribs;
+
+		bool drawBackground;
 
 	private:
 		// Not implemented

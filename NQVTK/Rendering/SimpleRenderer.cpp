@@ -17,6 +17,7 @@ namespace NQVTK
 	SimpleRenderer::SimpleRenderer()
 		: shader(0)
 	{
+		drawBackground = true;
 	}
 
 	// ------------------------------------------------------------------------
@@ -62,6 +63,32 @@ namespace NQVTK
 	}
 
 	// ------------------------------------------------------------------------
+	void SimpleRenderer::Clear()
+	{
+		Superclass::Clear();
+		if (drawBackground)
+		{
+			glPushAttrib(GL_ALL_ATTRIB_BITS);
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			glDisable(GL_LIGHTING);
+			glDisable(GL_BLEND);
+			glDepthMask(GL_FALSE);
+			glBegin(GL_QUADS);
+			glColor4d(0.2, 0.2, 0.25, 0.0);
+			glVertex3d(-1.0, -1.0, 0.0);
+			glVertex3d(1.0, -1.0, 0.0);
+			glColor4d(0.6, 0.6, 0.65, 0.0);
+			glVertex3d(1.0, 1.0, 0.0);
+			glVertex3d(-1.0, 1.0, 0.0);
+			glEnd();
+			glPopAttrib();
+		}
+	}
+
+	// ------------------------------------------------------------------------
 	void SimpleRenderer::Draw()
 	{
 		// Prepare for rendering
@@ -97,5 +124,11 @@ namespace NQVTK
 		shaderAttribs.clear();
 		if (shader) shaderAttribs = shader->GetActiveAttributes();
 		return oldshader;
+	}
+
+	// ------------------------------------------------------------------------
+	void SimpleRenderer::SetDrawBackground(bool draw)
+	{
+		drawBackground = draw;
 	}
 }
