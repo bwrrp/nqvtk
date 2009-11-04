@@ -133,4 +133,10 @@ namespace NQVTK
 			if (tm) it->second->SetupTextureArrays(tm, objectId);
 		}
 	}
+
+	// ------------------------------------------------------------------------
+	void Renderable::SetupAttributes(
+		const std::vector<GLAttributeInfo> requiredAttribs)
+	{
+	}
 }

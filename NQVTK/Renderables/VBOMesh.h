@@ -2,10 +2,6 @@
 
 #include "Renderable.h"
 
-// For GLAttributeInfo
-#include "GLBlaat/GLShaderInfo.h"
-
-#include <vector>
 #include <map>
 #include <string>
 

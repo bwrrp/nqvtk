@@ -29,8 +29,7 @@ namespace NQVTK
 		if (shader) shader->SetUniform1i("objectId", objectId);
 		if (shaderAttribs.size() > 0)
 		{
-			NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
-			if (mesh) mesh->SetupAttributes(shaderAttribs);
+			renderable->SetupAttributes(shaderAttribs);
 		}
 		// If shader is null, this will still setup textures
 		// (remember to enable them during rendering...)

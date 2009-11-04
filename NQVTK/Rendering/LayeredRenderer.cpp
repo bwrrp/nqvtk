@@ -348,8 +348,7 @@ namespace NQVTK
 	{
 		scribe->SetUniform1i("objectId", objectId);
 		// Setup attributes
-		NQVTK::VBOMesh *mesh = dynamic_cast<NQVTK::VBOMesh*>(renderable);
-		if (mesh) mesh->SetupAttributes(scribeAttribs);
+		renderable->SetupAttributes(scribeAttribs);
 		// Apply all ParamSets
 		renderable->ApplyParamSets(scribe, tm);
 		// Allow tm to bind updated textures
