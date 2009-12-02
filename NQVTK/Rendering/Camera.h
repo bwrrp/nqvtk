@@ -16,6 +16,10 @@ namespace NQVTK
 		double nearZ;
 		double farZ;
 
+		// Fraction-of-viewport offsets for sub-pixel rendering
+		double jitterX;
+		double jitterY;
+
 		Camera();
 
 		virtual void SetZPlanes(const double *bounds);

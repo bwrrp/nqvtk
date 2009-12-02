@@ -44,6 +44,8 @@ namespace NQVTK
 
 		Camera *GetCamera();
 		void SetCamera(Camera *cam);
+		// For sub-pixel rendering, offset camera by fractions of a pixel
+		void SetCameraJitter(double jitterX, double jitterY);
 
 		GLFramebuffer *SetTarget(GLFramebuffer *target);
 		GLFramebuffer *GetTarget() { return this->fboTarget; }
@@ -62,6 +64,9 @@ namespace NQVTK
 		int viewportWidth;
 		int viewportHeight;
 
+		double jitterX;
+		double jitterY;
+
 		bool initialized;
 
 		Camera *camera;
@@ -76,6 +81,7 @@ namespace NQVTK
 		virtual bool Initialize();
 
 		virtual void UpdateLighting();
+		void UpdateJitter();
 
 		// Hook for per-renderable processing
 		virtual void PrepareForRenderable(int objectId, 

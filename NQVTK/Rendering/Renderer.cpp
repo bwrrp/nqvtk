@@ -23,6 +23,8 @@ namespace NQVTK
 		viewportWidth = -1;
 		viewportHeight = -1;
 
+		jitterX = jitterY = 0.0;
+
 		initialized = false;
 
 		lightOffsetDirection = 270.0;
@@ -79,6 +81,8 @@ namespace NQVTK
 		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 		GetCamera()->aspect = static_cast<double>(w) / static_cast<double>(h);
 
+		UpdateJitter();
+
 		// NOTE: The target is never resized by the renderer it's assigned to, 
 		// it should be managed by its owner!
 	}
@@ -131,6 +135,15 @@ namespace NQVTK
 	{
 		if (camera) delete camera;
 		camera = cam;
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::SetCameraJitter(double jitterX, double jitterY)
+	{
+		this->jitterX = jitterX;
+		this->jitterY = jitterY;
+
+		UpdateJitter();
 	}
 
 	// ------------------------------------------------------------------------
@@ -212,6 +225,14 @@ namespace NQVTK
 			static_cast<float>(lightDir.z), 
 			0.0f};
 		glLightfv(GL_LIGHT0, GL_POSITION, ldir);
+	}
+
+	// ------------------------------------------------------------------------
+	void Renderer::UpdateJitter()
+	{
+		// Set jitter values for subpixel rendering
+		camera->jitterX = jitterX / static_cast<double>(viewportWidth) * 2.0;
+		camera->jitterY = jitterY / static_cast<double>(viewportHeight) * 2.0;
 	}
 
 	// ------------------------------------------------------------------------

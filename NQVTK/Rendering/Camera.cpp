@@ -14,6 +14,7 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	Camera::Camera() : position(0.0, 0.0, -5.0), focus(), up(0.0, 1.0, 0.0) 
 	{
+		jitterX = jitterY = 0.0;
 	}
 
 	// ------------------------------------------------------------------------
@@ -65,6 +66,7 @@ namespace NQVTK
 	{
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
+		glTranslated(jitterX, jitterY, 0.0);
 		gluPerspective(45.0, aspect, nearZ, farZ);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
