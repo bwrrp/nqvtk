@@ -8,9 +8,9 @@
 namespace NQVTK
 {
 	// ------------------------------------------------------------------------
-	VolumeParamSet::VolumeParamSet(Volume *volume)
+	VolumeParamSet::VolumeParamSet(Volume *volume, const std::string &name)
+		: volume(volume), name(name)
 	{
-		this->volume = volume;
 	}
 
 	// ------------------------------------------------------------------------
@@ -24,25 +24,38 @@ namespace NQVTK
 	{
 		if (volume)
 		{
+			// TODO: revise the param(set) stuff to make this more efficient
+
+			// For legacy code
 			program->SetUniform1i("hasVolume", 1);
-			program->SetUniform1f("volumeDataShift", 
+			program->SetUniform1i(name + "Present", 1);
+			program->SetUniform1f(name + "DataShift", 
 				static_cast<float>(volume->GetDataShift()));
-			program->SetUniform1f("volumeDataScale", 
+			program->SetUniform1f(name + "DataScale", 
 				static_cast<float>(volume->GetDataScale()));
 			Vector3 origin = volume->GetOrigin();
-			program->SetUniform3f("volumeOrigin", 
+			program->SetUniform3f(name + "Origin", 
 				static_cast<float>(origin.x), 
 				static_cast<float>(origin.y), 
 				static_cast<float>(origin.z));
 			Vector3 size = volume->GetOriginalSize();
-			program->SetUniform3f("volumeSize", 
+			program->SetUniform3f(name + "Size", 
 				static_cast<float>(size.x), 
 				static_cast<float>(size.y), 
 				static_cast<float>(size.z));
+			program->SetUniform3f(name + "Spacing", 
+				static_cast<float>(
+					size.x / static_cast<double>(volume->GetWidth() - 1)), 
+				static_cast<float>(
+					size.y / static_cast<double>(volume->GetHeight() - 1)), 
+				static_cast<float>(
+					size.z / static_cast<double>(volume->GetDepth() - 1)));
 		}
 		else
 		{
+			// For legacy code
 			program->SetUniform1i("hasVolume", 0);
+			program->SetUniform1i(name + "Present", 0);
 		}
 	}
 
@@ -53,25 +66,25 @@ namespace NQVTK
 		if (volume)
 		{
 			program->SetUniform1f(
-				GetArrayName("volumeDataShift", objectId), 
+				GetArrayName(name + "DataShift", objectId), 
 				static_cast<float>(volume->GetDataShift()));
 			program->SetUniform1f(
-				GetArrayName("volumeDataScale", objectId), 
+				GetArrayName(name + "DataScale", objectId), 
 				static_cast<float>(volume->GetDataScale()));
 			NQVTK::Vector3 origin = volume->GetOrigin();
 			program->SetUniform3f(
-				GetArrayName("volumeOrigin", objectId), 
+				GetArrayName(name + "Origin", objectId), 
 				static_cast<float>(origin.x), 
 				static_cast<float>(origin.y), 
 				static_cast<float>(origin.z));
 			NQVTK::Vector3 size = volume->GetOriginalSize();
 			program->SetUniform3f(
-				GetArrayName("volumeSize", objectId), 
+				GetArrayName(name + "Size", objectId), 
 				static_cast<float>(size.x), 
 				static_cast<float>(size.y), 
 				static_cast<float>(size.z));
 			program->SetUniform3f(
-				GetArrayName("volumeSpacing", objectId), 
+				GetArrayName(name + "Spacing", objectId), 
 				static_cast<float>(
 					size.x / static_cast<double>(volume->GetWidth() - 1)), 
 				static_cast<float>(
@@ -84,13 +97,13 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	void VolumeParamSet::SetupTextures(GLTextureManager *tm)
 	{
-		tm->AddTexture("volume", volume, false);
+		tm->AddTexture(name, volume, false);
 	}
 
 	// ------------------------------------------------------------------------
 	void VolumeParamSet::SetupTextureArrays(GLTextureManager *tm, int objectId)
 	{
-		tm->AddTexture(GetArrayName("volume", objectId), volume, false);
+		tm->AddTexture(GetArrayName(name, objectId), volume, false);
 	}
 
 	// ------------------------------------------------------------------------

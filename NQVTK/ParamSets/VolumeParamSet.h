@@ -11,7 +11,7 @@ namespace NQVTK
 	public:
 		typedef ParamSet Superclass;
 
-		VolumeParamSet(Volume *volume = 0);
+		VolumeParamSet(Volume *volume = 0, const std::string &name = "volume");
 		virtual ~VolumeParamSet();
 
 		virtual void SetupProgram(GLProgram *program);
@@ -25,6 +25,7 @@ namespace NQVTK
 
 	protected:
 		Volume *volume;
+		std::string name;
 
 	private:
 		// Not implemented
