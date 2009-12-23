@@ -419,6 +419,9 @@ namespace NQVTK
 				if (style->DoShadersNeedUpdate())
 				{
 					Initialize();
+					// Don't forget to resize
+					SetViewport(viewportX, viewportY, 
+						viewportWidth, viewportHeight);
 				}
 			}
 		}
