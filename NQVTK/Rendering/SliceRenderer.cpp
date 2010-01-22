@@ -4,6 +4,7 @@
 #include "GLBlaat/GLFramebuffer.h"
 #include "GLBlaat/GLTextureManager.h"
 
+#include "Camera.h"
 #include "View.h"
 
 #include "Renderables/Renderable.h"
@@ -215,5 +216,7 @@ namespace NQVTK
 			vpright = right;
 			vpup = up + margin * up;
 		}
+		// Apply jitter
+		vporigin += camera->jitterX * vpright + camera->jitterY * vpup;
 	}
 }
