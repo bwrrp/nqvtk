@@ -217,6 +217,8 @@ namespace NQVTK
 			vpup = up + margin * up;
 		}
 		// Apply jitter
-		vporigin += camera->jitterX * vpright + camera->jitterY * vpup;
+		vporigin = vporigin - 
+			0.5 * camera->jitterX * vpright - 
+			0.5 * camera->jitterY * vpup;
 	}
 }
