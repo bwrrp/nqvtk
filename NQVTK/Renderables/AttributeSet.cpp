@@ -10,25 +10,35 @@ namespace NQVTK
 {
 	// ------------------------------------------------------------------------
 	AttributeSet::AttributeSet(GLenum valueType, int numComponents)
+		: valueType(valueType), numComponents(numComponents), 
+		buffer(GLBuffer::New()), pointer(0), 
+		bufferShared(false), stride(0), offset(0)
 	{
 		assert(valueType != GL_NONE);
-		this->valueType = valueType;
-		this->numComponents = numComponents;
-		buffer = GLBuffer::New();
-		// TODO: pointer
-		pointer = 0;
+	}
+
+	// ------------------------------------------------------------------------
+	AttributeSet::AttributeSet(GLenum valueType, int numComponents, 
+		GLBuffer *sharedBuffer, int stride, int offset)
+		: valueType(valueType), numComponents(numComponents), 
+		buffer(sharedBuffer), pointer(0), 
+		bufferShared(true), stride(stride), offset(offset)
+	{
+		assert(valueType != GL_NONE);
 	}
 
 	// ------------------------------------------------------------------------
 	AttributeSet::~AttributeSet()
 	{
-		delete buffer;
+		if (!bufferShared) delete buffer;
 		delete pointer;
 	}
 
 	// ------------------------------------------------------------------------
 	void AttributeSet::SetData(int numTuples, void *data, GLenum usage)
 	{
+		assert(!bufferShared);
+
 		buffer->BindAsVertexData();
 		this->numTuples = numTuples;
 		int size = numTuples * numComponents * GetValueSize();
@@ -61,7 +71,7 @@ namespace NQVTK
 	{
 		if (pointer) delete pointer;
 		pointer = new NQVTK::AttributePointers::VertexPointer(
-			numComponents, valueType, 0, 0);
+			numComponents, valueType, stride, offset);
 	}
 
 	// ------------------------------------------------------------------------
@@ -69,7 +79,7 @@ namespace NQVTK
 	{
 		if (pointer) delete pointer;
 		pointer = new NQVTK::AttributePointers::NormalPointer(
-			valueType, 0, 0);
+			valueType, stride, offset);
 	}
 
 	// ------------------------------------------------------------------------
@@ -77,7 +87,7 @@ namespace NQVTK
 	{
 		if (pointer) delete pointer;
 		pointer = new NQVTK::AttributePointers::ColorPointer(
-			numComponents, valueType, 0, 0);
+			numComponents, valueType, stride, offset);
 	}
 
 	// ------------------------------------------------------------------------
@@ -85,7 +95,7 @@ namespace NQVTK
 	{
 		if (pointer) delete pointer;
 		pointer = new NQVTK::AttributePointers::TexCoordPointer(
-			index, numComponents, valueType, 0, 0);
+			index, numComponents, valueType, stride, offset);
 	}
 
 	// ------------------------------------------------------------------------
@@ -93,7 +103,7 @@ namespace NQVTK
 	{
 		if (pointer) delete pointer;
 		pointer = new NQVTK::AttributePointers::VertexAttribPointer(
-			index, numComponents, valueType, normalized, 0, 0);
+			index, numComponents, valueType, normalized, stride, offset);
 	}
 
 	// ------------------------------------------------------------------------
@@ -106,7 +116,6 @@ namespace NQVTK
 	// ------------------------------------------------------------------------
 	int AttributeSet::GetValueSize()
 	{
-		// NOTE: templates are not useful here, we still need the enum for OpenGL
 		switch (valueType)
 		{
 		case GL_FLOAT:

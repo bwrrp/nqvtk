@@ -10,6 +10,9 @@ namespace NQVTK
 	{
 	public:
 		AttributeSet(unsigned int valueType, int numComponents);
+		// Overloaded constructor for attributesets sharing a single buffer
+		AttributeSet(unsigned int valueType, int numComponents, 
+			GLBuffer *sharedBuffer, int stride, int offset);
 		virtual ~AttributeSet();
 
 		// Set the buffer data and usage hint
@@ -40,6 +43,10 @@ namespace NQVTK
 		unsigned int valueType;
 		int numComponents;
 		int numTuples;
+
+		bool bufferShared;
+		int stride;
+		int offset;
 
 		int GetValueSize();
 
