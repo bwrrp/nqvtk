@@ -139,7 +139,6 @@ namespace NQVTK
 		AttributeSet *attribSet, bool isCustom)
 	{
 		AttributeSet *oldSet = attributeSets[name];
-		assert(!oldSet);
 		if (oldSet) delete oldSet;
 		attributeSets[name] = attribSet;
 
