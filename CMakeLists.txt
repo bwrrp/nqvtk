@@ -68,6 +68,8 @@ ENDIF (WIN32)
 ADD_DEFINITIONS( -DGLEW_STATIC )
 
 # We need GLBlaat
+# TODO: cleanup GLBlaat for easier use as an external library
+# For now, use 'svn checkout http://glblaat.googlecode.com/svn/trunk/ GLBlaat'
 ADD_SUBDIRECTORY( GLBlaat )
 SET( GLBlaat_lib
 	${CMAKE_CURRENT_BINARY_DIR}/GLBlaat/GLBlaat
