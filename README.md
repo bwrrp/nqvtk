@@ -1,0 +1,3 @@
+NQVTK is a library which enables users to quickly create GPU-based implementations of complicated rendering pipelines for visualization using OpenGL. It integrates with VTK for loading and processing mesh and image data, but provides a separate rendering framework with easy access to cutting-edge GPU functionality without the typical VTK overhead.
+
+This is very much research code at the moment. See the [shape space explorer](https://github.com/bwrrp/shapespaceexplorer) and [multi field explorer](https://github.com/bwrrp/multifieldexplorer) projects for example applications using the framework.
